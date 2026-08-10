@@ -1,0 +1,229 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Mark from '../components/Mark.astro';
+import { graph } from '../lib/schema';
+import { SITE } from '../consts';
+
+const url = new URL('/brand', SITE.url).href;
+const schema = graph({
+  '@type': 'WebPage',
+  '@id': `${url}#brand`,
+  url,
+  name: 'هویت بصری تاکسلی',
+  inLanguage: SITE.lang,
+});
+
+const COLORS = [
+  { fa: 'جوهر', en: 'Ink', hex: '#0F141C', use: 'متن اصلی، پس‌زمینهٔ تیره' },
+  { fa: 'کهربا', en: 'Amber', hex: '#FFB020', use: 'تأکید، منقار نشان، پیوند فعال' },
+  { fa: 'اخگر', en: 'Ember', hex: '#E07C10', use: 'حالت hover و فشرده' },
+  { fa: 'سنگی', en: 'Slate', hex: '#5B6472', use: 'متن ثانویه' },
+  { fa: 'برف', en: 'Snow', hex: '#FAFAF7', use: 'پس‌زمینهٔ روشن' },
+];
+
+const FILES = [
+  { f: 'tuxly-logo-horizontal.svg', d: 'ترکیب افقی لاتین — تیره' },
+  { f: 'tuxly-logo-horizontal-light.svg', d: 'ترکیب افقی لاتین — روشن' },
+  { f: 'tuxly-logo-fa.svg', d: 'ترکیب فارسی — تیره' },
+  { f: 'tuxly-logo-fa-light.svg', d: 'ترکیب فارسی — روشن' },
+  { f: 'tuxly-logo-vertical.svg', d: 'ترکیب عمودی' },
+  { f: 'tuxly-mark.svg', d: 'نشان تنها — تیره' },
+  { f: 'tuxly-mark-light.svg', d: 'نشان تنها — روشن' },
+  { f: 'tuxly-mark-black.svg', d: 'تک‌رنگ سیاه — چاپ' },
+  { f: 'tuxly-mark-white.svg', d: 'تک‌رنگ سفید — چاپ' },
+];
+---
+
+<BaseLayout
+  title="هویت بصری تاکسی"
+  description="نشان، لوگوتایپ، رنگ‌ها، قلم‌ها و قواعد استفاده از هویت بصری تاکسلی."
+  schema={schema}
+>
+  <div class="wrap" data-pagefind-body data-pagefind-meta="kind:صفحه">
+    <h1>هویت بصری تاکسی</h1>
+    <p class="intro">
+      این صفحه همه‌چیز مربوط به ظاهر تاکسلی را یک‌جا دارد. اگر دربارهٔ ما
+      می‌نویسید یا به سایت لینک می‌دهید، از همین فایل‌ها استفاده کنید.
+    </p>
+
+    <section>
+      <h2>نشان</h2>
+      <div class="showcase">
+        <div class="tile dark"><Mark size={110} /></div>
+        <div class="tile light"><Mark size={110} /></div>
+      </div>
+      <p>
+        نشان یک پنگوئن انتزاعی و تلفیقی از برج آزادی است که روی شبکه‌ای از دایره‌های کامل ساخته شده.
+        بدنه یک مسیر پیوسته است و شکم، چشم‌ها و پاها فضای منفی‌اند — به همین
+        دلیل روی هر پس‌زمینه‌ای، روشن یا تیره، خودش را تطبیق می‌دهد. کافی است
+        رنگ بدنه را عوض کنید. <strong>منقار همیشه کهربایی می‌ماند.</strong>
+      </p>
+    </section>
+
+    <section>
+      <h2>رنگ</h2>
+      <ul class="colors">
+        {COLORS.map((c) => (
+          <li
+            data-copy={c.hex}
+            data-copy-label={c.hex}
+            tabindex="0"
+            role="button"
+            aria-label={`رونوشت کد رنگ ${c.fa}: ${c.hex}`}
+          >
+            <span class="swatch" style={`background:${c.hex}`}></span>
+            <span class="c-name">{c.fa} <bdi class="latin muted">{c.en}</bdi></span>
+            <code>{c.hex}</code>
+            <span class="c-use muted">{c.use}</span>
+            <span class="copy-hint" aria-hidden="true">
+              <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="9" y="9" width="12" height="12" rx="2.5"></rect>
+                <path d="M5 15H4.5A1.5 1.5 0 0 1 3 13.5v-9A1.5 1.5 0 0 1 4.5 3h9A1.5 1.5 0 0 1 15 4.5V5"></path>
+              </svg>
+            </span>
+          </li>
+        ))}
+      </ul>
+      <p class="tip muted">روی هر رنگ بزنید تا کدش رونوشت شود.</p>
+      <p class="note">
+        کهربا روی سفید کنتراست کافی برای متن بدنه ندارد؛ فقط برای سطح، آیکون،
+        حاشیه و متن درشت استفاده شود.
+      </p>
+    </section>
+
+    <section>
+      <h2>قلم</h2>
+      <dl class="fonts">
+        <div>
+          <dt>وزیرمتن</dt>
+          <dd>تمام متن فارسی · وزن متغیر ۱۰۰ تا ۹۰۰ · <bdi class="latin">SIL OFL 1.1</bdi></dd>
+        </div>
+        <div>
+          <dt><bdi class="latin">Space Grotesk</bdi></dt>
+          <dd>لاتین، رابط کاربری و برچسب‌های فنی · وزن ۳۰۰ تا ۷۰۰ · <bdi class="latin">SIL OFL 1.1</bdi></dd>
+        </div>
+      </dl>
+      <p>
+        هر دو قلم آزادند.
+      </p>
+    </section>
+
+    <section>
+      <h2>فایل‌ها</h2>
+      <ul class="files">
+        {FILES.map((x) => (
+          <li>
+            <a href={`/brand/${x.f}`} download>
+              <bdi class="latin f">{x.f}</bdi>
+              <span class="muted">{x.d}</span>
+            </a>
+          </li>
+        ))}
+      </ul>
+      <p class="muted">
+        نسخهٔ PNG با پس‌زمینهٔ شفاف و راهنمای کامل در
+        <a href={`${SITE.repo}/tree/main/public/brand`} rel="noopener"> مخزن </a> موجود است.
+      </p>
+    </section>
+
+    <section>
+      <h2>قواعد</h2>
+      <ul class="rules">
+        <li><b>فضای امن</b> پیرامون لوگو برابر با نصف ارتفاع نشان است. هیچ عنصری وارد این ناحیه نشود.</li>
+        <li><b>حداقل اندازه</b> ترکیب افقی ۱۲۰ پیکسل عرض، نشان تنها ۲۴ پیکسل.</li>
+        <li>در طراحی‌ و فضا‌های راست‌به‌چپ از <bdi class="latin">tuxly-logo-fa</bdi> استفاده کنید، نه آینه‌کردن نسخهٔ لاتین «از قبل این واستون طراحی شده است».</li>
+      </ul>
+      <h3>نکنید</h3>
+      <ul class="rules dont">
+        <li>نشان را نکشید، نچرخانید یا تغییر شکل ندهید.</li>
+        <li>رنگ منقار را عوض نکنید.</li>
+        <li>لوگو را روی تصویر شلوغ بدون لایهٔ تیره‌کننده نگذارید.</li>
+        <li>لوگوتایپ را با قلم دیگری بازنویسی نکنید — حروف آن دستی ساخته شده‌اند.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>پروانه</h2>
+      <p>
+        نشان و لوگوتایپ تاکسلی علامت تجاری این پروژه‌اند. استفاده برای اشاره
+        به تاکسلی، خبر دادن دربارهٔ آن یا لینک دادن آزاد است. استفاده به‌گونه‌ای
+        که تأیید یا وابستگی را القا کند، نیاز به اجازه دارد —
+        <a href={`mailto:${SITE.email}`}><bdi class="latin">{SITE.email}</bdi></a>
+      </p>
+    </section>
+  </div>
+</BaseLayout>
+
+<style>
+  .intro { max-width: var(--measure); color: var(--text-muted); }
+  section { margin-top: 3rem; }
+  section h2 { font-size: var(--step-2); }
+  section p { max-width: var(--measure); }
+
+  .showcase { display: flex; flex-wrap: wrap; gap: 1rem; margin-block: 1.2rem; }
+  .tile {
+    display: grid; place-items: center;
+    flex: 1 1 200px; min-height: 190px;
+    border-radius: var(--r-md); border: 1px solid var(--border);
+  }
+  .tile.dark { background: #0F141C; color: #FAFAF7; }
+  .tile.light { background: #FAFAF7; color: #0F141C; }
+
+  .colors { list-style: none; padding: 0; margin: 1.2rem 0; display: grid; gap: 0.6rem; }
+  .colors li {
+    position: relative;
+    display: grid; align-items: center; gap: 0.3rem 1rem;
+    grid-template-columns: 44px 1fr;
+    padding: 0.6rem 2.4rem 0.6rem 0.6rem;
+    border: 1px solid var(--border); border-radius: var(--r-sm);
+    cursor: pointer;
+    transition: border-color 0.16s var(--ease), background 0.16s var(--ease);
+  }
+  .colors li:hover { border-color: var(--accent); background: var(--surface); }
+  .colors li[data-copied] {
+    border-color: var(--accent);
+    background: color-mix(in srgb, var(--accent) 12%, transparent);
+  }
+  .copy-hint {
+    position: absolute;
+    inset-inline-end: 0.7rem;
+    inset-block-start: 0.7rem;
+    color: var(--text-muted);
+    opacity: 0;
+    transition: opacity 0.16s var(--ease);
+  }
+  .colors li:hover .copy-hint,
+  .colors li:focus-visible .copy-hint { opacity: 1; }
+  .colors li[data-copied] .copy-hint { opacity: 1; color: var(--accent); }
+  .tip { font-size: var(--step--2); margin-top: 0.4rem; }
+
+  @media (min-width: 700px) {
+    .colors li { grid-template-columns: 44px 200px 110px 1fr; }
+  }
+  .swatch { width: 44px; height: 44px; border-radius: var(--r-sm); border: 1px solid var(--border); grid-row: span 3; }
+  @media (min-width: 700px) { .swatch { grid-row: auto; } }
+  .c-name { font-weight: 600; }
+  .c-use { font-size: var(--step--1); }
+  .note {
+    border-inline-start: 3px solid var(--warn);
+    padding-inline-start: 1rem; color: var(--text-muted); font-size: var(--step--1);
+  }
+
+  .fonts { margin: 1.2rem 0; }
+  .fonts > div { padding-block: 0.7rem; border-bottom: 1px solid var(--border-soft); }
+  dt { font-size: var(--step-1); font-weight: 700; }
+  dd { margin: 0.2rem 0 0; color: var(--text-muted); font-size: var(--step--1); }
+
+  .files { list-style: none; padding: 0; display: grid; gap: 0.5rem; grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr)); }
+  .files a {
+    display: grid; gap: 0.15rem; padding: 0.7rem 0.9rem;
+    border: 1px solid var(--border); border-radius: var(--r-sm); text-decoration: none;
+  }
+  .files a:hover { border-color: var(--accent); }
+  .files .f { font-size: var(--step--1); }
+  .files span { font-size: var(--step--2); }
+
+  .rules { padding-inline-start: 1.2rem; max-width: var(--measure); }
+  .rules li { margin-block: 0.5rem; }
+  .dont li::marker { color: var(--warn); }
+</style>

@@ -1,0 +1,247 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+
+<BaseLayout title="جست‌وجو" description="جست‌وجو در همهٔ مطالب، توزیع‌ها، میزکارها و رویدادهای تاکسلی." noindex>
+  <div class="wrap">
+    <h1>جست‌وجو</h1>
+    <p class="hint">
+      نوشتار عربی و فارسی یکسان در نظر گرفته می‌شود؛ با خیال راحت بدون این محدودیت جست‌وجو کنید، نیم‌فاصله، اِعراب و ارقام فارسی هم نادیده گرفته می‌شوند.
+    </p>
+
+    <form class="box" data-full-search role="search">
+      <label for="q" class="visually-hidden">عبارت جست‌وجو</label>
+      <input id="q" name="q" type="search" placeholder="جست‌وجو در تاکسلی…" autocomplete="off" enterkeyhint="search" />
+      <button type="submit" class="btn btn-primary">جست‌وجو</button>
+    </form>
+
+    <p class="status muted" data-status role="status" aria-live="polite"></p>
+    <ol class="results" data-results></ol>
+    <button type="button" class="btn more" data-more hidden>نتایج بیشتر</button>
+  </div>
+</BaseLayout>
+
+<style>
+  .hint { max-width: var(--measure); color: var(--text-muted); font-size: var(--step--1); }
+  .box { display: flex; gap: 0.6rem; margin-block: 1.5rem; flex-wrap: wrap; }
+  input {
+    flex: 1 1 260px; min-width: 0;
+    padding: 0.7rem 1rem; background: var(--surface); color: var(--text);
+    border: 1px solid var(--border); border-radius: var(--r-sm);
+  }
+  input:focus-visible { border-color: var(--accent); }
+  .status { font-size: var(--step--1); }
+  .results { list-style: none; margin: 1.2rem 0 0; padding: 0; display: grid; gap: 0.6rem; }
+
+  .results :global(.hit) {
+    border: 1px solid var(--border);
+    border-radius: var(--r-md);
+    background: var(--surface);
+    overflow: hidden;
+    transition: border-color 0.16s var(--ease);
+  }
+  .results :global(.hit:hover) { border-color: var(--accent); }
+
+  .results :global(.hit-main) {
+    display: grid;
+    gap: 0.35rem;
+    padding: 1rem 1.2rem;
+    text-decoration: none;
+  }
+  .results :global(.h-head) {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: var(--step--2);
+  }
+  .results :global(.h-kind) {
+    font-weight: 700;
+    color: var(--accent);
+    background: color-mix(in srgb, var(--accent) 15%, transparent);
+    border-radius: 999px;
+    padding: 0.08rem 0.6rem;
+  }
+  .results :global(.h-path) { color: var(--text-muted); }
+
+  .results :global(.hit b) { display: block; font-size: var(--step-1); line-height: 1.5; }
+  .results :global(.hit:hover b) { color: var(--accent); }
+  .results :global(.hit p) {
+    margin: 0;
+    color: var(--text-muted);
+    font-size: var(--step--1);
+    line-height: 1.7;
+  }
+
+  /* Matching sections within the page. */
+  .results :global(.subs) {
+    list-style: none;
+    margin: 0;
+    padding: 0.2rem 1.2rem 0.9rem;
+    display: grid;
+    gap: 2px;
+    border-top: 1px solid var(--border-soft);
+  }
+  .results :global(.subs a) {
+    display: grid;
+    gap: 0.1rem;
+    padding: 0.5rem 0.7rem;
+    border-radius: var(--r-sm);
+    border-inline-start: 2px solid var(--border);
+    text-decoration: none;
+  }
+  .results :global(.subs a:hover) {
+    background: var(--bg);
+    border-inline-start-color: var(--accent);
+  }
+  .results :global(.s-title) { font-size: var(--step--1); font-weight: 600; }
+  .results :global(.s-excerpt) {
+    font-size: var(--step--2);
+    color: var(--text-muted);
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .results :global(mark) {
+    background: color-mix(in srgb, var(--accent) 26%, transparent);
+    color: var(--text);
+    border-radius: 3px;
+    padding: 0 2px;
+    font-weight: 600;
+  }
+  .more { display: block; margin: 1.5rem auto 0; }
+</style>
+
+<script>
+  import { normalizeFa } from '../lib/persian';
+
+  const form = document.querySelector('[data-full-search]') as HTMLFormElement;
+  const input = document.getElementById('q') as HTMLInputElement;
+  const out = document.querySelector('[data-results]') as HTMLOListElement;
+  const status = document.querySelector('[data-status]') as HTMLElement;
+  const moreBtn = document.querySelector('[data-more]') as HTMLButtonElement;
+
+  // First batch size. The "more results" button only appears when the query
+  // actually returned more than this.
+  const PAGE = 8;
+  let pagefind: any = null;
+  let pending: any[] = [];
+
+  async function index() {
+    if (pagefind) return pagefind;
+    const url = ['', 'pagefind', 'pagefind.js'].join('/');
+    pagefind = await import(/* @vite-ignore */ url);
+    await pagefind.options({ excerptLength: 40 });
+    await pagefind.init();
+    return pagefind;
+  }
+
+  const SECTIONS: Record<string, string> = {
+    news: 'اخبار',
+    distributions: 'توزیع‌ها',
+    desktops: 'میزکارها',
+    'window-managers': 'پنجره‌گردان‌ها',
+    projects: 'پروژه‌ها',
+    communities: 'اجتماع‌ها',
+    events: 'رویدادها',
+    people: 'نویسندگان',
+    tags: 'برچسب‌ها',
+    glossary: 'واژه‌نامه',
+    brand: 'هویت بصری',
+    about: 'درباره',
+  };
+
+  const escapeHtml = (s: string) =>
+    s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
+  function sectionOf(url: string) {
+    const first = url.replace(/^\//, '').split('/')[0];
+    return SECTIONS[first] ?? 'تاکسلی';
+  }
+
+  function render(batch: any[]) {
+    out.insertAdjacentHTML(
+      'beforeend',
+      batch
+        .map((r) => {
+          const kind = r.meta?.kind ? escapeHtml(r.meta.kind) : '';
+          /*
+           * Sub-results are the matching sections within a page. On a long
+           * distro write-up they take the reader to the right heading rather
+           * than the top of the article.
+           */
+          const subs = (r.sub_results ?? [])
+            .filter((s: any) => s.anchor)
+            .slice(0, 3)
+            .map(
+              (s: any) =>
+                `<li><a href="${s.url}"><span class="s-title">${escapeHtml(s.title)}</span>` +
+                `<span class="s-excerpt">${s.excerpt}</span></a></li>`,
+            )
+            .join('');
+
+          return (
+            `<li class="hit"><a class="hit-main" href="${r.url}">` +
+            `<span class="h-head">` +
+            (kind ? `<span class="h-kind">${kind}</span>` : '') +
+            `<span class="h-path">${escapeHtml(sectionOf(r.url))}</span>` +
+            `</span>` +
+            `<b>${escapeHtml(r.meta?.title ?? r.url)}</b>` +
+            `<p>${r.excerpt}</p></a>` +
+            (subs ? `<ul class="subs">${subs}</ul>` : '') +
+            `</li>`
+          );
+        })
+        .join(''),
+    );
+  }
+
+  async function loadMore() {
+    const batch = await Promise.all(pending.splice(0, PAGE).map((r) => r.data()));
+    render(batch);
+    moreBtn.hidden = pending.length === 0;
+    if (pending.length) moreBtn.textContent = `${pending.length.toLocaleString('fa-IR')} نتیجهٔ دیگر`;
+  }
+
+  async function run(raw: string) {
+    out.innerHTML = '';
+    moreBtn.hidden = true;
+    const q = normalizeFa(raw);
+    if (q.length < 2) {
+      status.textContent = 'حداقل دو حرف بنویسید.';
+      return;
+    }
+    status.textContent = 'در حال جست‌وجو…';
+    try {
+      const pf = await index();
+      const res = await pf.search(q);
+      pending = res.results;
+      if (!pending.length) {
+        status.textContent = `چیزی برای «${raw.trim()}» پیدا نشد. املای دیگری را امتحان کنید یا از فهرست توزیع‌ها شروع کنید.`;
+        return;
+      }
+      status.textContent = `${pending.length.toLocaleString('fa-IR')} نتیجه`;
+      await loadMore();
+    } catch {
+      status.textContent = 'ایندکس جست‌وجو هنوز ساخته نشده. یک بار `npm run build` را اجرا کنید.';
+    }
+  }
+
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const url = new URL(location.href);
+    url.searchParams.set('q', input.value.trim());
+    history.replaceState(null, '', url);
+    run(input.value);
+  });
+  moreBtn.addEventListener('click', loadMore);
+
+  const initial = new URLSearchParams(location.search).get('q');
+  if (initial) {
+    input.value = initial;
+    run(initial);
+  } else {
+    input.focus();
+  }
+</script>

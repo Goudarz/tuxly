@@ -1,0 +1,252 @@
+---
+import { getCollection, getEntry, getEntries, render } from 'astro:content';
+import { Image } from 'astro:assets';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Gallery from '../../components/Gallery.astro';
+import MediaEmbed from '../../components/MediaEmbed.astro';
+import EntityChip from '../../components/EntityChip.astro';
+import SearchIndex from '../../components/SearchIndex.astro';
+import TableOfContents from '../../components/TableOfContents.astro';
+import ShareBar from '../../components/ShareBar.astro';
+import HeadingAnchors from '../../components/HeadingAnchors.astro';
+import { faDate } from '../../lib/persian';
+import { articleSchema } from '../../lib/schema';
+import { SITE, POST_TYPE_LABELS } from '../../consts';
+
+export async function getStaticPaths() {
+  const posts = await getCollection('posts', ({ data }) => (import.meta.env.PROD ? !data.draft : true));
+  return posts.map((post) => ({ params: { slug: post.id }, props: { post } }));
+}
+
+const { post } = Astro.props;
+const d = post.data;
+const { Content, headings } = await render(post);
+
+const author = await getEntry(d.author);
+const reviewer = d.reviewedBy ? await getEntry(d.reviewedBy) : undefined;
+const source = d.source ? await getEntry(d.source) : undefined;
+const entities = d.entities.length ? await getEntries(d.entities) : [];
+
+const url = new URL(Astro.url.pathname, SITE.url).href;
+const schema = articleSchema(post, url, {
+  author,
+  sourceName: source?.data.name,
+  entities,
+  imageUrl: d.cover ? new URL(d.cover.src, SITE.url).href : undefined,
+});
+
+const STATUS = {
+  original: { label: 'نوشتهٔ اختصاصی تاکسلی', tone: 'ok' },
+  reviewed: { label: reviewer ? `بازبینی: ${reviewer.data.name}` : 'بازبینی‌شده', tone: 'ok' },
+  'draft-review': { label: 'در انتظار بازبینی', tone: 'warn' },
+} as const;
+const status = STATUS[d.originStatus];
+---
+
+<BaseLayout
+  title={d.title}
+  description={d.summary}
+  schema={schema}
+  ogType="article"
+  publishedAt={d.publishedAt}
+  updatedAt={d.updatedAt}
+>
+  <article class="wrap" data-pagefind-body data-pagefind-meta={`kind:${POST_TYPE_LABELS[d.type]}`}>
+    <header class="head prose">
+      <div class="meta" data-pagefind-ignore>
+        <span class="kind">{POST_TYPE_LABELS[d.type]}</span>
+        <time datetime={d.publishedAt.toISOString()}>{faDate(d.publishedAt)}</time>
+        <span aria-hidden="true">·</span>
+        <a href={`/people/${author.id}`} rel="author">{author.data.name}</a>
+        <span class:list={['status', status.tone]}>
+          <span class="dot" aria-hidden="true"></span>{status.label}
+        </span>
+      </div>
+      <h1>{d.title}</h1>
+      <p class="summary">{d.summary}</p>
+      {d.updatedAt && (
+        <p class="updated muted">
+          آخرین به‌روزرسانی: <time datetime={d.updatedAt.toISOString()}>{faDate(d.updatedAt)}</time>
+        </p>
+      )}
+    </header>
+
+    {d.cover && d.coverAlt && (
+      <figure class="cover">
+        <Image
+          src={d.cover}
+          alt={d.coverAlt}
+          widths={[640, 960, 1400]}
+          sizes="(max-width: 800px) 100vw, 900px"
+          loading="eager"
+          fetchpriority="high"
+        />
+      </figure>
+    )}
+
+    {d.context && (
+      <aside class="context prose">
+        <h2>چرا این موضوع مهم است؟</h2>
+        <p>{d.context}</p>
+      </aside>
+    )}
+
+    <div class:list={['layout', { 'has-toc': d.toc }]}>
+      <div class="col-main">
+        <div class="prose body"><Content /></div>
+
+        {d.gallery.length > 0 && <div class="prose"><Gallery items={d.gallery} /></div>}
+        {d.media.length > 0 && <div class="prose"><MediaEmbed items={d.media} /></div>}
+      </div>
+
+      {d.toc && (
+        <aside class="col-toc">
+          <TableOfContents headings={headings} />
+        </aside>
+      )}
+    </div>
+
+    <SearchIndex text={`${d.title} ${d.summary} ${d.context ?? ''} ${d.tags.join(' ')}`} />
+
+    {entities.length > 0 && (
+      <section class="prose related">
+        <h2>مرتبط با</h2>
+        <div class="chips">{entities.map((entity) => <EntityChip entity={entity} />)}</div>
+      </section>
+    )}
+
+    {d.tags.length > 0 && (
+      <section class="prose related">
+        <h2>برچسب‌ها</h2>
+        <div class="chips">
+          {d.tags.map((t) => <a class="tag" href={`/tags/${encodeURIComponent(t)}`}>{t}</a>)}
+        </div>
+      </section>
+    )}
+
+    <div class="prose"><ShareBar title={d.title} /></div>
+    <HeadingAnchors />
+
+    <footer class="prose foot" data-pagefind-ignore>
+      {source && d.sourceUrl && (
+        <p class="src">
+          منبع:
+          <a href={d.sourceUrl} rel="noopener nofollow external">
+            <bdi>{d.sourceTitle ?? source.data.name}</bdi>
+          </a>
+          — <a href={source.data.home} rel="noopener"><bdi>{source.data.name}</bdi></a>
+          · اثر اصلی از <bdi>{source.data.attribution}</bdi>
+          تحت پروانهٔ
+          <a href={source.data.licenseUrl} rel="license noopener nofollow"><bdi class="latin">{source.data.license}</bdi></a>{
+            source.data.shareAlike ? '؛ این متن اثر مشتق است و با همان پروانه منتشر می‌شود.' : '.'
+          }
+        </p>
+      )}
+      <div class="actions">
+        <a class="btn" href={`${SITE.repo}/edit/main/content/posts/${post.id}.md`} rel="noopener">
+          ویرایش این صفحه در گیت‌هاب
+        </a>
+        <a class="btn" href={`mailto:${SITE.email}?subject=${encodeURIComponent(d.title)}`}>
+          گزارش اشکال
+        </a>
+      </div>
+    </footer>
+  </article>
+</BaseLayout>
+
+<style>
+  .head { padding-block: 1rem 0; }
+  .meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.55rem;
+    font-size: var(--step--1);
+    color: var(--text-muted);
+  }
+  .meta a { text-decoration: none; }
+  .meta a:hover { text-decoration: underline; }
+  .kind {
+    background: color-mix(in srgb, var(--accent) 18%, transparent);
+    color: var(--accent);
+    border-radius: 999px;
+    padding: 0.1rem 0.65rem;
+    font-weight: 600;
+    font-size: var(--step--2);
+  }
+  .status {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 0.1rem 0.7rem;
+    font-size: var(--step--2);
+  }
+  .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--ok); }
+  .warn { color: var(--warn); border-color: color-mix(in srgb, var(--warn) 45%, transparent); }
+  .warn .dot { background: var(--warn); }
+
+  h1 { margin: 0.65rem 0 0.5rem; }
+  .summary { font-size: var(--step-1); color: var(--text-muted); margin: 0; line-height: 1.75; }
+  .updated { font-size: var(--step--2); margin: 0.7rem 0 0; }
+
+  .cover { margin: 2rem 0 0; }
+  .cover :global(img) {
+    width: 100%;
+    height: auto;
+    border-radius: var(--r-md);
+    border: 1px solid var(--border-soft);
+  }
+
+  .context {
+    background: color-mix(in srgb, var(--accent) 10%, var(--surface));
+    border: 1px solid color-mix(in srgb, var(--accent) 32%, transparent);
+    border-radius: var(--r-md);
+    padding: 1.2rem 1.4rem;
+    margin-block: 2rem;
+  }
+  .context h2 { margin: 0 0 0.5rem; font-size: var(--step-0); }
+  .context p { margin: 0; }
+
+  .body { margin-top: 1.8rem; }
+
+  /*
+   * One column by default. Above 1100px the ToC moves into a sticky sidebar
+   * beside the article; below that it collapses inline above the text.
+   */
+  .layout { display: grid; grid-template-columns: 1fr; gap: 0; }
+  @media (min-width: 1101px) {
+    .has-toc {
+      grid-template-columns: minmax(0, var(--measure)) 260px;
+      gap: 3rem;
+      /*
+       * No `align-items: start` here: the sidebar column must stretch to the
+       * full article height, otherwise position:sticky has nothing to travel
+       * inside and the ToC scrolls away with the text.
+       */
+    }
+  }
+  /* On mobile the ToC belongs above the body, not orphaned below it. */
+  @media (max-width: 1100px) {
+    .col-toc { order: -1; }
+    .layout { display: flex; flex-direction: column; }
+  }
+  .related { margin-top: 2.5rem; }
+  .related h2 { font-size: var(--step-0); color: var(--text-muted); margin-bottom: 0.7rem; }
+  .chips { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+  .tag {
+    display: inline-block;
+    font-size: var(--step--1);
+    text-decoration: none;
+    color: var(--text-muted);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 0.25rem 0.75rem;
+  }
+  .tag:hover { border-color: var(--accent); color: var(--text); }
+
+  .foot { margin-top: 3rem; padding-top: 1.4rem; border-top: 1px solid var(--border); }
+  .src { font-size: var(--step--1); color: var(--text-muted); margin: 0 0 1.2rem; }
+  .actions { display: flex; flex-wrap: wrap; gap: 0.6rem; }
+</style>

@@ -1,0 +1,56 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import EventCard from '../../components/EventCard.astro';
+import { getUpcomingEvents, getPastEvents } from '../../lib/entities';
+import { collectionSchema } from '../../lib/schema';
+import { faNumber } from '../../lib/persian';
+import { SITE } from '../../consts';
+
+const upcoming = await getUpcomingEvents();
+const past = await getPastEvents();
+const url = new URL('/events', SITE.url).href;
+---
+
+<BaseLayout
+  title="تقویم رویدادها"
+  description="رویدادهای نرم‌افزار آزاد و متن‌باز، داخلی و بین‌المللی: نشست، کارگاه، کنفرانس و هکاتون."
+  schema={collectionSchema('تقویم رویدادها', url, 'رویدادهای نرم‌افزار آزاد', upcoming.length + past.length)}
+>
+  <div class="wrap" data-pagefind-body data-pagefind-meta="kind:صفحه">
+    <h1>تقویم رویدادها</h1>
+    <p class="intro">
+      نشست‌ها، کارگاه‌ها، کنفرانس‌ها و هکاتون‌های نرم‌افزار آزاد — داخلی و
+      بین‌المللی، حضوری و آنلاین. هر رویداد صفحهٔ خودش را دارد با زمان دقیق،
+      مکان، برگزارکننده و لینک ثبت‌نام.
+    </p>
+    <p class="add muted">
+      رویدادی می‌شناسید که اینجا نیست؟ 
+      <a href={`mailto:${SITE.email}?subject=${encodeURIComponent('معرفی رویداد')}`}> خبرمان کنید </a>
+      یا مستقیم در <a href={`${SITE.repo}/tree/main/content/events`} rel="noopener">مخزن</a> اضافه‌اش کنید.
+    </p>
+
+    <section>
+      <h2>پیش‌رو <span class="n tnum">{faNumber(upcoming.length)}</span></h2>
+      {upcoming.length === 0 ? (
+        <p class="muted">فعلاً رویداد پیش‌رویی ثبت نشده.</p>
+      ) : (
+        upcoming.map((event) => <EventCard event={event} />)
+      )}
+    </section>
+
+    {past.length > 0 && (
+      <section>
+        <h2>برگزارشده <span class="n tnum">{faNumber(past.length)}</span></h2>
+        {past.slice(0, 20).map((event) => <EventCard event={event} past />)}
+      </section>
+    )}
+  </div>
+</BaseLayout>
+
+<style>
+  .intro { max-width: var(--measure); color: var(--text-muted); }
+  .add { font-size: var(--step--1); }
+  section { margin-top: 2.5rem; }
+  h2 { font-size: var(--step-1); display: flex; align-items: baseline; gap: 0.6rem; }
+  .n { font-size: var(--step--1); color: var(--text-muted); font-weight: 400; }
+</style>

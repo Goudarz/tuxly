@@ -1,0 +1,168 @@
+---
+import { getCollection, getEntry, getEntries, render } from 'astro:content';
+import { Image } from 'astro:assets';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import EntityChip from '../../components/EntityChip.astro';
+import SearchIndex from '../../components/SearchIndex.astro';
+import ShareBar from '../../components/ShareBar.astro';
+import { faDateTime } from '../../lib/persian';
+import { eventSchema } from '../../lib/schema';
+import { entityUrl, entityLabel } from '../../lib/entities';
+import { SITE } from '../../consts';
+
+export async function getStaticPaths() {
+  const events = await getCollection('events', ({ data }) => (import.meta.env.PROD ? !data.draft : true));
+  return events.map((event) => ({ params: { slug: event.id.split('/').pop()! }, props: { event } }));
+}
+
+const { event } = Astro.props;
+const d = event.data;
+const { Content } = await render(event);
+const organizer = d.organizer ? await getEntry(d.organizer) : undefined;
+const related = d.entities.length ? await getEntries(d.entities) : [];
+
+const url = new URL(Astro.url.pathname, SITE.url).href;
+const schema = eventSchema(event, url, organizer ? entityLabel(organizer) : d.organizerName);
+
+const MODE = { 'in-person': 'حضوری', online: 'آنلاین', hybrid: 'حضوری و آنلاین' };
+const isPast = (d.endsAt ?? d.startsAt) < new Date();
+
+const slug = event.id.split('/').pop()!;
+const icsUrl = `/events/${slug}/event.ics`;
+
+// Google Calendar wants basic-format UTC, same as the .ics file.
+const gcal = (date: Date) => date.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '');
+const end = d.endsAt ?? new Date(d.startsAt.getTime() + 2 * 60 * 60 * 1000);
+const googleUrl =
+  'https://calendar.google.com/calendar/render?action=TEMPLATE&' +
+  new URLSearchParams({
+    text: d.title,
+    dates: `${gcal(d.startsAt)}/${gcal(end)}`,
+    details: `${d.summary}\n\n${url}`,
+    location: d.mode === 'online' ? (d.onlineUrl ?? 'Online') : [d.venue, d.city].filter(Boolean).join('، '),
+  }).toString();
+---
+
+<BaseLayout title={d.title} description={d.summary} schema={schema} ogType="article">
+  <div class="wrap" data-pagefind-body data-pagefind-meta="kind:رویداد">
+    <header class="head">
+      <p class="kind" data-pagefind-ignore>رویداد {MODE[d.mode]}</p>
+      <h1>{d.title}</h1>
+      <p class="summary">{d.summary}</p>
+
+      {d.cancelled && <p class="alert">این رویداد لغو شده است.</p>}
+      {!d.cancelled && isPast && <p class="alert past">این رویداد برگزار شده است.</p>}
+
+      <dl class="facts">
+        <div>
+          <dt>شروع</dt>
+          <dd><time datetime={d.startsAt.toISOString()}>{faDateTime(d.startsAt)}</time></dd>
+        </div>
+        {d.endsAt && (
+          <div>
+            <dt>پایان</dt>
+            <dd><time datetime={d.endsAt.toISOString()}>{faDateTime(d.endsAt)}</time></dd>
+          </div>
+        )}
+        {d.mode !== 'online' && (
+          <div><dt>مکان</dt><dd>{[d.venue, d.city, d.country].filter(Boolean).join('، ')}</dd></div>
+        )}
+        {organizer && (
+          <div>
+            <dt>برگزارکننده</dt>
+            <dd><a href={entityUrl(organizer)}>{entityLabel(organizer)}</a></dd>
+          </div>
+        )}
+        {!organizer && d.organizerName && <div><dt>برگزارکننده</dt><dd>{d.organizerName}</dd></div>}
+        {d.price && <div><dt>هزینه</dt><dd>{d.price}</dd></div>}
+        <div><dt>زبان</dt><dd>{d.language}</dd></div>
+      </dl>
+
+      {d.address && <p class="addr muted">نشانی: {d.address}</p>}
+
+      <div class="links" data-pagefind-ignore>
+        {!d.cancelled && (
+          <a class="btn btn-primary" href={icsUrl} download={`tuxly-${slug}.ics`} data-no-ext>
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <rect x="3" y="4.5" width="18" height="16" rx="2.5"></rect>
+              <path d="M3 9.5h18M8 2.5v4M16 2.5v4M12 12v5m0 0-2-2m2 2 2-2"></path>
+            </svg>
+            افزودن به تقویم
+          </a>
+        )}
+        {d.registerUrl && !isPast && !d.cancelled && (
+          <a class="btn btn-primary" href={d.registerUrl} rel="noopener">ثبت‌نام</a>
+        )}
+        {d.onlineUrl && <a class="btn" href={d.onlineUrl} rel="noopener">پیوند اتصال</a>}
+        {d.mapUrl && <a class="btn" href={d.mapUrl} rel="noopener">نقشه</a>}
+      </div>
+
+      {!d.cancelled && (
+        <p class="cal-note muted">
+          فایل <bdi class="latin">ICS</bdi> استاندارد است و در تقویم گوگل،
+          اپل، اوت‌لوک، <bdi class="latin">Thunderbird</bdi> و هر برنامهٔ
+          دیگری باز می‌شود. یادآور یک‌ساعت‌قبل هم داخلش هست.
+          {' '}
+          <a href={googleUrl} rel="noopener">یا مستقیم به تقویم گوگل اضافه کنید</a>
+        </p>
+      )}
+    </header>
+
+    {d.cover && d.coverAlt && (
+      <figure class="cover">
+        <Image src={d.cover} alt={d.coverAlt} widths={[640, 1200]} sizes="(max-width: 800px) 100vw, 900px" />
+      </figure>
+    )}
+
+    <div class="prose"><Content /></div>
+
+    <SearchIndex text={`${d.title} ${d.summary} ${d.topics.join(' ')} ${d.city ?? ''}`} />
+
+    {(related.length > 0 || d.topics.length > 0) && (
+      <section class="prose">
+        <h2>موضوع‌ها</h2>
+        <div class="chips">
+          {related.map((e) => <EntityChip entity={e} />)}
+          {d.topics.map((t) => <span class="topic">{t}</span>)}
+        </div>
+      </section>
+    )}
+
+    <ShareBar title={d.title} />
+
+    <p class="back"><a href="/events">بازگشت به تقویم رویدادها</a></p>
+  </div>
+</BaseLayout>
+
+<style>
+  .head { padding-block: 1rem 1.8rem; border-bottom: 1px solid var(--border-soft); }
+  .kind { color: var(--accent); font-weight: 700; font-size: var(--step--1); margin: 0; }
+  h1 { margin: 0.3rem 0 0.6rem; }
+  .summary { max-width: var(--measure); color: var(--text-muted); margin: 0 0 1.3rem; }
+  .alert {
+    display: inline-block;
+    border: 1px solid color-mix(in srgb, var(--warn) 45%, transparent);
+    color: var(--warn);
+    border-radius: var(--r-sm);
+    padding: 0.5rem 0.9rem;
+    font-size: var(--step--1);
+    margin: 0 0 1.2rem;
+  }
+  .alert.past { border-color: var(--border); color: var(--text-muted); }
+  .facts { display: flex; flex-wrap: wrap; gap: 1rem 2rem; margin: 0 0 1rem; }
+  .facts > div { display: grid; gap: 0.1rem; }
+  dt { color: var(--text-muted); font-size: var(--step--2); }
+  dd { margin: 0; font-size: var(--step--1); font-weight: 600; }
+  .addr { font-size: var(--step--1); margin: 0 0 1.2rem; }
+  .links { display: flex; flex-wrap: wrap; gap: 0.6rem; align-items: center; }
+  .links .btn svg { flex: none; }
+  .cal-note { font-size: var(--step--2); margin: 0.9rem 0 0; max-width: 62ch; }
+  .cover { margin: 2rem 0 0; }
+  .cover :global(img) { width: 100%; height: auto; border-radius: var(--r-md); }
+  .chips { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+  .topic {
+    font-size: var(--step--1); color: var(--text-muted);
+    border: 1px solid var(--border); border-radius: 999px; padding: 0.25rem 0.75rem;
+  }
+  .back { margin-top: 2.5rem; }
+</style>

@@ -1,0 +1,26 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import EntityGrid from '../../components/EntityGrid.astro';
+import { getEntities } from '../../lib/entities';
+import { collectionSchema } from '../../lib/schema';
+import { faNumber } from '../../lib/persian';
+import { SITE } from '../../consts';
+
+const items = await getEntities('community');
+const url = new URL('/communities', SITE.url).href;
+const schema = collectionSchema('اجتماع‌ها و گروه‌ها', url, 'گروه‌ها و اجتماع‌های نرم‌افزار آزاد، داخلی و بین‌المللی، به‌همراه رویدادهایشان.', items.length);
+---
+
+<BaseLayout title="اجتماع‌ها و گروه‌ها" description="گروه‌ها و اجتماع‌های نرم‌افزار آزاد، داخلی و بین‌المللی، به‌همراه رویدادهایشان." schema={schema}>
+  <div class="wrap">
+    <h1>اجتماع‌ها و گروه‌ها</h1>
+    <p class="intro">هر گروهی صفحهٔ خودش را دارد: معرفی، رویدادها و مطالب مرتبط، با خوراک جداگانه برای دنبال کردن.</p>
+    <p class="count muted"><span class="tnum">{faNumber(items.length)}</span> مورد</p>
+    <EntityGrid type="community" reveal={false} />
+  </div>
+</BaseLayout>
+
+<style>
+  .intro { max-width: var(--measure); color: var(--text-muted); }
+  .count { font-size: var(--step--1); }
+</style>

@@ -1,0 +1,74 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { graph } from '../lib/schema';
+import { SITE, SOCIAL } from '../consts';
+
+const url = new URL('/about', SITE.url).href;
+const schema = graph({
+  '@type': 'AboutPage',
+  '@id': `${url}#about`,
+  url,
+  name: `دربارهٔ ${SITE.name}`,
+  inLanguage: SITE.lang,
+});
+---
+
+<BaseLayout title="دربارهٔ تاکسلی" description={SITE.description} schema={schema}>
+  <div class="wrap prose" data-pagefind-body data-pagefind-meta="kind:صفحه">
+    <h1>دربارهٔ تاکسلی</h1>
+
+    <p class="lead">
+      تاکسلی خانهٔ فارسی نرم‌افزار آزاد و متن‌باز است.
+    </p>
+
+    <p>
+      سال‌هاست که دنیای متن‌باز با سرعتی نفس‌گیر جلو می‌رود، ولی بخش بزرگی از
+      این اتفاقات هیچ‌وقت به فارسی گفته نمی‌شود. کسی که انگلیسی نمی‌داند یا وقت
+      دنبال کردن ده‌ها منبع را ندارد، عملاً از این دنیا جا می‌ماند. تاکسلی برای
+      همین ساخته شد.
+    </p>
+
+    <h2>اینجا چه خبر است</h2>
+    <ul>
+      <li><b>اخبار</b> — اتفاقات مهم دنیای لینوکس و پروژه‌های آزاد، با زمینه‌ای که بگوید چرا مهم‌اند.</li>
+      <li><b>معرفی</b> — توزیع‌ها، میزکارها، پنجره‌گردان‌ها و پروژه‌های بنیادی، با مشخصات ساختاریافته و به‌روز.</li>
+      <li><b>آموزش</b> — راهنماهای عملی برای کسی که تازه شروع کرده یا می‌خواهد عمیق‌تر شود.</li>
+      <li><b>رویدادها</b> — تقویم نشست‌ها، کارگاه‌ها و کنفرانس‌های اجتماع، داخلی و بین‌المللی.</li>
+      <li><b>واژه‌نامه</b> — معادل‌های فارسی اصطلاحات فنی، چون ناهماهنگی ترجمه یکی از بزرگ‌ترین ضعف محتوای فارسی است.</li>
+    </ul>
+
+    <h2>چطور کار می‌کند</h2>
+    <p>
+      کل سایت — کد و محتوا — متن‌باز است و در
+      <a href={SITE.repo} rel="noopener"> یک مخزن گیت‌هاب </a> نگهداری می‌شود.
+      پایین هر صفحه دکمهٔ ویرایش هست: اگر اشتباهی دیدید، خودتون هم می‌تونید اصلاحش کنید.
+    </p>
+    <p>
+      داده‌های نسخهٔ توزیع‌ها به‌صورت خودکار و هفتگی از ویکی‌داده و
+      <bdi class="latin"> endoflife.date </bdi> به‌روز می‌شوند، چون داده‌ای که
+      دستی وارد شود ظرف چند ماه چون به‌روز نمی‌شود، غلط می‌شه.
+    </p>
+    <p>
+      هیچ ردیابی کوکی و هیچ تبلیغی روی سایت نیست. دکمه‌های هم‌رسانی هم
+      پیوند سادهٔ HTML‌اند — هیچ اسکریپتی از تلگرام یا لینکدین روی صفحه
+      بارگذاری نمی‌شود.
+    </p>
+
+    <h2>تماس</h2>
+    <p>
+      پیشنهاد، اصلاح، معرفی رویداد یا هر چیز دیگر:
+      <a href={`mailto:${SITE.email}`}><bdi class="latin">{SITE.email}</bdi></a>
+    </p>
+    <ul class="social">
+      {SOCIAL.filter((s) => s.id !== 'rss').map((s) => (
+        <li><a href={s.href} rel="noopener">{s.label} — <bdi class="latin">{s.handle}</bdi></a></li>
+      ))}
+    </ul>
+  </div>
+</BaseLayout>
+
+<style>
+  .lead { font-size: var(--step-1); color: var(--text-muted); }
+  .social { list-style: none; padding: 0; }
+  .social li { padding-block: 0.3rem; }
+</style>

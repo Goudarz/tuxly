@@ -1,0 +1,118 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { faNumber } from '../../lib/persian';
+
+const terms = (await getCollection('glossary')).sort((a, b) =>
+  a.data.en.localeCompare(b.data.en),
+);
+---
+
+<BaseLayout
+  title="واژه‌نامه"
+  description="معادل‌های فارسی اصطلاحات نرم‌افزار آزاد — همان فهرستی که مترجم‌های ما موظف به رعایتش هستند."
+>
+  <div class="wrap">
+    <h1>واژه‌نامه</h1>
+    <p class="intro">
+      یکی از بزرگ‌ترین ضعف محتوای فارسی ناهماهنگی ترجمه است: یکی از 
+      <bdi class="latin">kernel</bdi> را «هسته» می‌نویسد و دیگری «کرنل». این
+      فهرست معادل رسمی تاکسلی است و مستقیم در فرایند ترجمه هم استفاده می‌شود،
+      نه اینکه فقط اینجا نمایش داده شود.
+    </p>
+    <p class="count">{faNumber(terms.length)} اصطلاح</p>
+    <p class="tip-line muted">روی هر اصطلاح بزنید تا معادل فارسی‌اش رونوشت شود.</p>
+
+    <div class="filter">
+      <label for="q" class="visually-hidden">جست‌وجو در واژه‌نامه</label>
+      <input id="q" type="search" placeholder="جست‌وجو…" autocomplete="off" />
+    </div>
+
+    <dl class="terms">
+      {terms.map((t) => (
+        <div
+          class="term"
+          data-en={t.data.en.toLowerCase()}
+          data-fa={t.data.fa}
+          data-copy={t.data.fa}
+          data-copy-label={t.data.fa}
+          tabindex="0"
+          role="button"
+          aria-label={`رونوشت معادل فارسی ${t.data.en}: ${t.data.fa}`}
+        >
+          <span class="copy-hint" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="9" y="9" width="12" height="12" rx="2.5"></rect>
+              <path d="M5 15H4.5A1.5 1.5 0 0 1 3 13.5v-9A1.5 1.5 0 0 1 4.5 3h9A1.5 1.5 0 0 1 15 4.5V5"></path>
+            </svg>
+          </span>
+          <dt><bdi class="latin">{t.data.en}</bdi></dt>
+          <dd>
+            <b>{t.data.fa}</b>
+            {t.data.keepLatin && <span class="tip">اصل انگلیسی در پرانتز بیاید</span>}
+            {t.data.avoid.length > 0 && (
+              <span class="avoid">به‌جای: {t.data.avoid.join('، ')}</span>
+            )}
+            {t.data.note && <p class="note">{t.data.note}</p>}
+          </dd>
+        </div>
+      ))}
+    </dl>
+  </div>
+</BaseLayout>
+
+<style>
+  .intro { max-width: var(--measure); color: var(--text-muted); }
+  .count { color: var(--text-muted); font-size: var(--step--1); }
+  .filter { margin-block: 1.5rem; }
+  input {
+    width: min(100%, 420px); padding: 0.6rem 0.9rem; font: inherit;
+    background: var(--surface); color: var(--text);
+    border: 1px solid var(--border); border-radius: var(--r-sm);
+  }
+  .terms { margin: 0; }
+  .term {
+    position: relative;
+    display: grid; gap: 0.2rem 1.5rem; grid-template-columns: 1fr;
+    padding: 0.9rem 2.4rem 0.9rem 0.6rem;
+    border-bottom: 1px solid var(--border);
+    border-radius: var(--r-sm);
+    cursor: pointer;
+    transition: background 0.16s var(--ease);
+  }
+  .term:hover { background: var(--surface); }
+  .term[data-copied] { background: color-mix(in srgb, var(--accent) 12%, transparent); }
+
+  .copy-hint {
+    position: absolute;
+    inset-inline-end: 0.6rem;
+    inset-block-start: 0.9rem;
+    color: var(--text-muted);
+    opacity: 0;
+    transition: opacity 0.16s var(--ease);
+  }
+  .term:hover .copy-hint,
+  .term:focus-visible .copy-hint { opacity: 1; }
+  .term[data-copied] .copy-hint { opacity: 1; color: var(--accent); }
+  .tip-line { font-size: var(--step--2); margin: 0.2rem 0 1rem; }
+  @media (min-width: 640px) { .term { grid-template-columns: 240px 1fr; } .copy-hint { inset-block-start: 1rem; } }
+  dt { font-family: var(--font-en); color: var(--text-muted); }
+  dd { margin: 0; display: flex; flex-wrap: wrap; gap: 0.6rem; align-items: baseline; }
+  .tip, .avoid { font-size: var(--step--1); color: var(--text-muted); }
+  .avoid { text-decoration: line-through; text-decoration-color: var(--warn); }
+  .note { flex-basis: 100%; margin: 0.2rem 0 0; font-size: var(--step--1); color: var(--text-muted); }
+  .term[hidden] { display: none; }
+</style>
+
+<script>
+  import { normalizeFa } from '../../lib/persian';
+  const input = document.getElementById('q') as HTMLInputElement | null;
+  const terms = [...document.querySelectorAll('.term')] as HTMLElement[];
+  input?.addEventListener('input', () => {
+    const q = normalizeFa(input.value);
+    terms.forEach((el) => {
+      const hay = normalizeFa(`${el.dataset.en ?? ''} ${el.dataset.fa ?? ''}`);
+      el.toggleAttribute('hidden', q.length > 0 && !hay.includes(q));
+    });
+  });
+</script>

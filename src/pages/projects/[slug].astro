@@ -1,0 +1,11 @@
+---
+import { getCollection } from 'astro:content';
+import EntityPage from '../../layouts/EntityPage.astro';
+
+export async function getStaticPaths() {
+  const entities = await getCollection('entities', ({ data }) => data.type === 'project' && !data.draft);
+  return entities.map((entity) => ({ params: { slug: entity.id.split('/').pop()! }, props: { entity } }));
+}
+const { entity } = Astro.props;
+---
+<EntityPage entity={entity} />

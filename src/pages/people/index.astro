@@ -1,0 +1,68 @@
+---
+import { getCollection } from 'astro:content';
+import { Image } from 'astro:assets';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Mark from '../../components/Mark.astro';
+import { getPublishedPosts } from '../../lib/entities';
+import { collectionSchema } from '../../lib/schema';
+import { faNumber } from '../../lib/persian';
+import { SITE } from '../../consts';
+
+const authors = await getCollection('authors');
+const posts = await getPublishedPosts();
+const counts = new Map<string, number>();
+for (const p of posts) counts.set(p.data.author.id, (counts.get(p.data.author.id) ?? 0) + 1);
+const url = new URL('/people', SITE.url).href;
+---
+
+<BaseLayout
+  title="نویسندگان"
+  description="کسانی که تاکسلی را می‌نویسند و بازبینی می‌کنند."
+  schema={collectionSchema('نویسندگان', url, 'نویسندگان تاکسلی', authors.length)}
+>
+  <div class="wrap">
+    <h1>نویسندگان</h1>
+    <p class="intro">
+      تاکسلی یک پروژهٔ متن‌باز است و هر کسی می‌تواند در آن نقشی داشته باشد.
+      <a href={`${SITE.repo}/blob/main/CONTRIBUTING.md`} rel="noopener">راهنمای مشارکت</a>
+      را ببینید.
+    </p>
+
+    <ul class="grid">
+      {authors.map((author) => (
+        <li>
+          <a href={`/people/${author.id}`}>
+            {author.data.avatar
+              ? <Image src={author.data.avatar} alt="" width={72} height={72} class="av" />
+              : <span class="av fallback"><Mark size={34} /></span>}
+            <span class="t">
+              <b>{author.data.name}</b>
+              {author.data.role && <span class="role">{author.data.role}</span>}
+              <span class="n tnum">{faNumber(counts.get(author.id) ?? 0)} مطلب</span>
+            </span>
+          </a>
+        </li>
+      ))}
+    </ul>
+  </div>
+</BaseLayout>
+
+<style>
+  .intro { color: var(--text-muted); max-width: var(--measure); }
+  .grid {
+    list-style: none; margin: 1.5rem 0 0; padding: 0;
+    display: grid; gap: 1rem;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr));
+  }
+  a {
+    display: flex; align-items: center; gap: 1rem;
+    padding: 1rem; border: 1px solid var(--border);
+    border-radius: var(--r-md); background: var(--surface); text-decoration: none;
+  }
+  a:hover { border-color: var(--accent); }
+  .av { border-radius: 50%; width: 72px; height: 72px; object-fit: cover; flex: none; }
+  .fallback { display: grid; place-items: center; background: var(--bg); border: 1px solid var(--border); color: var(--text-muted); }
+  .t { display: grid; gap: 0.15rem; min-width: 0; }
+  .role { font-size: var(--step--1); color: var(--accent); }
+  .n { font-size: var(--step--2); color: var(--text-muted); }
+</style>

@@ -1,0 +1,26 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import EntityGrid from '../../components/EntityGrid.astro';
+import { getEntities } from '../../lib/entities';
+import { collectionSchema } from '../../lib/schema';
+import { faNumber } from '../../lib/persian';
+import { SITE } from '../../consts';
+
+const items = await getEntities('windowmanager');
+const url = new URL('/window-managers', SITE.url).href;
+const schema = collectionSchema('پنجره‌گردان‌ها', url, 'پنجره‌گردان‌ها و کامپوزیتورهای کاشی‌کاری و شناور برای X11 و Wayland.', items.length);
+---
+
+<BaseLayout title="پنجره‌گردان‌ها" description="پنجره‌گردان‌ها و کامپوزیتورهای کاشی‌کاری و شناور برای X11 و Wayland." schema={schema}>
+  <div class="wrap">
+    <h1>پنجره‌گردان‌ها</h1>
+    <p class="intro">اگر میزکار کامل برایتان زیادی است، پنجره‌گردان فقط همان یک کار را می‌کند: چیدن پنجره‌ها. بقیه‌اش با خودتان.</p>
+    <p class="count muted"><span class="tnum">{faNumber(items.length)}</span> مورد</p>
+    <EntityGrid type="windowmanager" />
+  </div>
+</BaseLayout>
+
+<style>
+  .intro { max-width: var(--measure); color: var(--text-muted); }
+  .count { font-size: var(--step--1); }
+</style>

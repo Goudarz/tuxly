@@ -1,0 +1,26 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import EntityGrid from '../../components/EntityGrid.astro';
+import { getEntities } from '../../lib/entities';
+import { collectionSchema } from '../../lib/schema';
+import { faNumber } from '../../lib/persian';
+import { SITE } from '../../consts';
+
+const items = await getEntities('distribution');
+const url = new URL('/distributions', SITE.url).href;
+const schema = collectionSchema('توزیع‌های لینوکس', url, 'معرفی توزیع‌های مهم لینوکس با مشخصات، خانواده، مدیر بسته و آخرین نسخه.', items.length);
+---
+
+<BaseLayout title="توزیع‌های لینوکس" description="معرفی توزیع‌های مهم لینوکس با مشخصات، خانواده، مدیر بسته و آخرین نسخه." schema={schema}>
+  <div class="wrap">
+    <h1>توزیع‌های لینوکس</h1>
+    <p class="intro">هر توزیع یک انتخاب طراحی است، نه فقط یک نام. اینجا می‌بینید هرکدام برای چه کسی ساخته شده و چه چیزی را بر چه چیزی ترجیح داده است.</p>
+    <p class="count muted"><span class="tnum">{faNumber(items.length)}</span> مورد</p>
+    <EntityGrid type="distribution" />
+  </div>
+</BaseLayout>
+
+<style>
+  .intro { max-width: var(--measure); color: var(--text-muted); }
+  .count { font-size: var(--step--1); }
+</style>

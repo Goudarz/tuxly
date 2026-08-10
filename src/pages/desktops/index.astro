@@ -1,0 +1,26 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import EntityGrid from '../../components/EntityGrid.astro';
+import { getEntities } from '../../lib/entities';
+import { collectionSchema } from '../../lib/schema';
+import { faNumber } from '../../lib/persian';
+import { SITE } from '../../consts';
+
+const items = await getEntities('desktop');
+const url = new URL('/desktops', SITE.url).href;
+const schema = collectionSchema('میزکارها', url, 'معرفی میزکارهای لینوکس؛ جعبه‌ابزار، پشتیبانی از Wayland و فلسفهٔ طراحی هرکدام.', items.length);
+---
+
+<BaseLayout title="میزکارها" description="معرفی میزکارهای لینوکس؛ جعبه‌ابزار، پشتیبانی از Wayland و فلسفهٔ طراحی هرکدام." schema={schema}>
+  <div class="wrap">
+    <h1>میزکارها</h1>
+    <p class="intro">میزکار همان چیزی است که هر روز با آن سر و کار دارید. تفاوت‌شان بیشتر از ظاهر است — هرکدام دربارهٔ اینکه کاربر چقدر باید انتخاب کند نظر متفاوتی دارند.</p>
+    <p class="count muted"><span class="tnum">{faNumber(items.length)}</span> مورد</p>
+    <EntityGrid type="desktop" />
+  </div>
+</BaseLayout>
+
+<style>
+  .intro { max-width: var(--measure); color: var(--text-muted); }
+  .count { font-size: var(--step--1); }
+</style>

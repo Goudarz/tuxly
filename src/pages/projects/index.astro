@@ -1,0 +1,26 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import EntityGrid from '../../components/EntityGrid.astro';
+import { getEntities } from '../../lib/entities';
+import { collectionSchema } from '../../lib/schema';
+import { faNumber } from '../../lib/persian';
+import { SITE } from '../../consts';
+
+const items = await getEntities('project');
+const url = new URL('/projects', SITE.url).href;
+const schema = collectionSchema('پروژه‌ها', url, 'پروژه‌های بنیادی نرم‌افزار آزاد که زیربنای نرم‌افزار امروز هستند.', items.length);
+---
+
+<BaseLayout title="پروژه‌ها" description="پروژه‌های بنیادی نرم‌افزار آزاد که زیربنای نرم‌افزار امروز هستند." schema={schema}>
+  <div class="wrap">
+    <h1>پروژه‌ها</h1>
+    <p class="intro">اینها قطعاتی هستند که همه‌چیز روی آن‌ها ساخته شده — از هسته و جعبه‌ابزارهای رابط کاربری تا مرورگر و مجموعهٔ اداری.</p>
+    <p class="count muted"><span class="tnum">{faNumber(items.length)}</span> مورد</p>
+    <EntityGrid type="project" />
+  </div>
+</BaseLayout>
+
+<style>
+  .intro { max-width: var(--measure); color: var(--text-muted); }
+  .count { font-size: var(--step--1); }
+</style>

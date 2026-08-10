@@ -1,0 +1,153 @@
+---
+import { getCollection, render } from 'astro:content';
+import { Image } from 'astro:assets';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PostCard from '../../components/PostCard.astro';
+import Mark from '../../components/Mark.astro';
+import SearchIndex from '../../components/SearchIndex.astro';
+import { getPublishedPosts } from '../../lib/entities';
+import { profileSchema } from '../../lib/schema';
+import { faNumber } from '../../lib/persian';
+import { SITE } from '../../consts';
+
+export async function getStaticPaths() {
+  const authors = await getCollection('authors');
+  return authors.map((author) => ({ params: { slug: author.id }, props: { author } }));
+}
+
+const { author } = Astro.props;
+const a = author.data;
+const { Content } = await render(author);
+
+const posts = (await getPublishedPosts()).filter((p) => p.data.author.id === author.id);
+const reviewed = (await getPublishedPosts()).filter((p) => p.data.reviewedBy?.id === author.id);
+
+const url = new URL(Astro.url.pathname, SITE.url).href;
+const schema = profileSchema(author, url, posts.length);
+
+const links = [
+  a.website && { label: 'وب‌سایت', href: a.website, text: a.website.replace(/^https?:\/\//, '') },
+  a.email && { label: 'ایمیل', href: `mailto:${a.email}`, text: a.email },
+  a.github && { label: 'گیت‌هاب', href: `https://github.com/${a.github}`, text: `@${a.github}` },
+  a.telegram && { label: 'تلگرام', href: `https://t.me/${a.telegram}`, text: `@${a.telegram}` },
+  a.mastodon && { label: 'ماستودون', href: a.mastodon, text: a.mastodon.replace(/^https?:\/\//, '') },
+  a.peertube && { label: 'پیرتیوب', href: a.peertube, text: a.peertube.replace(/^https?:\/\//, '') },
+  a.linkedin && { label: 'لینکدین', href: a.linkedin, text: a.linkedin.replace(/^https?:\/\//, '') },
+  a.x && { label: 'ایکس', href: `https://x.com/${a.x.replace(/^@/, '')}`, text: `@${a.x.replace(/^@/, '')}` },
+].filter(Boolean) as Array<{ label: string; href: string; text: string }>;
+
+const ROLE_LABELS: Record<string, string> = {
+  founder: 'بنیان‌گذار', author: 'نویسنده', editor: 'ویراستار',
+  reviewer: 'بازبین', translator: 'مترجم',
+};
+---
+
+<BaseLayout title={a.name} description={a.bio} schema={schema} ogType="profile">
+  <div class="wrap" data-pagefind-body data-pagefind-meta="kind:نویسنده">
+    <header class="head">
+      <div class="avatar">
+        {a.avatar
+          ? <Image src={a.avatar} alt="" width={128} height={128} />
+          : <div class="fallback"><Mark size={62} /></div>}
+      </div>
+
+      <div class="info">
+        <h1>{a.name}</h1>
+        {a.nameLatin && <p class="alt"><bdi class="latin">{a.nameLatin}</bdi></p>}
+        {a.role && <p class="role">{a.role}</p>}
+        <p class="bio">{a.bio}</p>
+
+        <ul class="roles">
+          {a.roles.map((r) => <li>{ROLE_LABELS[r] ?? r}</li>)}
+        </ul>
+      </div>
+    </header>
+
+    {links.length > 0 && (
+      <section class="links">
+        <h2 class="visually-hidden">راه‌های ارتباط</h2>
+        <ul>
+          {links.map((l) => (
+            <li>
+              <a href={l.href} rel={l.href.includes('mastodon') || l.label === 'ماستودون' ? 'me noopener' : 'noopener'}>
+                <span class="k">{l.label}</span>
+                <bdi class="latin v">{l.text}</bdi>
+              </a>
+            </li>
+          ))}
+        </ul>
+      </section>
+    )}
+
+    <div class="prose"><Content /></div>
+    <SearchIndex text={`${a.name} ${a.nameLatin ?? ''} ${a.bio}`} />
+
+    <section>
+      <h2>نوشته‌ها <span class="n tnum">{faNumber(posts.length)}</span></h2>
+      {posts.length === 0
+        ? <p class="muted">هنوز مطلبی منتشر نشده.</p>
+        : posts.map((post) => <PostCard post={post} />)}
+    </section>
+
+    {reviewed.length > 0 && (
+      <section>
+        <h2>بازبینی‌ها <span class="n tnum">{faNumber(reviewed.length)}</span></h2>
+        {reviewed.map((post) => <PostCard post={post} compact />)}
+      </section>
+    )}
+  </div>
+</BaseLayout>
+
+<style>
+  .head {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.6rem;
+    align-items: flex-start;
+    padding-block: 1rem 2rem;
+    border-bottom: 1px solid var(--border-soft);
+  }
+  .avatar { flex: none; }
+  .avatar :global(img) { border-radius: 50%; width: 128px; height: 128px; object-fit: cover; }
+  .fallback {
+    display: grid;
+    place-items: center;
+    width: 128px;
+    height: 128px;
+    border-radius: 50%;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+  }
+  .info { flex: 1 1 320px; }
+  h1 { margin: 0; }
+  .alt { margin: 0.15rem 0 0; color: var(--text-muted); font-size: var(--step--1); }
+  .role { margin: 0.5rem 0 0; color: var(--accent); font-weight: 600; font-size: var(--step--1); }
+  .bio { margin: 0.9rem 0 0; color: var(--text-muted); max-width: var(--measure); }
+
+  .roles { display: flex; flex-wrap: wrap; gap: 0.4rem; list-style: none; margin: 1rem 0 0; padding: 0; }
+  .roles li {
+    font-size: var(--step--2); border: 1px solid var(--border);
+    border-radius: 999px; padding: 0.15rem 0.7rem; color: var(--text-muted);
+  }
+
+  .links { margin-top: 1.8rem; }
+  .links ul {
+    list-style: none; margin: 0; padding: 0;
+    display: grid; gap: 0.5rem;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 250px), 1fr));
+  }
+  .links a {
+    display: flex; justify-content: space-between; gap: 0.8rem;
+    padding: 0.6rem 0.9rem; border: 1px solid var(--border);
+    border-radius: var(--r-sm); text-decoration: none; font-size: var(--step--1);
+    min-height: 44px; align-items: center;
+  }
+  .links a:hover { border-color: var(--accent); }
+  .k { color: var(--text-muted); flex: none; }
+  .v { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+  section { margin-top: 2.5rem; }
+  section h2 { font-size: var(--step-1); display: flex; align-items: baseline; gap: 0.6rem; }
+  .n { font-size: var(--step--1); color: var(--text-muted); font-weight: 400; }
+</style>

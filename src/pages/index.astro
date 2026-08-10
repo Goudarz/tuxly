@@ -1,0 +1,137 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PostCard from '../components/PostCard.astro';
+import EventCard from '../components/EventCard.astro';
+import { getPublishedPosts, getEntities, getUpcomingEvents, entityUrl, entityLabel } from '../lib/entities';
+import { graph } from '../lib/schema';
+import { faNumber } from '../lib/persian';
+import { SITE } from '../consts';
+
+const posts = await getPublishedPosts();
+const [lead, ...rest] = posts;
+const events = (await getUpcomingEvents()).slice(0, 3);
+const distros = await getEntities('distribution');
+const desktops = await getEntities('desktop');
+
+const schema = graph({
+  '@type': 'CollectionPage',
+  '@id': `${SITE.url}/#home`,
+  url: SITE.url,
+  name: SITE.name,
+  description: SITE.description,
+  inLanguage: SITE.lang,
+});
+---
+
+<BaseLayout schema={schema}>
+  <div class="wrap">
+    <section class="hero">
+      <h1>{SITE.tagline}</h1>
+      <p>
+        اخبار گنو/لینوکس و پروژه‌های آزاد، معرفی توزیع‌ها و میزکارها، آموزش، و
+        تقویم رویدادهای اجتماع — همه به فارسی، در یک جا.
+      </p>
+      <div class="cta">
+        <a class="btn btn-primary" href="/news">شروع از مطالب</a>
+        <a class="btn" href="/distributions">
+          <span class="tnum">{faNumber(distros.length)}</span> توزیع
+        </a>
+        <a class="btn" href="/desktops">
+          <span class="tnum">{faNumber(desktops.length)}</span> میزکار
+        </a>
+      </div>
+    </section>
+
+    {lead && (
+      <section class="lead">
+        <span class="eyebrow">تازه‌ترین</span>
+        <h2><a href={`/news/${lead.id}`}>{lead.data.title}</a></h2>
+        <p>{lead.data.summary}</p>
+      </section>
+    )}
+
+    <div class="cols">
+      <section aria-labelledby="latest">
+        <h2 id="latest" class="sec">مطالب</h2>
+        {rest.length === 0 && posts.length <= 1 ? (
+          <p class="muted">
+            هنوز مطلب دیگری منتشر نشده.
+            <a href={`${SITE.repo}/blob/main/CONTRIBUTING.md`} rel="noopener">اولین مطلب را شما بنویسید</a>.
+          </p>
+        ) : (
+          rest.slice(0, 8).map((post) => <PostCard post={post} />)
+        )}
+        {posts.length > 9 && <a class="more" href="/news">همهٔ مطالب ←</a>}
+      </section>
+
+      <aside>
+        {events.length > 0 && (
+          <section class="panel">
+            <h2>رویدادهای پیش‌رو</h2>
+            {events.map((event) => <EventCard event={event} compact />)}
+            <a class="more" href="/events">تقویم کامل ←</a>
+          </section>
+        )}
+
+        <section class="panel">
+          <h2>توزیع‌ها</h2>
+          <ul class="mini">
+            {distros.slice(0, 8).map((d) => (
+              <li>
+                <a href={entityUrl(d)}><bdi>{entityLabel(d)}</bdi></a>
+                {d.data.currentVersion && <span class="ver latin">{d.data.currentVersion}</span>}
+              </li>
+            ))}
+          </ul>
+          <a class="more" href="/distributions">همهٔ توزیع‌ها ←</a>
+        </section>
+
+        <section class="panel">
+          <h2>دنبال کردن</h2>
+          <p class="muted">
+            <a href="/rss.xml">خوراک RSS تمام سایت</a> — هر توزیع، میزکار، پروژه،
+            اجتماع و برچسب هم خوراک جداگانهٔ خودش را دارد.
+          </p>
+        </section>
+      </aside>
+    </div>
+  </div>
+</BaseLayout>
+
+<style>
+  .hero { padding-block: clamp(1.5rem, 5vw, 3.5rem) clamp(1.5rem, 4vw, 2.5rem); max-width: 62ch; }
+  .hero h1 { margin-top: 0; }
+  .hero p { color: var(--text-muted); font-size: var(--step-1); line-height: 1.8; }
+  .cta { display: flex; flex-wrap: wrap; gap: 0.6rem; margin-top: 1.6rem; }
+
+  .lead { border-block: 1px solid var(--border); padding-block: 1.8rem; margin-bottom: 2rem; }
+  .eyebrow {
+    font-size: var(--step--2); color: var(--accent-ink); background: var(--accent);
+    border-radius: 999px; padding: 0.15rem 0.75rem; font-weight: 700;
+  }
+  .lead h2 { margin: 0.8rem 0 0.5rem; font-size: var(--step-2); }
+  .lead h2 a { text-decoration: none; }
+  .lead h2 a:hover { text-decoration: underline; text-decoration-color: var(--accent); }
+  .lead p { margin: 0; color: var(--text-muted); max-width: var(--measure); }
+
+  .cols { display: grid; gap: 2.5rem; grid-template-columns: 1fr; }
+  @media (min-width: 940px) { .cols { grid-template-columns: minmax(0, 1fr) 320px; gap: 3rem; } }
+
+  .sec { font-size: var(--step-1); margin-top: 0; }
+  .more { display: inline-block; margin-top: 1.2rem; font-weight: 600; font-size: var(--step--1); text-decoration: none; }
+  .more:hover { text-decoration: underline; }
+
+  .panel {
+    border: 1px solid var(--border); border-radius: var(--r-md);
+    padding: 1.1rem 1.2rem; margin-bottom: 1.2rem; background: var(--surface);
+  }
+  .panel h2 { margin: 0 0 0.8rem; font-size: var(--step-0); }
+  .panel :global(.event) { padding-block: 0.9rem; }
+  .panel :global(.event:first-of-type) { padding-top: 0; }
+
+  .mini { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.55rem; }
+  .mini li { display: flex; justify-content: space-between; gap: 0.6rem; font-size: var(--step--1); }
+  .mini a { text-decoration: none; }
+  .mini a:hover { text-decoration: underline; }
+  .ver { color: var(--text-muted); }
+</style>
