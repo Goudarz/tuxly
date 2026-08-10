@@ -1,0 +1,158 @@
+{
+  "$comment": "رجیستری منابع. فیلد policy تعیین می‌کند pipeline اجازهٔ ترجمهٔ کامل دارد یا فقط خلاصه. این فایل تنها مرجع است — هیچ‌جای دیگری این تصمیم گرفته نمی‌شود.",
+  "policies": {
+    "full-translate": "بازنشر ترجمهٔ کامل مجاز است. اگر share_alike صحیح باشد، ترجمه باید با همان لایسنس منتشر شود.",
+    "summary-only": "فقط خلاصهٔ کوتاه به‌همراه لینک منبع. ترجمهٔ کامل ممنوع."
+  },
+  "sources": [
+    {
+      "id": "fedora-magazine",
+      "name": "Fedora Magazine",
+      "nameFa": "فدورا مگزین",
+      "home": "https://fedoramagazine.org",
+      "feed": "https://fedoramagazine.org/feed/",
+      "license": "CC BY-SA 4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0/",
+      "policy": "full-translate",
+      "shareAlike": true,
+      "attribution": "Fedora Magazine (Red Hat, Inc.)",
+      "note": "علائم تجاری و تم سایت از لایسنس CC مستثنا هستند."
+    },
+    {
+      "id": "kde",
+      "name": "KDE",
+      "nameFa": "کی‌دی‌ای",
+      "home": "https://kde.org",
+      "feed": "https://dot.kde.org/rss.xml",
+      "license": "CC BY-SA 4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0/",
+      "policy": "full-translate",
+      "shareAlike": true,
+      "attribution": "KDE Community",
+      "note": "پیش از بازنشر، فوتر همان صفحه را بررسی کنید؛ لایسنس per-article ممکن است فرق کند."
+    },
+    {
+      "id": "gnome",
+      "name": "GNOME",
+      "nameFa": "گنوم",
+      "home": "https://www.gnome.org",
+      "feed": "https://thisweek.gnome.org/index.xml",
+      "license": "CC BY-SA 4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0/",
+      "policy": "full-translate",
+      "shareAlike": true,
+      "attribution": "The GNOME Project"
+    },
+    {
+      "id": "mozilla",
+      "name": "Mozilla Blog",
+      "nameFa": "وبلاگ موزیلا",
+      "home": "https://blog.mozilla.org",
+      "feed": "https://blog.mozilla.org/en/feed/",
+      "license": "CC BY 4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "policy": "full-translate",
+      "shareAlike": false,
+      "attribution": "Mozilla",
+      "note": "سیاست بنیاد موزیلا CC BY است ولی فوتر وبلاگ لایسنس صریح نشان نمی‌دهد. پیش از بازنشر کامل، همان صفحه را بررسی کنید."
+    },
+    {
+      "id": "rust",
+      "name": "Rust Blog",
+      "nameFa": "وبلاگ راست",
+      "home": "https://blog.rust-lang.org",
+      "feed": "https://blog.rust-lang.org/feed.xml",
+      "license": "MIT OR Apache-2.0",
+      "licenseUrl": "https://github.com/rust-lang/blog.rust-lang.org",
+      "policy": "full-translate",
+      "shareAlike": false,
+      "attribution": "The Rust Project Developers"
+    },
+    {
+      "id": "libreoffice",
+      "name": "The Document Foundation",
+      "nameFa": "بنیاد سند",
+      "home": "https://blog.documentfoundation.org",
+      "feed": "https://blog.documentfoundation.org/feed/",
+      "license": "CC BY-SA 3.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0/",
+      "policy": "full-translate",
+      "shareAlike": true,
+      "attribution": "The Document Foundation"
+    },
+    {
+      "id": "debian",
+      "name": "Debian News",
+      "nameFa": "اخبار دبیان",
+      "home": "https://bits.debian.org",
+      "feed": "https://bits.debian.org/feeds/atom.xml",
+      "license": "MIT (Expat) OR GPL-2.0-or-later",
+      "licenseUrl": "https://www.debian.org/license",
+      "policy": "full-translate",
+      "shareAlike": false,
+      "attribution": "The Debian Project"
+    },
+    {
+      "id": "ubuntu",
+      "name": "Ubuntu Blog",
+      "nameFa": "وبلاگ اوبونتو",
+      "home": "https://ubuntu.com/blog",
+      "feed": "https://ubuntu.com/blog/feed",
+      "license": "CC BY-SA 3.0",
+      "licenseUrl": "https://ubuntu.com/legal/intellectual-property-policy",
+      "policy": "full-translate",
+      "shareAlike": true,
+      "attribution": "Canonical Ltd.",
+      "note": "احتیاط شدید با علائم تجاری Canonical — لوگو و نام تحت CC نیستند."
+    },
+    {
+      "id": "phoronix",
+      "name": "Phoronix",
+      "nameFa": "فورونیکس",
+      "home": "https://www.phoronix.com",
+      "feed": "https://www.phoronix.com/rss.php",
+      "license": "All rights reserved",
+      "licenseUrl": "https://www.phoronix-media.com/",
+      "policy": "summary-only",
+      "shareAlike": false,
+      "attribution": "Phoronix Media",
+      "note": "بازنشر بدون اجازهٔ کتبی ممنوع است."
+    },
+    {
+      "id": "itsfoss",
+      "name": "It's FOSS",
+      "nameFa": "ایتس‌فاس",
+      "home": "https://itsfoss.com",
+      "feed": "https://itsfoss.com/feed/",
+      "license": "All rights reserved",
+      "licenseUrl": "https://itsfoss.com",
+      "policy": "summary-only",
+      "shareAlike": false,
+      "attribution": "It's FOSS"
+    },
+    {
+      "id": "omgubuntu",
+      "name": "OMG! Ubuntu",
+      "nameFa": "اوه‌ام‌جی اوبونتو",
+      "home": "https://www.omgubuntu.co.uk",
+      "feed": "https://www.omgubuntu.co.uk/feed",
+      "license": "All rights reserved",
+      "licenseUrl": "https://www.omgubuntu.co.uk",
+      "policy": "summary-only",
+      "shareAlike": false,
+      "attribution": "Ohso Ltd."
+    },
+    {
+      "id": "linuxiac",
+      "name": "Linuxiac",
+      "nameFa": "لینوکسیاک",
+      "home": "https://linuxiac.com",
+      "feed": "https://linuxiac.com/feed/",
+      "license": "All rights reserved",
+      "licenseUrl": "https://linuxiac.com",
+      "policy": "summary-only",
+      "shareAlike": false,
+      "attribution": "Linuxiac"
+    }
+  ]
+}
