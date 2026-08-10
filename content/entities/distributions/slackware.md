@@ -11,6 +11,8 @@ releaseModel: fixed
 defaultDesktop: [Xfce, KDE Plasma]
 architectures: [x86_64]
 tags: [توزیع]
+wikidata: Q58436
+versionCheckedAt: 2026-08-10
 ---
 
 اسلکور از ۱۹۹۳ وجود دارد و قدیمی‌ترین توزیع فعال گنو/لینوکس است. فلسفه‌اش

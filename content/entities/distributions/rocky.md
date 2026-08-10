@@ -13,6 +13,11 @@ eolId: rocky-linux
 defaultDesktop: [GNOME]
 architectures: [x86_64]
 tags: [توزیع]
+currentVersion: '10.2'
+releasedAt: 2026-05-29
+eolAt: 2035-05-31
+wikidata: Q104102686
+versionCheckedAt: 2026-08-10
 ---
 
 راکی را Gregory Kurtzer — از بنیان‌گذاران CentOS — بعد از تغییر سیاست

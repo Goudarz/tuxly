@@ -12,6 +12,8 @@ releaseModel: rolling
 defaultDesktop: [KDE Plasma]
 architectures: [x86_64]
 tags: [توزیع]
+wikidata: Q116777127
+versionCheckedAt: 2026-08-10
 ---
 
 کچی او اس بسته‌ها را با بهینه‌سازی برای معماری‌های x86-64-v3 و v4 کامپایل

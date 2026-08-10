@@ -12,6 +12,8 @@ releaseModel: fixed
 defaultDesktop: [KDE Plasma, GNOME]
 architectures: [x86_64]
 tags: [توزیع]
+wikidata: Q131105150
+versionCheckedAt: 2026-08-10
 ---
 
 بازایت روی فدورا Atomic ساخته می‌شود، یعنی سیستم‌فایل تغییرناپذیر است و

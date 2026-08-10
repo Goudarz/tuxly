@@ -11,6 +11,8 @@ packageManager: emerge
 releaseModel: rolling
 architectures: [x86_64]
 tags: [توزیع]
+wikidata: Q170378
+versionCheckedAt: 2026-08-10
 ---
 
 جنتو بسته‌های از پیش کامپایل‌شده نمی‌دهد — سیستم مدیریت بستهٔ Portage

@@ -12,6 +12,8 @@ releaseModel: fixed
 defaultDesktop: [GNOME]
 architectures: [x86_64]
 tags: [توزیع]
+wikidata: Q2801412
+versionCheckedAt: 2026-08-10
 ---
 
 تیلز از روی حافظهٔ USB اجرا می‌شود و به‌صورت پیش‌فرض چیزی روی دیسک

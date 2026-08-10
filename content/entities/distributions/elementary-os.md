@@ -12,6 +12,8 @@ releaseModel: lts
 defaultDesktop: [Pantheon]
 architectures: [x86_64]
 tags: [توزیع]
+wikidata: Q1321517
+versionCheckedAt: 2026-08-10
 ---
 
 المنتری روی اوبونتوی LTS ساخته می‌شود ولی تجربه‌اش کاملاً متفاوت است:

@@ -12,6 +12,8 @@ releaseModel: semi-rolling
 defaultDesktop: [Budgie, GNOME, KDE Plasma, Xfce]
 architectures: [x86_64]
 tags: [توزیع]
+wikidata: Q22013701
+versionCheckedAt: 2026-08-10
 ---
 
 سولوس از هیچ توزیع دیگری مشتق نشده و صریحاً فقط برای رایانهٔ رومیزی ساخته

@@ -12,6 +12,8 @@ releaseModel: lts
 defaultDesktop: [COSMIC, GNOME]
 architectures: [x86_64]
 tags: [توزیع]
+wikidata: Q81388644
+versionCheckedAt: 2026-08-10
 ---
 
 پاپ او اس را شرکت سخت‌افزاری System76 می‌سازد و همین باعث شده پشتیبانی

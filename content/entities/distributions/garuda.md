@@ -12,6 +12,8 @@ releaseModel: rolling
 defaultDesktop: [KDE Plasma]
 architectures: [x86_64]
 tags: [توزیع]
+wikidata: Q12483555
+versionCheckedAt: 2026-08-10
 ---
 
 گارودا بر پایهٔ آرچ است ولی برخلاف اندورا، تنظیمات زیادی را از پیش انجام

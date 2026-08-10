@@ -12,6 +12,8 @@ releaseModel: rolling
 defaultDesktop: [Xfce]
 architectures: [x86_64]
 tags: [توزیع]
+wikidata: Q19310966
+versionCheckedAt: 2026-08-10
 ---
 
 وید از صفر نوشته شده و از هیچ توزیع دیگری مشتق نشده. سیستم مدیریت بستهٔ

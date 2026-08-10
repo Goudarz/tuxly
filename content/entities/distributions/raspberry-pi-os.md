@@ -12,6 +12,8 @@ releaseModel: fixed
 defaultDesktop: [LXDE]
 architectures: [x86_64]
 tags: [توزیع]
+wikidata: Q890474
+versionCheckedAt: 2026-08-10
 ---
 
 رزبری پای او اس بر پایهٔ دبیان است و برای پردازنده‌های ARM رزبری‌پای بهینه

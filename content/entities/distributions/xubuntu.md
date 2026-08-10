@@ -11,6 +11,8 @@ releaseModel: lts
 defaultDesktop: [Xfce]
 architectures: [x86_64]
 tags: [توزیع]
+wikidata: Q72688
+versionCheckedAt: 2026-08-10
 ---
 
 زوبونتو همان اوبونتوست با میزکار Xfce که مصرف حافظهٔ به‌مراتب کمتری دارد.

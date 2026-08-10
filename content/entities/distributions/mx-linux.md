@@ -12,6 +12,8 @@ releaseModel: fixed
 defaultDesktop: [Xfce, KDE Plasma]
 architectures: [x86_64]
 tags: [توزیع]
+wikidata: Q28127271
+versionCheckedAt: 2026-08-10
 ---
 
 ام‌ایکس محصول همکاری جامعه‌های antiX و MEPIS است و روی دبیان پایدار
