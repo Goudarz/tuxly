@@ -1,0 +1,165 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import { render, getEntries } from 'astro:content';
+import { Image } from 'astro:assets';
+import BaseLayout from './BaseLayout.astro';
+import PostCard from '../components/PostCard.astro';
+import EventCard from '../components/EventCard.astro';
+import EntityChip from '../components/EntityChip.astro';
+import ShareBar from '../components/ShareBar.astro';
+import SearchIndex from '../components/SearchIndex.astro';
+import {
+  getPostsForEntity, getEventsForEntity, entityUrl, entityFeedUrl, entityLabel,
+} from '../lib/entities';
+import { entitySchema } from '../lib/schema';
+import { faDate, faNumber } from '../lib/persian';
+import { SITE, ENTITY_LABELS } from '../consts';
+
+interface Props { entity: CollectionEntry<'entities'> }
+const { entity } = Astro.props;
+const d = entity.data;
+
+const posts = await getPostsForEntity(entity.id);
+const events = await getEventsForEntity(entity.id);
+const related = d.related.length ? await getEntries(d.related) : [];
+const basedOn = d.basedOn.length ? await getEntries(d.basedOn) : [];
+const { Content } = await render(entity);
+
+const url = new URL(entityUrl(entity), SITE.url).href;
+const schema = entitySchema(entity, url, posts.map((p) => `${SITE.url}/news/${p.id}`));
+const eolPassed = d.eolAt ? d.eolAt.getTime() < Date.now() : false;
+const label = entityLabel(entity);
+
+const MODEL: Record<string, string> = {
+  fixed: 'انتشار ثابت', rolling: 'انتشار پیوسته',
+  'semi-rolling': 'نیمه‌پیوسته', lts: 'پشتیبانی بلندمدت',
+};
+---
+
+<BaseLayout
+  title={label}
+  description={d.summary}
+  schema={schema}
+  feed={{ href: entityFeedUrl(entity), title: `${SITE.name} — ${label}` }}
+>
+  <div class="wrap" data-pagefind-body data-pagefind-meta={`kind:${ENTITY_LABELS[d.type]}`}>
+    <header class="head">
+      <p class="kind" data-pagefind-ignore>{ENTITY_LABELS[d.type]}</p>
+      <div class="title-row">
+        {d.logo && <Image src={d.logo} alt="" width={64} height={64} class="logo" />}
+        <div>
+          <h1><bdi>{label}</bdi></h1>
+          {d.nameFa && d.name !== d.nameFa && <p class="alt"><bdi class="latin">{d.name}</bdi></p>}
+        </div>
+      </div>
+      <p class="summary">{d.summary}</p>
+
+      <dl class="facts">
+        {d.currentVersion ? (
+          <div><dt>نسخهٔ فعلی</dt><dd><bdi class="latin">{d.currentVersion}</bdi></dd></div>
+        ) : d.type === 'distribution' ? (
+          <div><dt>نسخهٔ فعلی</dt><dd class="pending">در حال بررسی</dd></div>
+        ) : null}
+        {d.releasedAt && <div><dt>تاریخ انتشار</dt><dd>{faDate(d.releasedAt)}</dd></div>}
+        {d.eolAt && (
+          <div>
+            <dt>پایان پشتیبانی</dt>
+            <dd class={eolPassed ? 'eol' : ''}>{faDate(d.eolAt)}{eolPassed && ' — گذشته'}</dd>
+          </div>
+        )}
+        {d.family && <div><dt>خانواده</dt><dd><bdi class="latin">{d.family}</bdi></dd></div>}
+        {d.packageManager && <div><dt>مدیر بسته</dt><dd><bdi class="latin">{d.packageManager}</bdi></dd></div>}
+        {d.releaseModel && <div><dt>مدل انتشار</dt><dd>{MODEL[d.releaseModel]}</dd></div>}
+        {d.toolkit && <div><dt>جعبه‌ابزار</dt><dd><bdi class="latin">{d.toolkit}</bdi></dd></div>}
+        {d.display.length > 0 && (
+          <div><dt>سرور نمایش</dt><dd><bdi class="latin">{d.display.join(' / ')}</bdi></dd></div>
+        )}
+        {d.tiling !== undefined && <div><dt>چیدمان</dt><dd>{d.tiling ? 'کاشی‌کاری' : 'شناور'}</dd></div>}
+        {d.license && <div><dt>پروانه</dt><dd><bdi class="latin">{d.license}</bdi></dd></div>}
+        {d.defaultDesktop.length > 0 && (
+          <div><dt>میزکار پیش‌فرض</dt><dd><bdi class="latin">{d.defaultDesktop.join('، ')}</bdi></dd></div>
+        )}
+      </dl>
+
+      {d.versionCheckedAt && (
+        <p class="checked muted" data-pagefind-ignore>
+          داده‌های نسخه به‌صورت خودکار از ویکی‌داده و endoflife.date به‌روز
+          می‌شوند. آخرین بررسی: {faDate(d.versionCheckedAt)}
+        </p>
+      )}
+
+      <div class="links" data-pagefind-ignore>
+        {d.website && <a class="btn" href={d.website} rel="noopener">وب‌سایت رسمی</a>}
+        {d.repo && <a class="btn" href={d.repo} rel="noopener">مخزن کد</a>}
+        {d.docs && <a class="btn" href={d.docs} rel="noopener">مستندات</a>}
+        {d.wikidata && (
+          <a class="btn" href={`https://www.wikidata.org/wiki/${d.wikidata}`} rel="noopener">ویکی‌داده</a>
+        )}
+        <a class="btn" href={entityFeedUrl(entity)}>خوراک این صفحه</a>
+      </div>
+    </header>
+
+    <div class="prose"><Content /></div>
+
+    <SearchIndex text={`${label} ${d.name} ${d.summary} ${d.aliases.join(' ')}`} />
+
+    <ShareBar title={label} compact />
+
+    {basedOn.length > 0 && (
+      <section>
+        <h2>ساخته‌شده بر پایهٔ</h2>
+        <div class="chips">{basedOn.map((e) => <EntityChip entity={e} />)}</div>
+      </section>
+    )}
+
+    {related.length > 0 && (
+      <section>
+        <h2>مرتبط</h2>
+        <div class="chips">{related.map((e) => <EntityChip entity={e} />)}</div>
+      </section>
+    )}
+
+    {events.length > 0 && (
+      <section>
+        <h2>رویدادها</h2>
+        {events.slice(0, 5).map((e) => <EventCard event={e} past={(e.data.endsAt ?? e.data.startsAt) < new Date()} />)}
+      </section>
+    )}
+
+    <section>
+      <h2>مطالب مرتبط</h2>
+      {posts.length === 0 ? (
+        <p class="muted">هنوز مطلبی به این صفحه وصل نشده. با خوراک این صفحه دنبالش کنید تا اولین مطلب برسد.</p>
+      ) : (
+        <>
+          <p class="muted count"><span class="tnum">{faNumber(posts.length)}</span> مطلب</p>
+          {posts.map((post) => <PostCard post={post} />)}
+        </>
+      )}
+    </section>
+  </div>
+</BaseLayout>
+
+<style>
+  .head { padding-block: 1rem 1.8rem; border-bottom: 1px solid var(--border-soft); }
+  .kind { color: var(--accent); font-weight: 700; font-size: var(--step--1); margin: 0; }
+  .title-row { display: flex; align-items: center; gap: 1rem; margin-top: 0.3rem; }
+  .logo { border-radius: var(--r-sm); flex: none; }
+  h1 { margin: 0; }
+  .alt { color: var(--text-muted); margin: 0.15rem 0 0; font-size: var(--step--1); }
+  .summary { max-width: var(--measure); color: var(--text-muted); margin: 0.9rem 0 1.4rem; }
+
+  .facts { display: flex; flex-wrap: wrap; gap: 1rem 2rem; margin: 0 0 1rem; }
+  .facts > div { display: grid; gap: 0.1rem; }
+  dt { color: var(--text-muted); font-size: var(--step--2); }
+  dd { margin: 0; font-size: var(--step--1); font-weight: 600; }
+  .pending { color: var(--text-muted); font-weight: 400; font-style: italic; }
+  .eol { color: var(--warn); }
+  .checked { font-size: var(--step--2); margin: 0 0 1.2rem; max-width: 60ch; }
+
+  .links { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+  .chips { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+  section { margin-top: 2.5rem; }
+  section h2 { font-size: var(--step-1); margin-top: 0; }
+  .count { font-size: var(--step--1); }
+</style>

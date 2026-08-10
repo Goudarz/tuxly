@@ -1,0 +1,374 @@
+---
+/**
+ * Live search.
+ *
+ * Opens in place, shows results as you type. Uses the native <dialog> so
+ * focus is trapped and Escape works without a library.
+ */
+---
+
+<dialog id="search-dialog" aria-label="جست‌وجو در تاکسلی" data-pagefind-ignore>
+  <form method="dialog" class="head">
+    <label for="search-input" class="visually-hidden">عبارت جست‌وجو</label>
+    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true">
+      <circle cx="11" cy="11" r="7"></circle>
+      <path d="m20 20-3.5-3.5" stroke-linecap="round"></path>
+    </svg>
+    <input
+      id="search-input"
+      type="search"
+      placeholder="برای جست‌و‌جو نام توزیع، میزکار، پروژه یا هر چیز دیگر…"
+      autocomplete="off"
+      autocorrect="off"
+      spellcheck="false"
+      enterkeyhint="search"
+      role="combobox"
+      aria-expanded="false"
+      aria-controls="search-results"
+      aria-autocomplete="list"
+    />
+    <button type="submit" class="close" aria-label="بستن جست‌وجو">
+      <kbd class="latin">Esc</kbd>
+    </button>
+  </form>
+
+  <div class="body">
+    <p id="search-status" class="status" role="status" aria-live="polite">
+      برای شروع، چند حرف بنویسید.
+    </p>
+    <ul id="search-results" role="listbox" aria-label="نتایج جست‌وجو"></ul>
+    <a href="/search" class="more" hidden data-more>مشاهدهٔ همهٔ نتایج</a>
+  </div>
+
+  <p class="hint">
+    نوشتار فارسی و عربی یکسان در نظر گرفته می‌شود؛ نیم‌فاصله و اِعراب هم نادیده گرفته می‌شوند.
+  </p>
+</dialog>
+
+<style>
+  dialog {
+    width: min(680px, calc(100vw - 2rem));
+    max-height: min(78dvh, 640px);
+    padding: 0;
+    border: 1px solid var(--border);
+    border-radius: var(--r-lg);
+    background: var(--bg-elevated);
+    color: var(--text);
+    box-shadow: var(--shadow);
+    margin-block-start: clamp(1rem, 8vh, 6rem);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+  dialog::backdrop { background: rgb(0 0 0 / 0.55); backdrop-filter: blur(3px); }
+  dialog:not([open]) { display: none; }
+
+  .head {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    padding: 0.85rem 1.1rem;
+    border-bottom: 1px solid var(--border-soft);
+    color: var(--text-muted);
+    flex: none;
+  }
+  input {
+    flex: 1;
+    min-width: 0;
+    background: none;
+    border: 0;
+    outline: none;
+    font-size: var(--step-0);
+    padding-block: 0.4rem;
+  }
+  input::-webkit-search-cancel-button { -webkit-appearance: none; }
+  .close {
+    background: none;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 0.15rem 0.45rem;
+    color: var(--text-muted);
+    min-height: 32px;
+  }
+  .close kbd { font-size: 0.7rem; }
+
+  .body { overflow-y: auto; overscroll-behavior: contain; padding: 0.4rem; flex: 1; }
+  .status { margin: 0; padding: 1.1rem; color: var(--text-muted); font-size: var(--step--1); }
+
+  ul { list-style: none; margin: 0; padding: 0; }
+
+  /*
+   * Result rows are created by script after the page is built, so Astro's
+   * scoped class never lands on them. Everything below the static <ul> has
+   * to be :global() or none of it applies.
+   */
+  #search-results :global(li + li) { margin-top: 2px; }
+
+  #search-results :global(a) {
+    display: grid;
+    gap: 0.25rem;
+    padding: 0.7rem 0.9rem;
+    border-radius: var(--r-sm);
+    text-decoration: none;
+    color: var(--text);
+    border-inline-start: 2px solid transparent;
+    transition: background 0.14s var(--ease), border-color 0.14s var(--ease);
+  }
+  #search-results :global(a:hover),
+  #search-results :global(li[aria-selected='true'] a) {
+    background: var(--surface);
+    border-inline-start-color: var(--accent);
+  }
+
+  #search-results :global(.r-head) {
+    display: flex;
+    align-items: baseline;
+    gap: 0.5rem;
+    min-width: 0;
+  }
+  #search-results :global(.r-kind) {
+    flex: none;
+    font-size: var(--step--2);
+    font-weight: 700;
+    color: var(--accent);
+    background: color-mix(in srgb, var(--accent) 15%, transparent);
+    border-radius: 999px;
+    padding: 0.05rem 0.55rem;
+  }
+  #search-results :global(.r-title) {
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  #search-results :global(.r-excerpt) {
+    font-size: var(--step--1);
+    line-height: 1.65;
+    color: var(--text-muted);
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  #search-results :global(mark) {
+    background: color-mix(in srgb, var(--accent) 26%, transparent);
+    color: var(--text);
+    border-radius: 3px;
+    padding: 0 2px;
+    font-weight: 600;
+  }
+
+  #search-results :global(.r-path) {
+    font-size: var(--step--2);
+    color: var(--text-muted);
+    opacity: 0.75;
+  }
+
+  .more {
+    display: block;
+    text-align: center;
+    padding: 0.8rem;
+    margin: 0.4rem;
+    border-radius: var(--r-sm);
+    background: var(--surface);
+    text-decoration: none;
+    font-weight: 600;
+    font-size: var(--step--1);
+  }
+  .more:hover { color: var(--accent); }
+
+  .hint {
+    margin: 0;
+    padding: 0.7rem 1.1rem;
+    border-top: 1px solid var(--border-soft);
+    font-size: var(--step--2);
+    color: var(--text-muted);
+    flex: none;
+  }
+  @media (max-width: 620px) {
+    dialog { margin: 0; width: 100vw; max-width: 100vw; height: 100dvh; max-height: 100dvh; border-radius: 0; border: 0; }
+    .hint { display: none; }
+  }
+</style>
+
+<script>
+  import { normalizeFa } from '../lib/persian';
+
+  const dialog = document.getElementById('search-dialog') as HTMLDialogElement | null;
+  const input = document.getElementById('search-input') as HTMLInputElement | null;
+  const list = document.getElementById('search-results') as HTMLUListElement | null;
+  const status = document.getElementById('search-status');
+  const more = document.querySelector('[data-more]') as HTMLAnchorElement | null;
+  if (!dialog || !input || !list || !status || !more) throw new Error('search markup missing');
+
+  // Local aliases so TypeScript knows these are non-null inside closures.
+  const dlg = dialog, field = input, listEl = list, note = status, moreLink = more;
+
+  // Show this many inline. The "see all results" link only appears when
+  // there are more than this, so it never shows for a two-hit query.
+  const MAX = 8;
+  let pagefind: any = null;
+  let cursor = -1;
+  let token = 0;
+
+  async function ensureIndex() {
+    if (pagefind) return pagefind;
+    // Path built at runtime so the bundler does not try to resolve it —
+    // Pagefind writes this file after astro build.
+    const url = ['', 'pagefind', 'pagefind.js'].join('/');
+    pagefind = await import(/* @vite-ignore */ url);
+    await pagefind.options({ excerptLength: 24 });
+    await pagefind.init();
+    return pagefind;
+  }
+
+  /** Turn "/distributions/arch" into a readable trail. */
+  const SECTIONS: Record<string, string> = {
+    news: 'اخبار',
+    distributions: 'توزیع‌ها',
+    desktops: 'میزکارها',
+    'window-managers': 'پنجره‌گردان‌ها',
+    projects: 'پروژه‌ها',
+    communities: 'اجتماع‌ها',
+    events: 'رویدادها',
+    people: 'نویسندگان',
+    tags: 'برچسب‌ها',
+    glossary: 'واژه‌نامه',
+    brand: 'هویت بصری',
+    about: 'درباره',
+  };
+
+  const escapeHtml = (s: string) =>
+    s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
+  function sectionOf(url: string) {
+    const first = url.replace(/^\//, '').split('/')[0];
+    return SECTIONS[first] ?? 'تاکسلی';
+  }
+
+  function renderRow(r: any) {
+    const title = escapeHtml(r.meta?.title ?? r.url);
+    // Pagefind only returns `kind` on pages that declare it, so treat it as
+    // optional rather than assuming every hit is categorised.
+    const kind = r.meta?.kind ? escapeHtml(r.meta.kind) : '';
+    return (
+      `<li role="option" aria-selected="false"><a href="${r.url}">` +
+      `<span class="r-head">` +
+      (kind ? `<span class="r-kind">${kind}</span>` : '') +
+      `<span class="r-title">${title}</span>` +
+      `</span>` +
+      `<span class="r-excerpt">${r.excerpt}</span>` +
+      `<span class="r-path">${escapeHtml(sectionOf(r.url))}</span>` +
+      `</a></li>`
+    );
+  }
+
+  function setCursor(next: number) {
+    const items = [...listEl.children] as HTMLLIElement[];
+    if (!items.length) return;
+    cursor = (next + items.length) % items.length;
+    items.forEach((li, i) => li.setAttribute('aria-selected', String(i === cursor)));
+    items[cursor].scrollIntoView({ block: 'nearest' });
+  }
+
+  async function run(raw: string) {
+    const mine = ++token;
+    const query = normalizeFa(raw);
+    cursor = -1;
+    moreLink.hidden = true;
+
+    if (query.length < 2) {
+      listEl.innerHTML = '';
+      note.hidden = false;
+      note.textContent = 'برای شروع، چند حرف بنویسید.';
+      field.setAttribute('aria-expanded', 'false');
+      return;
+    }
+
+    note.hidden = false;
+    note.textContent = 'در حال جست‌وجو…';
+
+    let results: any[] = [];
+    let totalHits = 0;
+    try {
+      const pf = await ensureIndex();
+      const search = await pf.search(query);
+      if (mine !== token) return;
+      totalHits = search.results.length;
+      results = await Promise.all(search.results.slice(0, MAX).map((r: any) => r.data()));
+    } catch {
+      note.textContent = 'ایندکس جست‌وجو هنوز ساخته نشده. یک بار `npm run build` را اجرا کنید.';
+      return;
+    }
+    if (mine !== token) return;
+
+    if (!results.length) {
+      listEl.innerHTML = '';
+      note.textContent = `چیزی برای «${raw.trim()}» پیدا نشد.`;
+      field.setAttribute('aria-expanded', 'false');
+      return;
+    }
+
+    note.hidden = true;
+    field.setAttribute('aria-expanded', 'true');
+    listEl.innerHTML = results.map(renderRow).join('');
+
+    // Only offer the full page when there is genuinely more to see.
+    if (totalHits > MAX) {
+      moreLink.href = `/search?q=${encodeURIComponent(raw.trim())}`;
+      moreLink.textContent = `مشاهدهٔ همهٔ ${totalHits.toLocaleString('fa-IR')} نتیجه`;
+      moreLink.hidden = false;
+    }
+  }
+
+  let timer: number;
+  field.addEventListener('input', () => {
+    clearTimeout(timer);
+    timer = window.setTimeout(() => run(field.value), 120);
+  });
+
+  field.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowDown') { e.preventDefault(); setCursor(cursor + 1); }
+    else if (e.key === 'ArrowUp') { e.preventDefault(); setCursor(cursor - 1); }
+    else if (e.key === 'Enter') {
+      const active = listEl.children[cursor]?.querySelector('a') as HTMLAnchorElement | undefined;
+      e.preventDefault();
+      if (active) location.href = active.href;
+      else if (field.value.trim()) location.href = `/search?q=${encodeURIComponent(field.value.trim())}`;
+    }
+  });
+
+  function open() {
+    if (dlg.open) return;
+    dlg.showModal();
+    // Warm the index so the first keystroke is not blocked.
+    ensureIndex().catch(() => {});
+    field.focus();
+  }
+
+  document.querySelectorAll('[data-search-open]').forEach((el) => el.addEventListener('click', open));
+
+  addEventListener('keydown', (e) => {
+    const k = e.key.toLowerCase();
+    if ((e.ctrlKey || e.metaKey) && k === 'k') { e.preventDefault(); open(); }
+    // "/" only when the user is not typing in another field.
+    const tag = (e.target as HTMLElement)?.tagName;
+    if (k === '/' && !['INPUT', 'TEXTAREA', 'SELECT'].includes(tag) && !dlg.open) {
+      e.preventDefault();
+      open();
+    }
+  });
+
+  // Click on the backdrop closes it.
+  dlg.addEventListener('click', (e) => {
+    if (e.target === dlg) dlg.close();
+  });
+  dlg.addEventListener('close', () => {
+    field.value = '';
+    listEl.innerHTML = '';
+    moreLink.hidden = true;
+    note.hidden = false;
+    note.textContent = 'برای شروع، چند حرف بنویسید.';
+  });
+</script>

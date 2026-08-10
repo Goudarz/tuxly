@@ -1,0 +1,47 @@
+---
+/**
+ * The Tuxly mark, inlined as SVG.
+ *
+ * Inline rather than <img>: an image tag would need separate light and dark
+ * files, one of which flashes on load. Here the colour comes from
+ * currentColor, so the mark always matches the theme and costs no request.
+ *
+ * Belly, eyes and feet are negative space (fill-rule=evenodd), so the mark
+ * adapts to any background.
+ */
+interface Props {
+  size?: number;
+  accent?: string;
+  class?: string;
+  title?: string;
+}
+const { size = 32, accent = 'var(--accent)', class: klass, title } = Astro.props;
+const w = Math.round((size * 158) / 151);
+---
+
+<svg
+  width={w}
+  height={size}
+  viewBox="21 26 158 151"
+  fill="none"
+  class:list={['mark', klass]}
+  role={title ? 'img' : 'presentation'}
+  aria-label={title}
+  aria-hidden={title ? undefined : 'true'}
+  focusable="false"
+>
+  {title && <title>{title}</title>}
+  <path
+    fill="currentColor"
+    fill-rule="evenodd"
+    d="M 100 26 A 45 45 0 0 0 60 92 C 52 114, 24 136, 21 158 C 18 170, 26 177, 40 177 L 160 177 C 174 177, 182 170, 179 158 C 176 136, 148 114, 140 92 A 45 45 0 0 0 100 26 Z M 64 150 C 64 124, 80 108, 100 108 C 120 108, 136 124, 136 150 C 136 162, 134 171, 132 177 L 68 177 C 66 171, 64 162, 64 150 Z M 83 68 m -8.5 0 a 8.5 8.5 0 1 0 17 0 a 8.5 8.5 0 1 0 -17 0 Z M 117 68 m -8.5 0 a 8.5 8.5 0 1 0 17 0 a 8.5 8.5 0 1 0 -17 0 Z"
+  />
+  <path
+    fill={accent}
+    d="M 100 76 Q 111 81 114 90 Q 109 100 100 103 Q 91 100 86 90 Q 89 81 100 76 Z"
+  />
+</svg>
+
+<style>
+  .mark { display: block; flex: none; }
+</style>

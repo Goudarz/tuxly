@@ -1,0 +1,200 @@
+---
+import { SITE } from '../consts';
+
+/**
+ * Share buttons.
+ *
+ * Ordered by what Persian-speaking readers actually use: Telegram and
+ * Mastodon, then the rest. Native share comes first on mobile, where
+ * it opens the OS sheet and covers every app the reader has installed.
+ *
+ * All plain links — no third-party scripts, so no tracking and nothing to
+ * load.
+ */
+interface Props {
+  title: string;
+  /** Path only; the absolute URL is built here. */
+  path?: string;
+  compact?: boolean;
+}
+const { title, path = Astro.url.pathname, compact = false } = Astro.props;
+
+const url = new URL(path, SITE.url).href;
+const u = encodeURIComponent(url);
+const t = encodeURIComponent(title);
+const tWithSite = encodeURIComponent(`${title} — ${SITE.name}`);
+
+const targets = [
+  {
+    id: 'telegram',
+    label: 'تلگرام',
+    href: `https://t.me/share/url?url=${u}&text=${t}`,
+    path: 'M21.5 4.3 2.9 11.5c-.9.4-.9 1 0 1.3l4.7 1.5 1.8 5.5c.2.6.5.7 1 .3l2.6-2.1 4.6 3.4c.8.5 1.4.2 1.6-.8l3-13.9c.3-1.2-.4-1.7-1.7-1.2Z',
+  },
+  {
+    id: 'mastodon',
+    label: 'ماستودون',
+    href: `https://s.mastodon.social/share?text=${tWithSite}%20${u}`,
+    path: 'M20.9 8.5c0-3.6-2.4-4.7-2.4-4.7-1.2-.6-3.3-.8-5.5-.8h-.05c-2.2 0-4.3.2-5.5.8 0 0-2.4 1.1-2.4 4.7v3.4c0 4.3.3 7.3 4.3 7.9 1.9.3 3.5.3 3.5.3 2.6 0 4-.4 4-.4l-.1-1.9s-1.8.6-3.8.5c-2-.1-4.1-.2-4.4-2.7l-.03-.5s2-.5 4.5-.6c1.5-.2 3-.5 4.5-.7 3.1-.4 3.4-2.1 3.4-4.1V8.5Zm-3.3 4.4h-2v-4.6c0-1-.4-1.5-1.3-1.5-.9 0-1.4.6-1.4 1.8v2.6h-2V8.6c0-1.2-.5-1.8-1.4-1.8-.9 0-1.3.5-1.3 1.5v4.6H6.2V8.2c0-1 .3-1.8.8-2.4.5-.6 1.2-.9 2.1-.9 1 0 1.8.4 2.3 1.2l.5.9.5-.9c.5-.8 1.3-1.2 2.3-1.2.9 0 1.6.3 2.1.9.5.6.8 1.4.8 2.4v4.7Z',
+  },
+  {
+    id: 'x',
+    label: 'ایکس',
+    href: `https://twitter.com/intent/tweet?url=${u}&text=${t}`,
+    path: 'M17.5 3h3l-6.6 7.5L21.8 21h-6l-4.7-6.1L5.6 21h-3l7-8-6.9-10h6.2l4.3 5.6L17.5 3Zm-1 16h1.7L7.6 4.8H5.8L16.5 19Z',
+  },
+  {
+    id: 'linkedin',
+    label: 'لینکدین',
+    href: `https://www.linkedin.com/sharing/share-offsite/?url=${u}`,
+    path: 'M4.98 3.5A2.5 2.5 0 1 0 5 8.5a2.5 2.5 0 0 0 0-5ZM3 9.5h4V21H3V9.5Zm6.5 0h3.8v1.6h.05c.53-.95 1.83-1.95 3.75-1.95 4 0 4.75 2.5 4.75 5.8V21h-4v-5.3c0-1.3 0-3-1.85-3s-2.15 1.4-2.15 2.9V21h-4V9.5Z',
+  },
+];
+---
+
+<div class:list={['share', { compact }]} data-share>
+  <h2 class="label">هم‌رسانی</h2>
+
+  <ul>
+    {/* Native share sheet — hidden until JS confirms the browser supports it. */}
+    <li>
+      <button
+        type="button"
+        class="btn-share native"
+        data-native-share
+        data-url={url}
+        data-title={title}
+        hidden
+      >
+        <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M12 15V3m0 0L8.5 6.5M12 3l3.5 3.5"></path>
+          <path d="M20 14v5a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-5"></path>
+        </svg>
+        <span>هم‌رسانی</span>
+      </button>
+    </li>
+
+    {targets.map((s) => (
+      <li>
+        <a class="btn-share" href={s.href} data-net={s.id} rel="noopener" data-no-ext>
+          <svg viewBox="0 0 24 24" width="17" height="17" fill="currentColor" aria-hidden="true">
+            <path d={s.path}></path>
+          </svg>
+          <span>{s.label}</span>
+        </a>
+      </li>
+    ))}
+
+    <li>
+      <button
+        type="button"
+        class="btn-share"
+        data-copy={url}
+        data-copy-label="نشانی صفحه"
+        aria-label="رونوشت نشانی این صفحه"
+      >
+        <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <rect x="9" y="9" width="12" height="12" rx="2.5"></rect>
+          <path d="M5 15H4.5A1.5 1.5 0 0 1 3 13.5v-9A1.5 1.5 0 0 1 4.5 3h9A1.5 1.5 0 0 1 15 4.5V5"></path>
+        </svg>
+        <span>رونوشت نشانی</span>
+      </button>
+    </li>
+  </ul>
+</div>
+
+<style>
+  .share { margin-block: 2rem; }
+  .label {
+    font-size: var(--step--1);
+    color: var(--text-muted);
+    margin: 0 0 0.7rem;
+    font-weight: 600;
+  }
+  .compact .label { font-size: var(--step--2); }
+
+  ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .btn-share {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    min-height: 44px;
+    padding: 0.45rem 0.9rem;
+    border: 1px solid var(--border);
+    border-radius: var(--r-sm);
+    background: var(--surface);
+    color: var(--text-muted);
+    font-size: var(--step--1);
+    font-weight: 600;
+    text-decoration: none;
+    transition: border-color 0.16s var(--ease), color 0.16s var(--ease), transform 0.16s var(--ease);
+  }
+  .btn-share:hover,
+  .btn-share:focus-visible { color: var(--text); transform: translateY(-2px); }
+  .btn-share svg { flex: none; }
+
+  /* Brand tints on hover only, so the row stays calm at rest. */
+  [data-net='telegram']:hover { border-color: #2AABEE; color: #2AABEE; }
+  [data-net='whatsapp']:hover { border-color: #25D366; color: #25D366; }
+  [data-net='x']:hover { border-color: var(--text); color: var(--text); }
+  [data-net='linkedin']:hover { border-color: #0A66C2; color: #0A66C2; }
+  [data-net='mastodon']:hover { border-color: #6364FF; color: #6364FF; }
+  .native:hover, [data-copy]:hover { border-color: var(--accent); color: var(--accent); }
+  [data-copied] { border-color: var(--accent) !important; color: var(--accent) !important; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .btn-share:hover, .btn-share:focus-visible { transform: none; }
+  }
+
+  /*
+   * On narrow screens the labels are what break the row onto four lines, so
+   * drop to icons — except for the native sheet, which needs naming.
+   */
+  @media (max-width: 560px) {
+    .btn-share:not(.native) { width: 44px; justify-content: center; padding-inline: 0; }
+    .btn-share:not(.native) span {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip-path: inset(50%);
+      white-space: nowrap;
+    }
+  }
+</style>
+
+<script>
+  const native = document.querySelector('[data-native-share]') as HTMLButtonElement | null;
+
+  // Only offer the OS sheet where it exists — mostly mobile.
+  if (native && typeof navigator.share === 'function') {
+    native.hidden = false;
+    native.addEventListener('click', async () => {
+      try {
+        await navigator.share({
+          title: native.dataset.title,
+          url: native.dataset.url,
+        });
+      } catch {
+        // The user dismissed the sheet. Nothing to report.
+      }
+    });
+  }
+
+  // Share windows are popups, not navigations — keep the reader in place.
+  document.querySelectorAll('[data-net]').forEach((el) => {
+    el.addEventListener('click', (e) => {
+      const href = (el as HTMLAnchorElement).href;
+      const win = window.open(href, 'tuxly-share', 'width=640,height=620,noopener,noreferrer');
+      if (win) e.preventDefault();
+    });
+  });
+</script>

@@ -1,0 +1,244 @@
+---
+import type { MarkdownHeading } from 'astro';
+
+/**
+ * Table of contents.
+ *
+ * Built from the headings Astro already extracts while rendering Markdown,
+ * so there is no HTML parsing and no runtime cost. Anchor IDs come from
+ * Astro's own slugger, which handles Persian headings correctly.
+ *
+ * Desktop puts it in a sticky sidebar beside the article; mobile collapses
+ * it inline. Renders nothing below `minHeadings` — a two-item list on a
+ * short post is clutter, not navigation.
+ */
+interface Props {
+  headings: MarkdownHeading[];
+  minHeadings?: number;
+  title?: string;
+}
+const { headings, minHeadings = 3, title = 'در این مطلب' } = Astro.props;
+
+// h1 is the page title and h4+ makes the list too deep to scan.
+const items = headings.filter((h) => h.depth === 2 || h.depth === 3);
+if (items.length < minHeadings) return null;
+---
+
+<nav class="toc" data-toc aria-labelledby="toc-title">
+  <button
+    type="button"
+    class="toc-head"
+    data-toc-toggle
+    aria-expanded="false"
+    aria-controls="toc-list"
+  >
+    <span id="toc-title">{title}</span>
+    <svg class="chev" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <path d="m6 9 6 6 6-6"></path>
+    </svg>
+  </button>
+
+  <ol id="toc-list" class="toc-list">
+    {items.map((h) => (
+      <li class:list={[`d${h.depth}`]}>
+        <a href={`#${h.slug}`} data-toc-link={h.slug}>{h.text}</a>
+      </li>
+    ))}
+  </ol>
+</nav>
+
+<style>
+  .toc {
+    border: 1px solid var(--border);
+    border-radius: var(--r-md);
+    background: var(--surface);
+    overflow: hidden;
+  }
+
+  .toc-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.6rem;
+    width: 100%;
+    padding: 0.85rem 1.1rem;
+    background: none;
+    border: 0;
+    color: var(--text);
+    font-weight: 700;
+    font-size: var(--step--1);
+    text-align: start;
+  }
+  .chev { transition: transform 0.22s var(--ease); flex: none; color: var(--text-muted); }
+
+  .toc-list {
+    list-style: none;
+    margin: 0;
+    padding: 0 0.7rem 0.9rem;
+    counter-reset: toc;
+  }
+  .toc-list li { counter-increment: toc; }
+  .toc-list .d3 { padding-inline-start: 1rem; }
+
+  .toc-list a {
+    display: block;
+    padding: 0.42rem 0.7rem;
+    border-radius: var(--r-sm);
+    font-size: var(--step--1);
+    line-height: 1.6;
+    color: var(--text-muted);
+    text-decoration: none;
+    border-inline-start: 2px solid transparent;
+    transition: color 0.16s var(--ease), border-color 0.16s var(--ease), background 0.16s var(--ease);
+  }
+  .toc-list .d2 > a::before {
+    content: counter(toc, persian) ". ";
+    color: var(--text-muted);
+    font-variant-numeric: tabular-nums;
+  }
+  .toc-list a:hover { color: var(--text); background: var(--bg); }
+
+  /*
+   * Set by the scroll spy. It stays on one entry until the next heading is
+   * actually reached, so the highlight never flickers between two items.
+   */
+  .toc-list a[aria-current='true'] {
+    color: var(--accent);
+    border-inline-start-color: var(--accent);
+    background: color-mix(in srgb, var(--accent) 10%, transparent);
+    font-weight: 700;
+  }
+  .toc-list a[aria-current='true']::before { color: var(--accent); }
+
+  /* Mobile: collapsed inline, so it never buries the opening paragraph. */
+  @media (max-width: 1100px) {
+    .toc { margin-block: 2rem; }
+    .toc-list { display: none; }
+    .toc[data-open] .toc-list { display: block; }
+    .toc[data-open] .chev { transform: rotate(180deg); }
+  }
+
+  /* Desktop: sticky sidebar, always open. */
+  @media (min-width: 1101px) {
+    .toc {
+      position: sticky;
+      top: calc(var(--header-h) + 1.5rem);
+      max-height: calc(100dvh - var(--header-h) - 3rem);
+      overflow-y: auto;
+      overscroll-behavior: contain;
+    }
+    .toc-head { cursor: default; pointer-events: none; }
+    .chev { display: none; }
+  }
+</style>
+
+<script>
+  const toc = document.querySelector('[data-toc]') as HTMLElement | null;
+
+  if (toc) {
+    // Local non-null alias: the outer narrowing does not reach into the
+    // closures below, so TypeScript flags every use inside them.
+    const panel = toc;
+    const links = [...panel.querySelectorAll('[data-toc-link]')] as HTMLAnchorElement[];
+    const order = links.map((l) => l.dataset.tocLink!);
+    const isMobile = () => matchMedia('(max-width: 1100px)').matches;
+
+    panel.querySelector('[data-toc-toggle]')?.addEventListener('click', (e) => {
+      const open = panel.toggleAttribute('data-open');
+      (e.currentTarget as HTMLElement).setAttribute('aria-expanded', String(open));
+    });
+
+    let activeId = order[0];
+
+    function paint(id: string | undefined) {
+      for (const link of links) {
+        if (link.dataset.tocLink === id) link.setAttribute('aria-current', 'true');
+        else link.removeAttribute('aria-current');
+      }
+      /*
+       * Keep the active entry visible inside a long sidebar — but only by
+       * scrolling the sidebar itself. scrollIntoView would scroll the window
+       * too, yanking the reader back up the page.
+       */
+      if (isMobile() || panel.scrollHeight <= panel.clientHeight) return;
+      const link = links.find((l) => l.dataset.tocLink === id);
+      if (!link) return;
+      const box = panel.getBoundingClientRect();
+      const target = link.getBoundingClientRect();
+      if (target.top < box.top + 8) {
+        panel.scrollTop -= box.top + 8 - target.top;
+      } else if (target.bottom > box.bottom - 8) {
+        panel.scrollTop += target.bottom - (box.bottom - 8);
+      }
+    }
+
+    /*
+     * Which section are we in? Answer by position, not by intersection: the
+     * active heading is the last one whose top has passed the reading line.
+     * That keeps a single entry lit for the whole section, however long or
+     * short it is, which intersection observation alone cannot do.
+     */
+    const LINE = 140;
+
+    function refresh() {
+      let current = order[0];
+      for (const id of order) {
+        const el = document.getElementById(id);
+        if (el && el.getBoundingClientRect().top <= LINE) current = id;
+        else break;
+      }
+      // At the very bottom the last section is the one being read, even if
+      // its heading scrolled past long ago.
+      if (window.innerHeight + window.scrollY >= document.body.scrollHeight - 4) {
+        current = order[order.length - 1];
+      }
+      if (current !== activeId) {
+        activeId = current;
+        paint(activeId);
+      }
+    }
+
+    let ticking = false;
+    addEventListener(
+      'scroll',
+      () => {
+        if (ticking) return;
+        ticking = true;
+        requestAnimationFrame(() => {
+          refresh();
+          ticking = false;
+        });
+      },
+      { passive: true },
+    );
+    addEventListener('resize', refresh, { passive: true });
+
+    // Smooth jump, then move focus so keyboard and screen readers follow.
+    for (const link of links) {
+      link.addEventListener('click', (e) => {
+        const id = link.dataset.tocLink!;
+        const target = document.getElementById(id);
+        if (!target) return;
+
+        e.preventDefault();
+        const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+        target.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'start' });
+
+        target.setAttribute('tabindex', '-1');
+        target.focus({ preventScroll: true });
+
+        history.replaceState(null, '', `#${id}`);
+        activeId = id;
+        paint(id);
+
+        if (isMobile()) {
+          panel.removeAttribute('data-open');
+          panel.querySelector('[data-toc-toggle]')?.setAttribute('aria-expanded', 'false');
+        }
+      });
+    }
+
+    paint(activeId);
+    refresh();
+  }
+</script>

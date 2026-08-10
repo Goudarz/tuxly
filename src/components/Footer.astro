@@ -1,0 +1,183 @@
+---
+import Mark from './Mark.astro';
+import { SITE, SOCIAL } from '../consts';
+
+// Copyright runs from launch to now. A single year would understate the
+// claim once the archive spans several.
+const FOUNDED = 2026;
+const thisYear = new Date().getUTCFullYear();
+const span = thisYear > FOUNDED ? `${FOUNDED}–${thisYear}` : String(FOUNDED);
+
+const columns = [
+  {
+    title: 'کاوش',
+    links: [
+      { href: '/news', label: 'اخبار و مقالات' },
+      { href: '/distributions', label: 'توزیع‌های لینوکس' },
+      { href: '/desktops', label: 'میزکارها' },
+      { href: '/window-managers', label: 'پنجره‌گردان‌ها' },
+      { href: '/projects', label: 'پروژه‌ها' },
+    ],
+  },
+  {
+    title: 'اجتماع',
+    links: [
+      { href: '/events', label: 'تقویم رویدادها' },
+      { href: '/communities', label: 'اجتماع‌ها و گروه‌ها' },
+      { href: '/glossary', label: 'واژه‌نامه' },
+      { href: '/people', label: 'چهره‌ها' },
+      { href: '/rss.xml', label: 'خوراک RSS' },
+    ],
+  },
+  {
+    title: 'دربارهٔ ما',
+    links: [
+      { href: '/about', label: 'دربارهٔ تاکسلی' },
+      { href: '/brand', label: 'هویت بصری' },
+      { href: SITE.repo, label: 'مخزن گیت‌هاب' },
+      { href: `${SITE.repo}/blob/main/CONTRIBUTING.md`, label: 'راهنمای مشارکت' },
+      { href: `mailto:${SITE.email}`, label: SITE.email, latin: true },
+    ],
+  },
+];
+---
+
+<footer data-pagefind-ignore>
+  <div class="wrap">
+    <div class="top">
+      <div class="about">
+        <a href="/" class="brand" aria-label={`${SITE.name} — صفحهٔ خانه`}>
+          <Mark size={34} />
+          <span class="name">{SITE.name}</span>
+        </a>
+        <p>
+          تاکسلی خانهٔ فارسی نرم‌افزار آزاد و متن‌باز است. اینجا خبرهای
+          گنو/لینوکس و پروژه‌های آزاد را دنبال می‌کنیم، توزیع‌ها و میزکارها را
+          معرفی می‌کنیم، آموزش می‌نویسیم و تقویم رویدادهای اجتماع را نگه
+          می‌داریم — با این باور که نرم‌افزار آزاد باید به زبان مادری هم
+          در دسترس باشد.
+        </p>
+        <ul class="social">
+          {SOCIAL.map((s) => (
+            <li>
+              <a href={s.href} rel={s.id === 'mastodon' ? 'me noopener' : 'noopener'}>
+                {s.label}
+              </a>
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      {columns.map((col) => (
+        <nav aria-label={col.title}>
+          <h2>{col.title}</h2>
+          <ul>
+            {col.links.map((l) => (
+              <li>
+                <a href={l.href}>{'latin' in l && l.latin ? <bdi class="latin">{l.label}</bdi> : l.label}</a>
+              </li>
+            ))}
+          </ul>
+        </nav>
+      ))}
+    </div>
+
+    <div class="legal">
+      <p class="copyright">
+        <span class="latin tnum">©&nbsp;{span}</span>
+        <span>{SITE.name} — گودرز جعفری و مشارکت‌کنندگان</span>
+      </p>
+
+      <dl class="terms">
+        <div>
+          <dt>
+            کد سایت —
+            <a href={`${SITE.repo}/blob/main/LICENSE`} rel="license noopener">
+              <bdi class="latin">AGPL-3.0</bdi>
+            </a>
+          </dt>
+          <dd>آزادانه استفاده و تغییرش دهید، به شرط انتشار سورس و لینک به مخزن اصلی.</dd>
+        </div>
+
+        <div>
+          <dt>
+            نوشته‌ها —
+            <a href="https://creativecommons.org/licenses/by-sa/4.0/deed.fa" rel="license noopener">
+              <bdi class="latin">CC BY-SA 4.0</bdi>
+            </a>
+          </dt>
+          <dd>با ذکر منبع و همان پروانه بازنشرشان کنید. مطالب نقل‌شده پروانهٔ خودشان را دارند.</dd>
+        </div>
+
+        <div>
+          <dt>نشان و لوگوتایپ — <a href="/brand">علامت تجاری</a></dt>
+          <dd>مشمول پروانه‌های بالا نیست؛ قواعد استفاده در صفحهٔ هویت بصری.</dd>
+        </div>
+      </dl>
+
+      <p class="promise">بدون تبلیغات، بدون ردیابی کوکی.</p>
+    </div>
+  </div>
+</footer>
+
+<style>
+  footer {
+    border-top: 1px solid var(--border);
+    margin-top: 5rem;
+    padding-block: 3rem 2rem;
+    background: var(--bg-elevated);
+  }
+  .top {
+    display: grid;
+    gap: 2.5rem;
+    grid-template-columns: 1fr;
+  }
+  @media (min-width: 720px) { .top { grid-template-columns: repeat(3, 1fr); } .about { grid-column: 1 / -1; } }
+  @media (min-width: 1000px) {
+    .top { grid-template-columns: 1.6fr repeat(3, 1fr); }
+    .about { grid-column: auto; }
+  }
+
+  .brand { display: inline-flex; align-items: center; gap: 0.6rem; text-decoration: none; color: var(--text); }
+  .name { font-weight: 800; font-size: var(--step-1); }
+  .about p { color: var(--text-muted); font-size: var(--step--1); max-width: 46ch; margin: 0.9rem 0 1.2rem; }
+
+  .social { display: flex; flex-wrap: wrap; gap: 0.45rem; list-style: none; margin: 0; padding: 0; }
+  .social a {
+    display: inline-block;
+    font-size: var(--step--1);
+    text-decoration: none;
+    color: var(--text-muted);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 0.3rem 0.8rem;
+  }
+  .social a:hover { border-color: var(--accent); color: var(--text); }
+
+  h2 { font-size: var(--step--1); margin: 0 0 0.9rem; color: var(--text); font-weight: 700; }
+  nav ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.55rem; }
+  nav a { font-size: var(--step--1); text-decoration: none; color: var(--text-muted); }
+  nav a:hover { color: var(--accent); text-decoration: underline; }
+
+  .legal { margin-top: 3rem; padding-top: 1.4rem; border-top: 1px solid var(--border-soft); }
+  .copyright {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin: 0 0 0.4rem;
+    font-size: var(--step--1);
+    font-weight: 600;
+  }
+  .terms {
+    display: grid;
+    gap: 0.5rem 2rem;
+    margin: 0 0 0.9rem;
+    font-size: var(--step--2);
+  }
+  @media (min-width: 760px) { .terms { grid-template-columns: repeat(3, 1fr); } }
+  .terms dt { font-weight: 600; color: var(--text); }
+  .terms dd { margin: 0.15rem 0 0; color: var(--text-muted); line-height: 1.7; }
+  .promise { margin: 0; font-size: var(--step--2); color: var(--text-muted); }
+  .legal a { color: inherit; }
+  .legal a:hover { color: var(--accent); }
+</style>

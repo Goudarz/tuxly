@@ -1,0 +1,90 @@
+---
+import { Image } from 'astro:assets';
+import type { CollectionEntry } from 'astro:content';
+import { faDate, faRelative } from '../lib/persian';
+import { POST_TYPE_LABELS } from '../consts';
+
+interface Props { post: CollectionEntry<'posts'>; compact?: boolean }
+const { post, compact = false } = Astro.props;
+const d = post.data;
+const url = `/news/${post.id}`;
+---
+
+<article class:list={['card', { compact }]}>
+  {d.cover && !compact && (
+    <a href={url} class="thumb" tabindex="-1" aria-hidden="true">
+      <Image src={d.cover} alt="" widths={[320, 640]} sizes="(max-width: 640px) 100vw, 220px" loading="lazy" />
+    </a>
+  )}
+
+  <div class="text">
+    <div class="meta">
+      <span class="kind">{POST_TYPE_LABELS[d.type]}</span>
+      <time datetime={d.publishedAt.toISOString()} title={faDate(d.publishedAt)}>
+        {faRelative(d.publishedAt)}
+      </time>
+    </div>
+
+    <h3><a href={url}>{d.title}</a></h3>
+    {!compact && <p class="summary">{d.summary}</p>}
+
+    {d.tags.length > 0 && !compact && (
+      <ul class="tags">
+        {d.tags.slice(0, 3).map((t) => (
+          <li><a href={`/tags/${encodeURIComponent(t)}`}>{t}</a></li>
+        ))}
+      </ul>
+    )}
+  </div>
+</article>
+
+<style>
+  .card {
+    display: grid;
+    gap: 1rem;
+    padding-block: 1.5rem;
+    border-bottom: 1px solid var(--border-soft);
+  }
+  .card:last-child { border-bottom: 0; }
+  @media (min-width: 560px) {
+    .card:has(.thumb) { grid-template-columns: 220px 1fr; align-items: start; }
+  }
+
+  .thumb { display: block; border-radius: var(--r-md); overflow: hidden; background: var(--surface); }
+  .thumb :global(img) { width: 100%; aspect-ratio: 16 / 10; object-fit: cover; display: block; }
+
+  .meta {
+    display: flex;
+    gap: 0.6rem;
+    align-items: center;
+    flex-wrap: wrap;
+    font-size: var(--step--1);
+    color: var(--text-muted);
+  }
+  .kind {
+    background: color-mix(in srgb, var(--accent) 18%, transparent);
+    color: var(--accent);
+    border-radius: 999px;
+    padding: 0.1rem 0.65rem;
+    font-weight: 600;
+    font-size: var(--step--2);
+  }
+
+  h3 { margin: 0.4rem 0 0.4rem; font-size: var(--step-1); }
+  h3 a { text-decoration: none; }
+  h3 a:hover { text-decoration: underline; text-decoration-color: var(--accent); }
+  .compact h3 { font-size: var(--step-0); margin-block: 0.25rem 0; }
+
+  .summary { margin: 0; color: var(--text-muted); }
+  .tags { display: flex; flex-wrap: wrap; gap: 0.4rem; list-style: none; padding: 0; margin: 0.8rem 0 0; }
+  .tags a {
+    display: inline-block;
+    font-size: var(--step--2);
+    text-decoration: none;
+    color: var(--text-muted);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 0.15rem 0.65rem;
+  }
+  .tags a:hover { border-color: var(--accent); color: var(--text); }
+</style>

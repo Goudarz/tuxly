@@ -1,0 +1,183 @@
+---
+import { getEntities, entityUrl, entityLabel } from '../lib/entities';
+import { getCollection } from 'astro:content';
+import type { ENTITY_TYPES } from '../consts';
+import { faNumber } from '../lib/persian';
+
+interface Props {
+  type: (typeof ENTITY_TYPES)[number];
+  /**
+   * Version/licence strip on hover. Off for communities and the like, where
+   * there is no such field and an empty strip would be noise.
+   */
+  reveal?: boolean;
+}
+const { type, reveal = true } = Astro.props;
+
+const entities = await getEntities(type);
+const posts = await getCollection('posts', ({ data }) => (import.meta.env.PROD ? !data.draft : true));
+const counts = new Map<string, number>();
+for (const p of posts) for (const e of p.data.entities) counts.set(e.id, (counts.get(e.id) ?? 0) + 1);
+---
+
+<ul class="grid">
+  {entities.map((entity) => {
+    const d = entity.data;
+    const n = counts.get(entity.id) ?? 0;
+    return (
+      <li>
+        <a href={entityUrl(entity)}>
+          <span class="sheen" aria-hidden="true"></span>
+
+          <h2><bdi>{entityLabel(entity)}</bdi></h2>
+          {d.nameFa && d.name !== d.nameFa && <p class="alt"><bdi class="latin">{d.name}</bdi></p>}
+          <p class="sum">{d.summary}</p>
+
+          <div class="tags">
+            {d.family && <span><bdi class="latin">{d.family}</bdi></span>}
+            {d.packageManager && <span><bdi class="latin">{d.packageManager}</bdi></span>}
+            {d.toolkit && <span><bdi class="latin">{d.toolkit}</bdi></span>}
+            {d.tiling === true && <span>کاشی‌کاری</span>}
+            {n > 0 && <span class="n tnum">{faNumber(n)} مطلب</span>}
+          </div>
+
+          {/* Version slides up on hover; on touch it is always visible. */}
+          {reveal && (
+          <span class="reveal">
+            <span class="r-label">
+              {d.currentVersion ? 'آخرین نسخه' : d.type === 'distribution' ? 'نسخه' : 'پروانه'}
+            </span>
+            <span class="r-value">
+              {d.currentVersion
+                ? <bdi class="latin">{d.currentVersion}</bdi>
+                : d.license
+                  ? <bdi class="latin">{d.license}</bdi>
+                  : <span class="pending">در حال بررسی</span>}
+            </span>
+          </span>
+          )}
+        </a>
+      </li>
+    );
+  })}
+</ul>
+
+<style>
+  .grid {
+    list-style: none;
+    margin: 1.5rem 0 0;
+    padding: 0;
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 290px), 1fr));
+  }
+
+  li a {
+    position: relative;
+    display: block;
+    height: 100%;
+    padding: 1.1rem 1.2rem;
+  }
+  /* Only cards with a reveal strip need room reserved for it. */
+  li a:has(.reveal) { padding-bottom: 3.4rem; }
+  li a {
+    border: 1px solid var(--border);
+    border-radius: var(--r-md);
+    background: var(--surface);
+    text-decoration: none;
+    overflow: hidden;
+    isolation: isolate;
+    transition:
+      border-color 0.22s var(--ease),
+      transform 0.22s var(--ease),
+      box-shadow 0.22s var(--ease);
+  }
+  li a:hover,
+  li a:focus-visible {
+    border-color: var(--accent);
+    transform: translateY(-3px);
+    box-shadow: 0 14px 32px -18px color-mix(in srgb, var(--accent) 70%, transparent);
+  }
+
+  /* Amber wash that fades in behind the card content. */
+  .sheen {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    opacity: 0;
+    background:
+      radial-gradient(120% 80% at 100% 0%, color-mix(in srgb, var(--accent) 20%, transparent), transparent 60%),
+      linear-gradient(to top, color-mix(in srgb, var(--accent) 12%, transparent), transparent 55%);
+    transition: opacity 0.22s var(--ease);
+  }
+  li a:hover .sheen,
+  li a:focus-visible .sheen { opacity: 1; }
+
+  h2 { margin: 0; font-size: var(--step-1); transition: color 0.22s var(--ease); }
+  li a:hover h2 { color: var(--accent); }
+  .alt { margin: 0.1rem 0 0; font-size: var(--step--2); color: var(--text-muted); }
+  .sum { margin: 0.55rem 0 0.9rem; font-size: var(--step--1); color: var(--text-muted); }
+
+  .tags { display: flex; flex-wrap: wrap; gap: 0.35rem; }
+  .tags span {
+    font-size: var(--step--2);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 0.1rem 0.6rem;
+    color: var(--text-muted);
+  }
+
+  /* The reveal strip sits below the fold of the card and slides in. */
+  .reveal {
+    position: absolute;
+    inset-inline: 0;
+    bottom: 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.6rem;
+    padding: 0.6rem 1.2rem;
+    background: color-mix(in srgb, var(--accent) 92%, transparent);
+    color: var(--accent-ink);
+    transform: translateY(100%);
+    opacity: 0;
+    transition: transform 0.26s var(--ease), opacity 0.2s var(--ease);
+  }
+  li a:hover .reveal,
+  li a:focus-visible .reveal { transform: translateY(0); opacity: 1; }
+
+  .r-label { font-size: var(--step--2); font-weight: 600; opacity: 0.75; }
+  .r-value { font-size: var(--step--1); font-weight: 800; }
+  .pending { font-weight: 500; font-style: italic; opacity: 0.8; }
+
+  /*
+   * Touch devices have no hover, so the strip would never appear. Show it
+   * permanently there instead.
+   */
+  @media (hover: none) {
+    .reveal { transform: none; opacity: 1; }
+    li a { transform: none !important; }
+  }
+
+  /*
+   * Cards with no reveal strip lean on the border and glow instead, so the
+   * hover still reads as a state change.
+   */
+  li a:not(:has(.reveal)):hover,
+  li a:not(:has(.reveal)):focus-visible {
+    border-color: var(--accent);
+    box-shadow:
+      0 0 0 1px var(--accent),
+      0 18px 40px -20px color-mix(in srgb, var(--accent) 85%, transparent);
+  }
+  li a:not(:has(.reveal)) .sheen {
+    background:
+      radial-gradient(130% 100% at 100% 0%, color-mix(in srgb, var(--accent) 22%, transparent), transparent 65%),
+      radial-gradient(90% 90% at 0% 100%, color-mix(in srgb, var(--accent) 12%, transparent), transparent 60%);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    li a, .sheen, .reveal { transition: none; }
+    li a:hover { transform: none; }
+  }
+</style>

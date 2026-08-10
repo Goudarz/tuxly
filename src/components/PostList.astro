@@ -1,0 +1,149 @@
+---
+import PostCard from './PostCard.astro';
+import type { CollectionEntry } from 'astro:content';
+import { faNumber } from '../lib/persian';
+
+/**
+ * Post list with real pagination plus scroll loading.
+ *
+ * Pagination is the base layer and its links are in the HTML, because
+ * Googlebot does not scroll — without them, page 2 onward never gets
+ * indexed. JavaScript then enhances it: two pages load automatically as you
+ * scroll, after which a button takes over. Fully automatic loading would
+ * mean the footer is never reachable.
+ */
+interface Props {
+  posts: CollectionEntry<'posts'>[];
+  page: number;
+  totalPages: number;
+  baseUrl: string;
+  total: number;
+}
+const { posts, page, totalPages, baseUrl, total } = Astro.props;
+const pageUrl = (n: number) => (n === 1 ? baseUrl : `${baseUrl}/${n}`);
+---
+
+<div class="list-wrap">
+  <p class="count muted">
+    <span class="tnum">{faNumber(total)}</span> مطلب
+    {totalPages > 1 && (
+      <> · صفحهٔ <span class="tnum">{faNumber(page)}</span> از <span class="tnum">{faNumber(totalPages)}</span></>
+    )}
+  </p>
+
+  <div id="post-list" data-post-list aria-live="polite" aria-busy="false">
+    {posts.map((post) => <PostCard post={post} />)}
+  </div>
+
+  {totalPages > 1 && (
+    <nav class="pager" aria-label="صفحه‌بندی مطالب" data-pager data-next={page < totalPages ? pageUrl(page + 1) : ''}>
+      <a
+        class="btn"
+        href={page > 1 ? pageUrl(page - 1) : undefined}
+        rel="prev"
+        aria-disabled={page > 1 ? undefined : 'true'}
+      >
+        صفحهٔ قبل
+      </a>
+      <span class="pages tnum">{faNumber(page)} / {faNumber(totalPages)}</span>
+      <a
+        class="btn"
+        href={page < totalPages ? pageUrl(page + 1) : undefined}
+        rel="next"
+        aria-disabled={page < totalPages ? undefined : 'true'}
+        data-next-link
+      >
+        صفحهٔ بعد
+      </a>
+    </nav>
+  )}
+
+  <p class="loading" data-loading hidden role="status">در حال بارگذاری مطالب بیشتر…</p>
+  <button type="button" class="btn btn-primary more" data-load-more hidden>مطالب بیشتر</button>
+  <p class="end muted" data-end hidden>به انتهای فهرست رسیدید.</p>
+</div>
+
+<style>
+  .count { font-size: var(--step--1); margin-block: 0 1rem; }
+  .pager {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-top: 2rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border-soft);
+  }
+  .pager a[aria-disabled='true'] { opacity: 0.35; pointer-events: none; }
+  .pages { color: var(--text-muted); font-size: var(--step--1); }
+  .loading, .end { text-align: center; padding: 1.5rem 0; font-size: var(--step--1); }
+  .more { display: block; margin: 1.5rem auto 0; }
+  /* With JS on, pagination is replaced by the loading controls. */
+  :global(html.js-scroll) .pager { display: none; }
+</style>
+
+<script>
+  const list = document.querySelector('[data-post-list]') as HTMLElement | null;
+  const pager = document.querySelector('[data-pager]') as HTMLElement | null;
+  const loading = document.querySelector('[data-loading]') as HTMLElement | null;
+  const moreBtn = document.querySelector('[data-load-more]') as HTMLButtonElement | null;
+  const endMsg = document.querySelector('[data-end]') as HTMLElement | null;
+
+  if (list && pager && loading && moreBtn && endMsg) {
+    // Local aliases so TypeScript knows these are non-null inside closures.
+    const feed = list, spinner = loading, btn = moreBtn, done = endMsg;
+    const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    let nextUrl = pager.dataset.next ?? '';
+    // Pages fetched automatically before the button takes over.
+    let auto = reduced ? 0 : 2;
+    let busy = false;
+
+    document.documentElement.classList.add('js-scroll');
+    if (nextUrl && auto === 0) btn.hidden = false;
+
+    async function loadNext() {
+      if (busy || !nextUrl) return;
+      busy = true;
+      spinner.hidden = false;
+      feed.setAttribute('aria-busy', 'true');
+      btn.hidden = true;
+
+      try {
+        const res = await fetch(nextUrl);
+        if (!res.ok) throw new Error(String(res.status));
+        const doc = new DOMParser().parseFromString(await res.text(), 'text/html');
+        const cards = doc.querySelectorAll('[data-post-list] > article');
+        cards.forEach((c) => feed.append(document.importNode(c, true)));
+
+        // Keep the address bar in step so refresh and sharing still work.
+        history.replaceState(null, '', nextUrl);
+        nextUrl = (doc.querySelector('[data-pager]') as HTMLElement | null)?.dataset.next ?? '';
+      } catch {
+        // If fetching fails, fall back to the plain pagination links.
+        document.documentElement.classList.remove('js-scroll');
+        nextUrl = '';
+      } finally {
+        busy = false;
+        spinner.hidden = true;
+        feed.setAttribute('aria-busy', 'false');
+        if (!nextUrl) { done.hidden = false; btn.hidden = true; }
+        else if (auto <= 0) btn.hidden = false;
+      }
+    }
+
+    btn.addEventListener('click', () => { auto = 1; loadNext(); });
+
+    const sentinel = document.createElement('div');
+    sentinel.style.height = '1px';
+    feed.after(sentinel);
+
+    new IntersectionObserver(
+      (entries) => {
+        if (!entries[0].isIntersecting || auto <= 0 || !nextUrl) return;
+        auto--;
+        loadNext();
+      },
+      { rootMargin: '600px 0px' },
+    ).observe(sentinel);
+  }
+</script>

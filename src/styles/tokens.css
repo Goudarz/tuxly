@@ -1,0 +1,56 @@
+/* Tuxly design tokens — from the brand identity v1.0 */
+:root {
+  --tx-ink:   #0F141C;
+  --tx-amber: #FFB020;
+  --tx-ember: #E07C10;
+  --tx-slate: #5B6472;
+  --tx-snow:  #FAFAF7;
+  --tx-line:  #E3E6EA;
+
+  /* Dark is the default. */
+  --bg:          var(--tx-ink);
+  --bg-elevated: #141A25;
+  --surface:     #161C27;
+  --text:        var(--tx-snow);
+  --text-muted:  #98A1AF;
+  --border:      #232B38;
+  --border-soft: #1B222D;
+  --accent:      var(--tx-amber);
+  --accent-ink:  var(--tx-ink);
+  --ok:          #3FBE7A;
+  --warn:        #F0912E;
+  --shadow: 0 12px 32px -12px rgb(0 0 0 / 0.6);
+
+  --font-fa: 'Vazirmatn', 'Vazirmatn Fallback', system-ui, sans-serif;
+  --font-en: 'Space Grotesk', ui-sans-serif, sans-serif;
+  --font-mono: ui-monospace, 'JetBrains Mono', 'Cascadia Code', monospace;
+
+  --r-sm: 8px;
+  --r-md: 14px;
+  --r-lg: 22px;
+  --ease: cubic-bezier(.22, 1, .36, 1);
+
+  --step--2: clamp(.72rem, .70rem + .08vw, .78rem);
+  --step--1: clamp(.83rem, .81rem + .1vw, .90rem);
+  --step-0:  clamp(1rem, .96rem + .18vw, 1.07rem);
+  --step-1:  clamp(1.15rem, 1.06rem + .42vw, 1.38rem);
+  --step-2:  clamp(1.38rem, 1.18rem + .95vw, 1.85rem);
+  --step-3:  clamp(1.7rem, 1.3rem + 1.9vw, 2.6rem);
+
+  --measure: 68ch;
+  --gutter: clamp(1rem, 4vw, 2.5rem);
+  --header-h: 60px;
+}
+
+:root[data-theme='light'] {
+  --bg:          var(--tx-snow);
+  --bg-elevated: #FFFFFF;
+  --surface:     #FFFFFF;
+  --text:        var(--tx-ink);
+  --text-muted:  var(--tx-slate);
+  --border:      var(--tx-line);
+  --border-soft: #EDEFF2;
+  --ok:          #2C9E5F;
+  --warn:        var(--tx-ember);
+  --shadow: 0 12px 30px -14px rgb(15 20 28 / 0.22);
+}

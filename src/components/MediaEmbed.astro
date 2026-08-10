@@ -1,0 +1,170 @@
+---
+/**
+ * Video and podcast embeds.
+ *
+ * No iframe exists until the user presses play. Three wins: the page loads
+ * faster, YouTube's trackers never run without consent, and layout stays
+ * stable because the aspect ratio is reserved up front.
+ *
+ * Supports YouTube, Aparat, PeerTube, Vimeo and any custom embed URL.
+ */
+interface Item {
+  provider: 'youtube' | 'peertube' | 'aparat' | 'vimeo' | 'audio' | 'iframe';
+  id: string;
+  title: string;
+  host?: string;
+  poster?: string;
+  duration?: string;
+  kind: 'video' | 'podcast';
+}
+interface Props { items: Item[] }
+const { items } = Astro.props;
+if (!items.length) return null;
+
+function embedUrl(m: Item): string {
+  switch (m.provider) {
+    case 'youtube':
+      return `https://www.youtube-nocookie.com/embed/${m.id}?autoplay=1&rel=0`;
+    case 'aparat':
+      return `https://www.aparat.com/video/video/embed/videohash/${m.id}/vt/frame?autoplay=true`;
+    case 'peertube':
+      return `https://${m.host}/videos/embed/${m.id}?autoplay=1`;
+    case 'vimeo':
+      return `https://player.vimeo.com/video/${m.id}?autoplay=1`;
+    default:
+      return m.id;
+  }
+}
+
+const PROVIDER_LABEL: Record<string, string> = {
+  youtube: 'یوتیوب',
+  aparat: 'آپارات',
+  peertube: 'پیرتیوب',
+  vimeo: 'ویمئو',
+  audio: 'صوت',
+  iframe: 'منبع بیرونی',
+};
+---
+
+<div class="media-list">
+  {items.map((m) => (
+    <figure class:list={['embed', m.kind]}>
+      <div
+        class="frame"
+        data-embed
+        data-src={embedUrl(m)}
+        data-title={m.title}
+        style={m.poster ? `--poster: url(${JSON.stringify(m.poster)})` : undefined}
+      >
+        <button type="button" class="play" data-play>
+          <span class="icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor">
+              <path d="M8 5.5v13l11-6.5-11-6.5Z"></path>
+            </svg>
+          </span>
+          <span class="label">
+            <span class="t">{m.title}</span>
+            <span class="s">
+              پخش {m.kind === 'podcast' ? 'قسمت' : 'ویدیو'} از {PROVIDER_LABEL[m.provider]}
+              {m.duration && <> · <span class="tnum">{m.duration}</span></>}
+            </span>
+          </span>
+        </button>
+      </div>
+      <figcaption>
+        <bdi>{m.title}</bdi>
+        <span class="src">{PROVIDER_LABEL[m.provider]}</span>
+      </figcaption>
+    </figure>
+  ))}
+</div>
+
+<style>
+  .media-list { display: grid; gap: 1.5rem; margin-block: 2rem; }
+
+  .embed { margin: 0; }
+  .frame {
+    position: relative;
+    aspect-ratio: 16 / 9;
+    border-radius: var(--r-md);
+    overflow: hidden;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    background-image: var(--poster, none);
+    background-size: cover;
+    background-position: center;
+  }
+  /* Podcasts need less height. */
+  .podcast .frame { aspect-ratio: 21 / 6; min-height: 140px; }
+
+  .frame :global(iframe) {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    border: 0;
+  }
+
+  .play {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.9rem;
+    padding: 1rem;
+    background: linear-gradient(to top, color-mix(in srgb, var(--bg) 92%, transparent), color-mix(in srgb, var(--bg) 55%, transparent));
+    border: 0;
+    color: var(--text);
+    text-align: start;
+  }
+  .play:hover .icon { background: var(--accent); color: var(--accent-ink); transform: scale(1.06); }
+
+  .icon {
+    display: grid;
+    place-items: center;
+    width: 58px;
+    height: 58px;
+    flex: none;
+    border-radius: 50%;
+    background: color-mix(in srgb, var(--accent) 92%, transparent);
+    color: var(--accent-ink);
+    transition: transform 0.18s var(--ease), background 0.18s var(--ease);
+    padding-inline-start: 3px;
+  }
+  .label { display: grid; gap: 0.15rem; min-width: 0; }
+  .t { font-weight: 700; font-size: var(--step-0); }
+  .s { font-size: var(--step--1); color: var(--text-muted); }
+
+  figcaption {
+    display: flex;
+    justify-content: space-between;
+    gap: 0.8rem;
+    margin-top: 0.55rem;
+    font-size: var(--step--1);
+    color: var(--text-muted);
+  }
+  .src { flex: none; }
+
+  @media (max-width: 520px) {
+    .play { flex-direction: column; justify-content: center; text-align: center; }
+    .podcast .frame { aspect-ratio: 4 / 3; }
+  }
+</style>
+
+<script>
+  document.querySelectorAll('[data-embed]').forEach((frame) => {
+    frame.querySelector('[data-play]')?.addEventListener('click', () => {
+      const iframe = document.createElement('iframe');
+      iframe.src = frame.getAttribute('data-src') ?? '';
+      iframe.title = frame.getAttribute('data-title') ?? '';
+      iframe.loading = 'lazy';
+      iframe.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; picture-in-picture; fullscreen';
+      iframe.setAttribute('allowfullscreen', '');
+      iframe.setAttribute('referrerpolicy', 'strict-origin-when-cross-origin');
+      frame.replaceChildren(iframe);
+      iframe.focus();
+    });
+  });
+</script>

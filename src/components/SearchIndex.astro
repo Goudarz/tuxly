@@ -1,0 +1,17 @@
+---
+import { normalizeFa } from '../lib/persian';
+
+/**
+ * Hidden, normalised copy of the text, purely for the Pagefind index.
+ *
+ * Pagefind indexes text as written. If only the user's query were
+ * normalised, a page containing the Arabic-kaf spelling would never match
+ * the Persian-kaf one. Emitting both forms means the visible text still
+ * produces natural excerpts while this block handles normalised matching.
+ */
+interface Props { text: string }
+const { text } = Astro.props;
+const normalized = normalizeFa(text);
+---
+
+<div class="visually-hidden" aria-hidden="true" data-search-alt>{normalized}</div>

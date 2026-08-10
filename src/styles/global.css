@@ -1,0 +1,192 @@
+@import './tokens.css';
+
+/* Fonts are self-hosted. Google's CDN is slow or unreachable for Iranian
+   users, which would undo all the performance work. */
+@font-face {
+  font-family: 'Vazirmatn';
+  src: url('/fonts/Vazirmatn.woff2') format('woff2-variations');
+  font-weight: 100 900;
+  font-display: swap;
+  unicode-range: U+0600-06FF, U+200C-200E, U+2010-2011, U+204F, U+2E41, U+FB8A, U+FBFC-FBFD, U+FE70-FEFF;
+}
+@font-face {
+  font-family: 'Vazirmatn';
+  src: url('/fonts/Vazirmatn.woff2') format('woff2-variations');
+  font-weight: 100 900;
+  font-display: swap;
+  unicode-range: U+0000-00FF, U+2000-206F, U+2190-21BB, U+2212;
+}
+@font-face {
+  font-family: 'Space Grotesk';
+  src: url('/fonts/SpaceGrotesk.woff2') format('woff2-variations');
+  font-weight: 300 700;
+  font-display: swap;
+  unicode-range: U+0000-00FF, U+2000-206F, U+2190-21BB;
+}
+/* Adjusted metrics so the page does not shift on font swap (CLS). */
+@font-face {
+  font-family: 'Vazirmatn Fallback';
+  src: local('Tahoma'), local('Arial'), local('Noto Sans Arabic');
+  size-adjust: 96%;
+  ascent-override: 92%;
+  descent-override: 28%;
+  line-gap-override: 0%;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+/*
+ * The UA stylesheet gives [hidden] `display: none`, but any class rule that
+ * sets `display` outranks it and the element stays visible. This is a
+ * frequent, silent bug — anything toggled with the hidden attribute needs
+ * this to actually hide.
+ */
+[hidden] { display: none !important; }
+
+html {
+  -webkit-text-size-adjust: 100%;
+  scroll-behavior: smooth;
+  scroll-padding-top: calc(var(--header-h) + 1rem);
+  /* Themed scrollbar — Firefox */
+  scrollbar-color: var(--border) transparent;
+  scrollbar-width: thin;
+}
+
+/* Scrollbar — WebKit and Blink */
+::-webkit-scrollbar { width: 12px; height: 12px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 999px;
+  border: 3px solid var(--bg);
+}
+::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+::-webkit-scrollbar-corner { background: var(--bg); }
+::selection { background: var(--accent); color: var(--accent-ink); }
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after {
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+body {
+  margin: 0;
+  min-height: 100dvh;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-fa);
+  font-size: var(--step-0);
+  line-height: 1.85;
+  -webkit-font-smoothing: antialiased;
+  overflow-wrap: break-word;
+}
+
+/* Latin names, versions and code inside Persian sentences. Without isolate
+   the bidi algorithm reorders them: "GNOME 48" renders as "48 GNOME". */
+:is(code, kbd, samp, .latin, bdi) { unicode-bidi: isolate; }
+.latin, bdi.latin { font-family: var(--font-en); }
+code, kbd, samp { font-family: var(--font-mono); font-size: .9em; }
+
+h1, h2, h3, h4 { line-height: 1.45; font-weight: 700; margin-block: 1.5em .55em; text-wrap: balance; }
+h1 { font-size: var(--step-3); }
+h2 { font-size: var(--step-2); }
+h3 { font-size: var(--step-1); }
+h4 { font-size: var(--step-0); }
+p, li { text-wrap: pretty; }
+
+a { color: inherit; text-decoration-color: var(--accent); text-underline-offset: .28em; text-decoration-thickness: 2px; }
+a:hover { color: var(--accent); }
+
+:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+/* Pointer only, never keyboard */
+:focus:not(:focus-visible) { outline: none; }
+
+img, svg, video, iframe { max-width: 100%; }
+img, video { height: auto; }
+
+hr { border: 0; border-top: 1px solid var(--border); margin-block: 2.5rem; }
+
+pre {
+  padding: 1.1rem 1.2rem;
+  border-radius: var(--r-md);
+  overflow-x: auto;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  direction: ltr;
+  text-align: left;
+  font-size: var(--step--1);
+}
+:root:not([data-theme='light']) .astro-code,
+:root:not([data-theme='light']) .astro-code span {
+  color: var(--shiki-dark) !important;
+  background-color: transparent !important;
+}
+
+blockquote {
+  margin-inline: 0;
+  padding-inline-start: 1.1rem;
+  border-inline-start: 3px solid var(--accent);
+  color: var(--text-muted);
+}
+
+/* Tables must not break the mobile layout. */
+.prose :is(table) { display: block; overflow-x: auto; white-space: nowrap; }
+table { width: 100%; border-collapse: collapse; }
+th, td { padding: .55rem .8rem; border-bottom: 1px solid var(--border); text-align: start; }
+
+input, button, select, textarea { font: inherit; color: inherit; }
+button { cursor: pointer; }
+
+/* 44px minimum touch target — WCAG 2.5.8 */
+:is(button, a.btn, [role='tab'], .icon-btn) { min-height: 44px; }
+
+.wrap { max-width: 1180px; margin-inline: auto; padding-inline: var(--gutter); }
+.prose { max-width: var(--measure); }
+.stack > * + * { margin-block-start: var(--stack-gap, 1rem); }
+
+.visually-hidden:not(:focus-within) {
+  position: absolute; width: 1px; height: 1px; overflow: hidden;
+  clip-path: inset(50%); white-space: nowrap; margin: -1px; padding: 0; border: 0;
+}
+
+.muted { color: var(--text-muted); }
+.tnum { font-variant-numeric: tabular-nums; }
+
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: .5rem;
+  padding: .55rem 1.1rem; border-radius: var(--r-sm);
+  border: 1px solid var(--border); background: var(--surface);
+  text-decoration: none; font-weight: 600; font-size: var(--step--1);
+  transition: border-color .15s var(--ease), background .15s var(--ease);
+}
+.btn:hover { border-color: var(--accent); color: var(--text); }
+.btn-primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+.btn-primary:hover { background: var(--tx-ember); border-color: var(--tx-ember); color: var(--accent-ink); }
+
+/* External links — the ↗ marker warns before the click. The .ext class is
+   added by the build integration, not by hand. */
+a.ext::after {
+  content: '↗';
+  display: inline-block;
+  margin-inline-start: 0.22em;
+  font-size: 0.78em;
+  line-height: 1;
+  vertical-align: 0.12em;
+  color: var(--text-muted);
+  text-decoration: none;
+}
+a.ext:hover::after { color: var(--accent); }
+/* In dense lists and buttons the marker is just noise. */
+.social a.ext::after,
+.files a.ext::after,
+.links a.ext::after,
+.mini a.ext::after { content: none; }

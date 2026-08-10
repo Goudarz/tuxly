@@ -1,0 +1,142 @@
+---
+/**
+ * Anchor links on article headings.
+ *
+ * A "#" appears beside a heading on hover or focus. Clicking it jumps there
+ * and copies the full URL, so a reader can link to one section rather than
+ * the whole article.
+ *
+ * The anchor is added at runtime rather than by a rehype plugin because it
+ * needs to sit inside the heading without becoming part of the heading text
+ * — a screen reader announcing "چرا این مهم است نمبر ساین" helps nobody.
+ */
+---
+
+<style is:global>
+  .prose :is(h2, h3, h4)[id] {
+    position: relative;
+  }
+
+  .heading-anchor {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.5em;
+    height: 1.5em;
+    margin-inline-start: 0.35em;
+    vertical-align: middle;
+    border-radius: var(--r-sm);
+    color: var(--text-muted);
+    text-decoration: none;
+    font-size: 0.62em;
+    font-weight: 400;
+    line-height: 1;
+    opacity: 0;
+    transition: opacity 0.16s var(--ease), color 0.16s var(--ease), background 0.16s var(--ease);
+  }
+
+  /* Show on hover of the heading, and whenever the anchor itself has focus. */
+  .prose :is(h2, h3, h4)[id]:hover .heading-anchor,
+  .heading-anchor:focus-visible {
+    opacity: 1;
+  }
+  .heading-anchor:hover {
+    color: var(--accent);
+    background: color-mix(in srgb, var(--accent) 14%, transparent);
+  }
+  .heading-anchor[data-copied] {
+    opacity: 1;
+    color: var(--accent);
+    background: color-mix(in srgb, var(--accent) 20%, transparent);
+  }
+
+  /* Touch devices have no hover, so keep it faintly visible instead. */
+  @media (hover: none) {
+    .heading-anchor { opacity: 0.45; }
+  }
+
+  /* Brief highlight so the reader sees where they landed. */
+  .prose :is(h2, h3, h4)[id][data-jumped] {
+    animation: heading-flash 1.4s var(--ease);
+    border-radius: var(--r-sm);
+  }
+  @keyframes heading-flash {
+    from { background: color-mix(in srgb, var(--accent) 26%, transparent); }
+    to { background: transparent; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .prose :is(h2, h3, h4)[id][data-jumped] { animation: none; }
+    .heading-anchor { transition: none; }
+  }
+</style>
+
+<script>
+  const headings = document.querySelectorAll<HTMLElement>(
+    '.prose :is(h2, h3, h4)[id]',
+  );
+
+  for (const heading of headings) {
+    const anchor = document.createElement('a');
+    anchor.className = 'heading-anchor';
+    anchor.href = `#${heading.id}`;
+    anchor.textContent = '#';
+    // The heading text already says what this links to; naming it again in
+    // the accessible tree is noise.
+    anchor.setAttribute('aria-label', `پیوند به بخش «${heading.textContent?.trim()}»`);
+    anchor.title = 'رونوشت پیوند این بخش';
+
+    anchor.addEventListener('click', async (e) => {
+      e.preventDefault();
+
+      const url = new URL(`#${heading.id}`, location.href).href;
+      const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+      heading.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'start' });
+      history.replaceState(null, '', `#${heading.id}`);
+
+      heading.setAttribute('data-jumped', '');
+      setTimeout(() => heading.removeAttribute('data-jumped'), 1500);
+
+      let copied = false;
+      try {
+        await navigator.clipboard.writeText(url);
+        copied = true;
+      } catch {
+        // Clipboard needs a secure context. The jump still worked, so this
+        // is a partial success, not a failure.
+      }
+
+      if (copied) {
+        anchor.setAttribute('data-copied', '');
+        setTimeout(() => anchor.removeAttribute('data-copied'), 1200);
+      }
+
+      dispatchEvent(
+        new CustomEvent('tuxly:toast', {
+          detail: {
+            message: copied ? 'پیوند این بخش رونوشت شد' : 'به این بخش رفتیم',
+          },
+        }),
+      );
+    });
+
+    heading.append(anchor);
+  }
+
+  /*
+   * Landing on a #fragment from an external link: flash the target so the
+   * reader can see where the page jumped to.
+   */
+  function flashTarget() {
+    if (!location.hash) return;
+    const target = document.querySelector<HTMLElement>(
+      `.prose :is(h2, h3, h4)${CSS.escape(location.hash)}`,
+    );
+    if (!target) return;
+    target.setAttribute('data-jumped', '');
+    setTimeout(() => target.removeAttribute('data-jumped'), 1500);
+  }
+
+  addEventListener('hashchange', flashTarget);
+  flashTarget();
+</script>

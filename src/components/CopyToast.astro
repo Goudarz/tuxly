@@ -1,0 +1,138 @@
+---
+/**
+ * Copy-to-clipboard helper plus a shared toast.
+ *
+ * Anything with data-copy="<text>" becomes clickable and copies that text.
+ * One listener on the document covers every case, so cards, swatches and
+ * glossary rows need no script of their own.
+ */
+---
+
+<div class="toast" data-toast role="status" aria-live="polite" hidden>
+  <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    <path d="m4 12.5 5 5L20 7"></path>
+  </svg>
+  <span data-toast-text></span>
+</div>
+
+<style>
+  .toast {
+    position: fixed;
+    inset-block-end: 1.5rem;
+    inset-inline-start: 50%;
+    transform: translateX(50%) translateY(1rem);
+    z-index: 90;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    max-width: calc(100vw - 2rem);
+    padding: 0.7rem 1.2rem;
+    border-radius: 999px;
+    background: var(--accent);
+    color: var(--accent-ink);
+    font-size: var(--step--1);
+    font-weight: 700;
+    box-shadow: 0 14px 34px -14px rgb(0 0 0 / 0.55);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s var(--ease), transform 0.24s var(--ease);
+  }
+  /* RTL: translateX(50%) centres, because the inline start is on the right. */
+  .toast[data-show] { opacity: 1; transform: translateX(50%) translateY(0); }
+  .toast[data-error] { background: var(--warn); }
+
+  @media (prefers-reduced-motion: reduce) {
+    .toast { transition: opacity 0.15s linear; }
+    .toast[data-show] { transform: translateX(50%); }
+  }
+</style>
+
+<script>
+  const toast = document.querySelector('[data-toast]') as HTMLElement | null;
+  const toastText = document.querySelector('[data-toast-text]') as HTMLElement | null;
+  let timer: number;
+
+  function notify(message: string, isError = false) {
+    if (!toast || !toastText) return;
+    toastText.textContent = message;
+    toast.toggleAttribute('data-error', isError);
+    toast.hidden = false;
+    // Force a frame so the transition runs on first show.
+    requestAnimationFrame(() => toast.setAttribute('data-show', ''));
+    clearTimeout(timer);
+    timer = window.setTimeout(() => {
+      toast.removeAttribute('data-show');
+      setTimeout(() => (toast.hidden = true), 260);
+    }, 1900);
+  }
+
+  async function copy(text: string) {
+    try {
+      await navigator.clipboard.writeText(text);
+      return true;
+    } catch {
+      // Clipboard API needs a secure context; fall back for plain http.
+      try {
+        const ta = document.createElement('textarea');
+        ta.value = text;
+        ta.setAttribute('readonly', '');
+        ta.style.cssText = 'position:fixed;opacity:0;pointer-events:none';
+        document.body.append(ta);
+        ta.select();
+        /*
+         * execCommand is deprecated, and deliberately used anyway: this only
+         * runs when the Clipboard API is unavailable, which is exactly the
+         * case on plain http or in older WebViews. There is no modern
+         * replacement for that fallback.
+         */
+        /*
+         * Cast through unknown so this does not resolve to the lib's
+         * deprecated overload — the deprecation is understood, and there is
+         * no modern replacement for this fallback path.
+         */
+        const legacy = document as unknown as {
+          execCommand?: (command: string) => boolean;
+        };
+        const ok = legacy.execCommand ? legacy.execCommand('copy') : false;
+        ta.remove();
+        return ok;
+      } catch {
+        return false;
+      }
+    }
+  }
+
+  async function handle(el: HTMLElement) {
+    const text = el.getAttribute('data-copy');
+    if (!text) return;
+    const ok = await copy(text);
+    const label = el.getAttribute('data-copy-label');
+    notify(
+      ok ? `«${label ?? text}» رونوشت شد` : 'رونوشت انجام نشد — دستی انتخاب کنید',
+      !ok,
+    );
+    if (ok) {
+      el.setAttribute('data-copied', '');
+      setTimeout(() => el.removeAttribute('data-copied'), 900);
+    }
+  }
+
+  document.addEventListener('click', (e) => {
+    const el = (e.target as HTMLElement)?.closest('[data-copy]') as HTMLElement | null;
+    if (el) handle(el);
+  });
+
+  // Keyboard parity: anything copyable is focusable and responds to Enter/Space.
+  document.addEventListener('keydown', (e) => {
+    if (e.key !== 'Enter' && e.key !== ' ') return;
+    const el = (e.target as HTMLElement)?.closest('[data-copy]') as HTMLElement | null;
+    if (!el) return;
+    e.preventDefault();
+    handle(el);
+  });
+
+  // Let other components raise a toast without duplicating the markup.
+  addEventListener('tuxly:toast', (e) => {
+    notify((e as CustomEvent).detail?.message ?? '', (e as CustomEvent).detail?.error ?? false);
+  });
+</script>

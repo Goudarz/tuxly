@@ -1,0 +1,79 @@
+---
+/**
+ * Install command for one package across several distributions.
+ * Genuinely useful, and missing from every Persian source.
+ */
+interface Props {
+  apt?: string;
+  dnf?: string;
+  pacman?: string;
+  flatpak?: string;
+}
+const { apt, dnf, pacman, flatpak } = Astro.props;
+const tabs = [
+  ['apt', 'Debian / Ubuntu', apt],
+  ['dnf', 'Fedora / RHEL', dnf],
+  ['pacman', 'Arch', pacman],
+  ['flatpak', 'Flatpak', flatpak],
+].filter(([, , cmd]) => Boolean(cmd)) as Array<[string, string, string]>;
+const uid = Math.random().toString(36).slice(2, 8);
+---
+
+<div class="install" data-install>
+  <div role="tablist" aria-label="دستور نصب">
+    {tabs.map(([id, label], i) => (
+      <button
+        role="tab"
+        type="button"
+        id={`t-${uid}-${id}`}
+        aria-controls={`p-${uid}-${id}`}
+        aria-selected={i === 0 ? 'true' : 'false'}
+        tabindex={i === 0 ? 0 : -1}
+      >
+        <bdi>{label}</bdi>
+      </button>
+    ))}
+  </div>
+
+  {tabs.map(([id, , cmd], i) => (
+    <div role="tabpanel" id={`p-${uid}-${id}`} aria-labelledby={`t-${uid}-${id}`} hidden={i !== 0}>
+      <pre><code>{cmd}</code></pre>
+    </div>
+  ))}
+</div>
+
+<style>
+  .install { border: 1px solid var(--border); border-radius: var(--r-md); overflow: hidden; margin-block: 1.6rem; }
+  [role='tablist'] { display: flex; gap: 0; background: var(--surface); border-bottom: 1px solid var(--border); overflow-x: auto; }
+  [role='tab'] {
+    background: none; border: 0; border-bottom: 2px solid transparent;
+    padding: 0.6rem 1rem; cursor: pointer; color: var(--text-muted);
+    font-family: var(--font-en); font-size: var(--step--1); white-space: nowrap;
+  }
+  [role='tab'][aria-selected='true'] { color: var(--text); border-bottom-color: var(--accent); }
+  [role='tabpanel'] pre { margin: 0; border: 0; border-radius: 0; }
+</style>
+
+<script>
+  document.querySelectorAll('[data-install]').forEach((root) => {
+    const tabs = [...root.querySelectorAll('[role="tab"]')] as HTMLButtonElement[];
+    const select = (idx: number) => {
+      tabs.forEach((tab, i) => {
+        const on = i === idx;
+        tab.setAttribute('aria-selected', String(on));
+        tab.tabIndex = on ? 0 : -1;
+        const panel = root.querySelector(`#${CSS.escape(tab.getAttribute('aria-controls')!)}`);
+        panel?.toggleAttribute('hidden', !on);
+      });
+      tabs[idx].focus();
+    };
+    tabs.forEach((tab, i) => {
+      tab.addEventListener('click', () => select(i));
+      tab.addEventListener('keydown', (e) => {
+        // Arrow keys are mirrored in RTL.
+        if (e.key === 'ArrowLeft') select((i + 1) % tabs.length);
+        if (e.key === 'ArrowRight') select((i - 1 + tabs.length) % tabs.length);
+      });
+    });
+  });
+</script>
