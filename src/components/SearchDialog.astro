@@ -8,7 +8,7 @@
 ---
 
 <dialog id="search-dialog" aria-label="جست‌وجو در تاکسلی" data-pagefind-ignore>
-  <form method="dialog" class="head">
+  <form method="dialog" class="head" role="search">
     <label for="search-input" class="visually-hidden">عبارت جست‌وجو</label>
     <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true">
       <circle cx="11" cy="11" r="7"></circle>
@@ -16,7 +16,7 @@
     </svg>
     <input
       id="search-input"
-      type="search"
+      type="text"
       placeholder="برای جست‌و‌جو نام توزیع، میزکار، پروژه یا هر چیز دیگر…"
       autocomplete="off"
       autocorrect="off"
@@ -81,7 +81,6 @@
     font-size: var(--step-0);
     padding-block: 0.4rem;
   }
-  input::-webkit-search-cancel-button { -webkit-appearance: none; }
   .close {
     background: none;
     border: 1px solid var(--border);
@@ -98,26 +97,26 @@
   ul { list-style: none; margin: 0; padding: 0; }
 
   /*
-   * Result rows are created by script after the page is built, so Astro's
-   * scoped class never lands on them. Everything below the static <ul> has
-   * to be :global() or none of it applies.
+   * Result rows are injected at runtime, so they never receive Astro's
+   * scoping attribute. Every selector below the list has to be :global()
+   * or the styles silently do nothing.
    */
-  #search-results :global(li + li) { margin-top: 2px; }
-
-  #search-results :global(a) {
+  #search-results :global(li a) {
     display: grid;
-    gap: 0.25rem;
-    padding: 0.7rem 0.9rem;
+    gap: 0.2rem;
+    padding: 0.7rem 0.85rem;
     border-radius: var(--r-sm);
     text-decoration: none;
-    color: var(--text);
     border-inline-start: 2px solid transparent;
-    transition: background 0.14s var(--ease), border-color 0.14s var(--ease);
   }
-  #search-results :global(a:hover),
+  #search-results :global(li a:hover),
   #search-results :global(li[aria-selected='true'] a) {
     background: var(--surface);
     border-inline-start-color: var(--accent);
+  }
+  /* Keyboard selection needs to read differently from a mouse hover. */
+  #search-results :global(li[aria-selected='true'] a) {
+    box-shadow: inset 0 0 0 1px var(--border);
   }
 
   #search-results :global(.r-head) {
@@ -131,32 +130,40 @@
     font-size: var(--step--2);
     font-weight: 700;
     color: var(--accent);
-    background: color-mix(in srgb, var(--accent) 15%, transparent);
+    border: 1px solid color-mix(in srgb, var(--accent) 40%, transparent);
     border-radius: 999px;
     padding: 0.05rem 0.55rem;
+    line-height: 1.6;
   }
   #search-results :global(.r-title) {
     font-weight: 600;
-    white-space: nowrap;
+    color: var(--text);
     overflow: hidden;
     text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
   #search-results :global(.r-excerpt) {
     font-size: var(--step--1);
-    line-height: 1.65;
     color: var(--text-muted);
+    line-height: 1.7;
     display: -webkit-box;
     -webkit-line-clamp: 2;
+    line-clamp: 2;
     -webkit-box-orient: vertical;
+    /* Hard cap: the clamp alone is not reliable across engines. */
+    max-height: 3.4em;
     overflow: hidden;
   }
+  /*
+   * A solid block behind every match is shouting — four of them in one
+   * excerpt makes the sentence unreadable. Colour and weight carry the
+   * signal instead.
+   */
   #search-results :global(mark) {
-    background: color-mix(in srgb, var(--accent) 26%, transparent);
-    color: var(--text);
-    border-radius: 3px;
-    padding: 0 2px;
-    font-weight: 600;
+    background: none;
+    color: var(--accent);
+    font-weight: 700;
   }
 
   #search-results :global(.r-path) {
@@ -218,7 +225,7 @@
     // Pagefind writes this file after astro build.
     const url = ['', 'pagefind', 'pagefind.js'].join('/');
     pagefind = await import(/* @vite-ignore */ url);
-    await pagefind.options({ excerptLength: 24 });
+    await pagefind.options({ excerptLength: 22 });
     await pagefind.init();
     return pagefind;
   }
