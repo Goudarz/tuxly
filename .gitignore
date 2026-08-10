@@ -1,0 +1,17 @@
+node_modules/
+dist/
+.astro/
+.DS_Store
+*.log
+.env
+.env.*
+!.env.example
+
+# Generated search index, copied from dist/ so dev has it too.
+public/pagefind/
+
+# Local-only: news ingestion.
+.env.example
+pipeline/
+docs/WORKFLOW.md
+.github\workflows\ingest.yml

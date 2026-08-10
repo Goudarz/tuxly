@@ -1,0 +1,41 @@
+{
+  "name": "tuxly",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "اخبار، معرفی و آموزش نرم‌افزار آزاد و متن‌باز، به فارسی",
+  "homepage": "https://tuxly.ir",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/goudarz/tuxly.git"
+  },
+  "author": "Goudarz Jafari <hi@goudarzjafari.com>",
+  "license": "AGPL-3.0-or-later",
+  "engines": {
+    "node": ">=24.0.0"
+  },
+  "scripts": {
+    "postinstall": "node scripts/banner.mjs --installed",
+    "dev": "node scripts/banner.mjs && astro dev",
+    "start": "npm run dev",
+    "build": "node scripts/build-og.mjs && astro build && pagefind --site dist && node scripts/sync-search-index.mjs",
+    "preview": "astro preview",
+    "check": "astro check",
+    "info": "node scripts/banner.mjs --full",
+    "update:versions": "node scripts/update-versions.mjs",
+    "ingest": "node pipeline/ingest.mjs",
+    "ingest:dry": "node pipeline/ingest.mjs --dry-run"
+  },
+  "dependencies": {
+    "@astrojs/mdx": "^7.0.5",
+    "@astrojs/rss": "^4.0.19",
+    "astro": "^7.2.0",
+    "sharp": "^0.35.3"
+  },
+  "devDependencies": {
+    "@astrojs/check": "^0.9.10",
+    "node-html-parser": "^9.0.1",
+    "pagefind": "^1.5.2",
+    "typescript": "^6.0.3"
+  }
+}
