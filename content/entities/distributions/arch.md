@@ -11,6 +11,8 @@ packageManager: pacman
 releaseModel: rolling
 architectures: [x86_64]
 tags: [توزیع]
+wikidata: Q185576
+versionCheckedAt: 2026-08-10
 ---
 
 آرچ روی اصل «سادگی» بنا شده، ولی سادگی از دید توسعه‌دهنده نه کاربر:

@@ -12,6 +12,8 @@ releaseModel: fixed
 defaultDesktop: [Xfce]
 architectures: [x86_64]
 tags: [توزیع]
+wikidata: Q7269652
+versionCheckedAt: 2026-08-10
 ---
 
 کیوبز رویکرد متفاوتی به امنیت دارد: به‌جای تلاش برای جلوگیری از نفوذ،

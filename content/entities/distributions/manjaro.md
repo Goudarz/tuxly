@@ -12,6 +12,8 @@ releaseModel: rolling
 defaultDesktop: [Xfce, KDE Plasma, GNOME]
 architectures: [x86_64]
 tags: [توزیع]
+wikidata: Q3285992
+versionCheckedAt: 2026-08-10
 ---
 
 منجارو بر پایهٔ آرچ ساخته می‌شود ولی نصب‌کنندهٔ گرافیکی دارد و بسته‌ها را

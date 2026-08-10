@@ -11,6 +11,8 @@ releaseModel: lts
 defaultDesktop: [KDE Plasma]
 architectures: [x86_64]
 tags: [توزیع]
+wikidata: Q11250
+versionCheckedAt: 2026-08-10
 ---
 
 کوبونتو یکی از طعم‌های رسمی اوبونتوست و دقیقاً همان پایه و همان مخزن را

@@ -12,6 +12,8 @@ releaseModel: rolling
 defaultDesktop: [KDE Plasma, GNOME, Xfce]
 architectures: [x86_64]
 tags: [توزیع]
+wikidata: Q67907497
+versionCheckedAt: 2026-08-10
 ---
 
 اندورا فلسفهٔ روشنی دارد: شما را تا نقطهٔ نصب همراهی می‌کند و بعد کنار

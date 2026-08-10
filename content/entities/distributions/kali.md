@@ -12,6 +12,8 @@ releaseModel: rolling
 defaultDesktop: [Xfce]
 architectures: [x86_64]
 tags: [توزیع]
+wikidata: Q8364850
+versionCheckedAt: 2026-08-10
 ---
 
 کالی را Offensive Security بر پایهٔ دبیان می‌سازد و مخاطبش کاملاً مشخص

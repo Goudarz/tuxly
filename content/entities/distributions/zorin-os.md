@@ -11,6 +11,8 @@ releaseModel: lts
 defaultDesktop: [GNOME, Xfce]
 architectures: [x86_64]
 tags: [توزیع]
+wikidata: Q2625341
+versionCheckedAt: 2026-08-10
 ---
 
 زورین یک هدف مشخص دارد: کسی که سال‌ها ویندوز کار کرده باید بتواند بدون
