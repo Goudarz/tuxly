@@ -1,8 +1,7 @@
-name: به‌روزرسانی نسخه‌ها
-
+name: Update Versions
 on:
   schedule:
-    - cron: '0 4 * * 1'   # هر دوشنبه، ساعت ۴ بامداد UTC
+    - cron: '0 4 * * 1' # Every Monday at 04:00 UTC
   workflow_dispatch:
 
 permissions:
@@ -18,24 +17,25 @@ jobs:
         with: { node-version: '24', cache: npm }
       - run: npm ci
 
-      # نسخهٔ فعلی، تاریخ انتشار و پایان پشتیبانی از endoflife.date،
-      # و شناسهٔ ویکی‌داده برای گراف دانش گوگل.
+      # Current version, release date, and end-of-life date from
+      # endoflife.date, plus the Wikidata ID for Google's Knowledge Graph.
       - run: npm run update:versions
 
-      # اسکیما باید قبول کند وگرنه PR ساخته نمی‌شود.
+      # The schema must pass validation; otherwise, no PR will be created.
       - run: npm run check
 
       - uses: peter-evans/create-pull-request@v6
         with:
           branch: chore/versions
-          title: به‌روزرسانی خودکار نسخهٔ توزیع‌ها
-          commit-message: 'chore: به‌روزرسانی نسخه‌ها از ویکی‌داده و endoflife.date'
+          title: Update distribution versions
+          commit-message: 'chore(versions): update versions from Wikidata and endoflife.date'
           labels: automated
           body: |
-            داده‌های نسخه به‌صورت هفتگی از منابع زیر گرفته شده‌اند:
+            Version data is automatically updated weekly from the following sources:
 
-            - `endoflife.date` — نسخهٔ فعلی، تاریخ انتشار، پایان پشتیبانی
-            - Wikidata — شناسهٔ موجودیت برای `sameAs`
+            - `endoflife.date` — current version, release date, and end-of-life date
+            - Wikidata — entity ID used for `sameAs`
 
-            پیش از merge، تغییرات را یک نگاه بیندازید. اگر منبعی داده نداشت،
-            فیلد خالی مانده و صفحه «در حال بررسی» نشان می‌دهد.
+            Please review the changes before merging. If a source does not
+            provide data, the field is left empty and the page displays
+            "Under Review".
