@@ -190,3 +190,30 @@ a.ext:hover::after { color: var(--accent); }
 .files a.ext::after,
 .links a.ext::after,
 .mini a.ext::after { content: none; }
+
+/* Responsive image defaults.
+   Replaces Astro's built-in sheet, which emits invalid object-position
+   pairs (`top bottom`, `left right`) and fails the W3C validator. */
+:where([data-astro-image]) { height: auto; }
+:where([data-astro-image='full-width']) { width: 100%; }
+:where([data-astro-image='constrained']) { max-width: 100%; }
+
+[data-astro-image-fit='fill'] { object-fit: fill; }
+[data-astro-image-fit='contain'] { object-fit: contain; }
+[data-astro-image-fit='cover'] { object-fit: cover; }
+[data-astro-image-fit='scale-down'] { object-fit: scale-down; }
+
+[data-astro-image-pos='top'] { object-position: top; }
+[data-astro-image-pos='bottom'] { object-position: bottom; }
+[data-astro-image-pos='left'] { object-position: left; }
+[data-astro-image-pos='right'] { object-position: right; }
+[data-astro-image-pos='center'] { object-position: center; }
+[data-astro-image-pos='top-left'] { object-position: top left; }
+[data-astro-image-pos='top-right'] { object-position: top right; }
+[data-astro-image-pos='top-center'] { object-position: top center; }
+[data-astro-image-pos='bottom-left'] { object-position: bottom left; }
+[data-astro-image-pos='bottom-right'] { object-position: bottom right; }
+[data-astro-image-pos='bottom-center'] { object-position: bottom center; }
+[data-astro-image-pos='center-left'] { object-position: center left; }
+[data-astro-image-pos='center-right'] { object-position: center right; }
+[data-astro-image-pos='center-center'] { object-position: center center; }
