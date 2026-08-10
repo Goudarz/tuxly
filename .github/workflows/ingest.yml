@@ -1,0 +1,52 @@
+name: جمع‌آوری خوراک‌ها
+
+on:
+  schedule:
+    - cron: '0 5,17 * * *'
+  workflow_dispatch:
+    inputs:
+      source:
+        description: 'فقط یک منبع (خالی = همه)'
+        required: false
+      limit:
+        description: 'حداکثر مطلب از هر منبع'
+        default: '5'
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  ingest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: '24', cache: npm }
+      - run: npm ci
+
+      - env:
+          TUXLY_ENGINE: ${{ vars.TUXLY_ENGINE || 'cloud' }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          TUXLY_CLOUD_MODEL: ${{ vars.TUXLY_CLOUD_MODEL }}
+        run: |
+          node pipeline/ingest.mjs \
+            ${{ inputs.source && format('--source={0}', inputs.source) || '' }} \
+            --limit=${{ inputs.limit || 5 }}
+
+      # هیچ چیز مستقیم به main نمی‌رود. صف بازبینی همین PR است.
+      - uses: peter-evans/create-pull-request@v6
+        with:
+          branch: ingest/auto
+          title: پیش‌نویس‌های تازه برای بازبینی
+          commit-message: 'content: پیش‌نویس‌های خودکار'
+          labels: needs-review
+          body: |
+            این پیش‌نویس‌ها خودکار ساخته شده‌اند و **همه `draft: true` هستند**.
+
+            پیش از merge:
+            - [ ] متن را بازبینی و `originStatus` را روی `reviewed` بگذارید
+            - [ ] `reviewedBy` را پر کنید
+            - [ ] بخش `context` را بازنویسی کنید — متن مدل فقط نقطهٔ شروع است
+            - [ ] `entities` و `tags` را وصل کنید
+            - [ ] `draft` را روی `false` بگذارید

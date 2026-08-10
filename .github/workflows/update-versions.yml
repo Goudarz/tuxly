@@ -1,0 +1,41 @@
+name: به‌روزرسانی نسخه‌ها
+
+on:
+  schedule:
+    - cron: '0 4 * * 1'   # هر دوشنبه، ساعت ۴ بامداد UTC
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: '24', cache: npm }
+      - run: npm ci
+
+      # نسخهٔ فعلی، تاریخ انتشار و پایان پشتیبانی از endoflife.date،
+      # و شناسهٔ ویکی‌داده برای گراف دانش گوگل.
+      - run: npm run update:versions
+
+      # اسکیما باید قبول کند وگرنه PR ساخته نمی‌شود.
+      - run: npm run check
+
+      - uses: peter-evans/create-pull-request@v6
+        with:
+          branch: chore/versions
+          title: به‌روزرسانی خودکار نسخهٔ توزیع‌ها
+          commit-message: 'chore: به‌روزرسانی نسخه‌ها از ویکی‌داده و endoflife.date'
+          labels: automated
+          body: |
+            داده‌های نسخه به‌صورت هفتگی از منابع زیر گرفته شده‌اند:
+
+            - `endoflife.date` — نسخهٔ فعلی، تاریخ انتشار، پایان پشتیبانی
+            - Wikidata — شناسهٔ موجودیت برای `sameAs`
+
+            پیش از merge، تغییرات را یک نگاه بیندازید. اگر منبعی داده نداشت،
+            فیلد خالی مانده و صفحه «در حال بررسی» نشان می‌دهد.
