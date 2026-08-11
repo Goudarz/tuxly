@@ -101,12 +101,15 @@ export function faNumber(n: number): string {
   return faDigits(n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '\u066C'));
 }
 
+export const SITE_TZ = 'Asia/Tehran';
+
 /**
  * Jalali dates via Intl — adds zero bytes to the bundle and is accurate
  * from 1800 to 2256 CE. For date *arithmetic*, use jalaali-js instead.
  */
 export function faDate(date: Date, opts: Intl.DateTimeFormatOptions = {}): string {
   return new Intl.DateTimeFormat('fa-IR', {
+    timeZone: SITE_TZ,
     year: 'numeric',
     month: 'long',
     day: 'numeric',
@@ -116,6 +119,74 @@ export function faDate(date: Date, opts: Intl.DateTimeFormatOptions = {}): strin
 
 export function faDateTime(date: Date): string {
   return faDate(date, { hour: '2-digit', minute: '2-digit' });
+}
+
+/** Weekday on its own, for the date chip on event cards. */
+export function faWeekday(date: Date): string {
+  return new Intl.DateTimeFormat('fa-IR', { timeZone: SITE_TZ, weekday: 'long' }).format(date);
+}
+
+/**
+ * Date with the weekday in front: «چهارشنبه، ۲۱ مرداد ۱۴۰۵».
+ *
+ * Composed by hand rather than by passing `weekday` to Intl. Adding that
+ * option makes ICU reorder the whole thing to «۱۴۰۵ مرداد ۲۱، چهارشنبه»,
+ * which is not how Persian dates are written — the weekday leads, then
+ * day, month, year.
+ *
+ * Worth the extra function: for anything a reader plans around, the
+ * weekday is the part that lands. Most people know whether they are free
+ * on Wednesday long before they work out what the 21st is.
+ */
+export function faDateWeekday(date: Date, opts: Intl.DateTimeFormatOptions = {}): string {
+  return `${faWeekday(date)}، ${faDate(date, opts)}`;
+}
+
+/** Weekday, date and time, all in Tehran time. */
+export function faDateTimeWeekday(date: Date): string {
+  return faDateWeekday(date, { hour: '2-digit', minute: '2-digit' });
+}
+
+/**
+ * Time only, in a named zone. Used to show an event's local time next to
+ * Tehran time, so a reader abroad does not have to convert in their head.
+ */
+export function faTimeIn(date: Date, timeZone: string): string {
+  return new Intl.DateTimeFormat('fa-IR', {
+    timeZone,
+    hour: '2-digit',
+    minute: '2-digit',
+  }).format(date);
+}
+
+/**
+ * Short zone label, e.g. "UTC" or "GMT+۳:۳۰". Intl gives the localised
+ * form, which is what a Persian reader expects to see.
+ */
+export function tzLabel(date: Date, timeZone: string): string {
+  const parts = new Intl.DateTimeFormat('fa-IR', {
+    timeZone,
+    timeZoneName: 'short',
+  }).formatToParts(date);
+  return parts.find((p) => p.type === 'timeZoneName')?.value ?? timeZone;
+}
+
+/** Offset in minutes between a zone and Tehran, at a given instant. */
+export function offsetFromTehran(date: Date, timeZone: string): number {
+  const read = (tz: string) => {
+    const p = new Intl.DateTimeFormat('en-US', {
+      timeZone: tz,
+      hour12: false,
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+    }).formatToParts(date);
+    const get = (t: string) => Number(p.find((x) => x.type === t)?.value);
+    return Date.UTC(get('year'), get('month') - 1, get('day'), get('hour') % 24, get('minute'));
+  };
+  return (read(timeZone) - read(SITE_TZ)) / 60000;
 }
 
 /** Relative time ("3 days ago") for news listings. */

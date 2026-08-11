@@ -1,6 +1,6 @@
 ---
 import type { CollectionEntry } from 'astro:content';
-import { faDateTime } from '../lib/persian';
+import { faDateTimeWeekday, faDate, faWeekday } from '../lib/persian';
 import { slugOf, priceLabel } from '../lib/entities';
 
 interface Props { event: CollectionEntry<'events'>; past?: boolean; compact?: boolean }
@@ -12,15 +12,17 @@ const place = d.mode === 'online' ? 'آنلاین' : [d.venue, d.city].filter(Bo
 
 <article class:list={['event', { past, compact, cancelled: d.cancelled }]}>
   <div class="when" aria-hidden="true">
-    <span class="d">{new Intl.DateTimeFormat('fa-IR', { day: 'numeric' }).format(d.startsAt)}</span>
-    <span class="m">{new Intl.DateTimeFormat('fa-IR', { month: 'long' }).format(d.startsAt)}</span>
+    {/* Via faDate, so the date chip uses Asia/Tehran time like everything else. */}
+    <span class="w">{faWeekday(d.startsAt)}</span>
+    <span class="d">{faDate(d.startsAt, { year: undefined, month: undefined, day: 'numeric' })}</span>
+    <span class="m">{faDate(d.startsAt, { year: undefined, month: 'long', day: undefined })}</span>
   </div>
 
   <div class="body">
     <div class="meta">
       <span class="mode" data-mode={d.mode}>{MODE[d.mode]}</span>
       {d.cancelled && <span class="off">لغو شد</span>}
-      <time datetime={d.startsAt.toISOString()}>{faDateTime(d.startsAt)}</time>
+      <time datetime={d.startsAt.toISOString()}>{faDateTimeWeekday(d.startsAt)}</time>
     </div>
 
     <h3><a href={`/events/${slugOf(event)}`}>{d.title}</a></h3>
@@ -50,15 +52,23 @@ const place = d.mode === 'online' ? 'آنلاین' : [d.venue, d.city].filter(Bo
     display: grid;
     place-content: center;
     text-align: center;
-    width: 72px;
-    height: 72px;
+    width: 76px;
+    min-height: 84px;
+    padding-block: 0.45rem;
     border-radius: var(--r-md);
     border: 1px solid var(--border);
     background: var(--surface);
     flex: none;
   }
+  .w {
+    font-size: 0.6rem;
+    color: var(--accent);
+    font-weight: 700;
+    line-height: 1.4;
+  }
   .d { font-size: var(--step-2); font-weight: 800; line-height: 1; }
   .m { font-size: var(--step--2); color: var(--text-muted); }
+  .compact .w { font-size: 0.55rem; }
 
   .meta { display: flex; flex-wrap: wrap; gap: 0.55rem; align-items: center; font-size: var(--step--1); color: var(--text-muted); }
   .mode { border-radius: 999px; padding: 0.1rem 0.65rem; font-size: var(--step--2); font-weight: 600; border: 1px solid var(--border); }
@@ -76,7 +86,7 @@ const place = d.mode === 'online' ? 'آنلاین' : [d.venue, d.city].filter(Bo
 
   /* Compact: smaller date chip, clamped title, one fact line. */
   .compact { gap: 0.8rem; padding-block: 0.85rem; }
-  .compact .when { width: 52px; height: 52px; }
+  .compact .when { width: 58px; min-height: 62px; padding-block: 0.3rem; }
   .compact .d { font-size: var(--step-0); }
   .compact .m { font-size: 0.62rem; }
   .compact h3 {
@@ -93,7 +103,16 @@ const place = d.mode === 'online' ? 'آنلاین' : [d.venue, d.city].filter(Bo
 
   @media (max-width: 520px) {
     .event:not(.compact) { grid-template-columns: 1fr; gap: 0.8rem; }
-    .event:not(.compact) .when { width: auto; height: auto; padding: 0.5rem 0.9rem; display: flex; gap: 0.5rem; align-items: baseline; justify-self: start; }
+    /* On narrow screens the chip lies flat, so the weekday reads inline. */
+    .event:not(.compact) .when {
+      width: auto;
+      min-height: 0;
+      padding: 0.4rem 0.9rem;
+      display: flex;
+      gap: 0.5rem;
+      align-items: baseline;
+      justify-self: start;
+    }
     .event:not(.compact) .d { font-size: var(--step-1); }
   }
 </style>

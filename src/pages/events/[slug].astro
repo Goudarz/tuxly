@@ -5,7 +5,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import EntityChip from '../../components/EntityChip.astro';
 import SearchIndex from '../../components/SearchIndex.astro';
 import ShareBar from '../../components/ShareBar.astro';
-import { faDateTime } from '../../lib/persian';
+import { faDateTimeWeekday, faTimeIn, tzLabel, offsetFromTehran, SITE_TZ } from '../../lib/persian';
 import { eventSchema } from '../../lib/schema';
 import { entityUrl, entityLabel, priceLabel } from '../../lib/entities';
 import { SITE } from '../../consts';
@@ -31,6 +31,14 @@ const schema = eventSchema(event, url, {
 });
 
 const MODE = { 'in-person': 'حضوری', online: 'آنلاین', hybrid: 'حضوری و آنلاین' };
+
+/*
+ * Times display in Asia/Tehran. When the event is announced in another zone,
+ * show that one too — the reader should not have to convert, and Iran's
+ * half-hour offset makes mental arithmetic unusually easy to get wrong.
+ */
+const showsSourceZone =
+  d.timezone !== SITE_TZ && offsetFromTehran(d.startsAt, d.timezone) !== 0;
 const isPast = (d.endsAt ?? d.startsAt) < new Date();
 
 const slug = event.id.split('/').pop()!;
@@ -61,13 +69,27 @@ const googleUrl =
 
       <dl class="facts">
         <div>
-          <dt>شروع</dt>
-          <dd><time datetime={d.startsAt.toISOString()}>{faDateTime(d.startsAt)}</time></dd>
+          <dt>شروع <span class="tz">به وقت تهران</span></dt>
+          <dd>
+            <time datetime={d.startsAt.toISOString()}>{faDateTimeWeekday(d.startsAt)}</time>
+            {showsSourceZone && (
+              <span class="alt-tz">
+                {faTimeIn(d.startsAt, d.timezone)} <bdi>{tzLabel(d.startsAt, d.timezone)}</bdi>
+              </span>
+            )}
+          </dd>
         </div>
         {d.endsAt && (
           <div>
-            <dt>پایان</dt>
-            <dd><time datetime={d.endsAt.toISOString()}>{faDateTime(d.endsAt)}</time></dd>
+            <dt>پایان <span class="tz">به وقت تهران</span></dt>
+            <dd>
+              <time datetime={d.endsAt.toISOString()}>{faDateTimeWeekday(d.endsAt)}</time>
+              {showsSourceZone && (
+                <span class="alt-tz">
+                  {faTimeIn(d.endsAt, d.timezone)} <bdi>{tzLabel(d.endsAt, d.timezone)}</bdi>
+                </span>
+              )}
+            </dd>
           </div>
         )}
         {d.mode !== 'online' && (
@@ -159,6 +181,14 @@ const googleUrl =
   .facts > div { display: grid; gap: 0.1rem; }
   dt { color: var(--text-muted); font-size: var(--step--2); }
   dd { margin: 0; font-size: var(--step--1); font-weight: 600; }
+  .tz { font-weight: 400; opacity: 0.8; }
+  .alt-tz {
+    display: block;
+    margin-top: 0.15rem;
+    font-size: var(--step--2);
+    font-weight: 400;
+    color: var(--text-muted);
+  }
   .addr { font-size: var(--step--1); margin: 0 0 1.2rem; }
   .links { display: flex; flex-wrap: wrap; gap: 0.6rem; align-items: center; }
   .links .btn svg { flex: none; }

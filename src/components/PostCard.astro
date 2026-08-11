@@ -1,7 +1,7 @@
 ---
 import { Image } from 'astro:assets';
 import type { CollectionEntry } from 'astro:content';
-import { faDate, faRelative } from '../lib/persian';
+import { faDateWeekday, faRelative } from '../lib/persian';
 import { POST_TYPE_LABELS } from '../consts';
 
 interface Props { post: CollectionEntry<'posts'>; compact?: boolean }
@@ -20,7 +20,7 @@ const url = `/news/${post.id}`;
   <div class="text">
     <div class="meta">
       <span class="kind">{POST_TYPE_LABELS[d.type]}</span>
-      <time datetime={d.publishedAt.toISOString()} title={faDate(d.publishedAt)}>
+      <time datetime={d.publishedAt.toISOString()} title={faDateWeekday(d.publishedAt)}>
         {faRelative(d.publishedAt)}
       </time>
     </div>
