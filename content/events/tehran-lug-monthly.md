@@ -7,10 +7,10 @@ mode: hybrid
 organizer: communities/tehran-linux-user-group
 venue: خانهٔ نرم‌افزار آزاد
 city: تهران
-address: نشانی دقیق در صفحهٔ ثبت‌نام اعلام می‌شود
+address: نشانی دقیق در صفحهٔ نام‌نویسی اعلام می‌شود
 onlineUrl: https://meet.jit.si/tehran-lug
 registerUrl: https://example.org/register
-price: رایگان
+priceNote: رایگان
 language: فارسی
 topics: [لینوکس, Wayland, خط فرمان]
 entities:

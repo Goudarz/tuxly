@@ -1,0 +1,177 @@
+---
+/**
+ * Community links.
+ *
+ * Sits next to the website and repo buttons on an entity page. Each kind
+ * carries its own icon and default label, so a page can list a Telegram
+ * channel and a Telegram group side by side without them looking identical.
+ */
+interface Link {
+  kind: string;
+  url: string;
+  label?: string;
+  note?: string;
+}
+interface Props {
+  links: Link[];
+}
+const { links } = Astro.props;
+if (!links.length) return null;
+
+/** Default label per kind. `label` on the link overrides it. */
+const LABELS: Record<string, string> = {
+  'telegram-channel': 'کانال تلگرام',
+  'telegram-group': 'گروه تلگرام',
+  mastodon: 'ماستودون',
+  matrix: 'ماتریکس',
+  discord: 'دیسکورد',
+  slack: 'اسلک',
+  zulip: 'زولیپ',
+  irc: 'IRC',
+  forum: 'انجمن',
+  'mailing-list': 'فهرست پستی',
+  stackoverflow: 'استک‌اورفلو',
+  youtube: 'یوتیوب',
+  peertube: 'پیرتیوب',
+  x: 'ایکس',
+  linkedin: 'لینکدین',
+  bluesky: 'بلواسکای',
+  wiki: 'ویکی',
+  blog: 'وبلاگ',
+  calendar: 'تقویم',
+  other: 'پیوند',
+};
+
+/** Single-path icons, so each one costs almost nothing. */
+const ICONS: Record<string, string> = {
+  telegram:
+    'M21.5 4.3 2.9 11.5c-.9.4-.9 1 0 1.3l4.7 1.5 1.8 5.5c.2.6.5.7 1 .3l2.6-2.1 4.6 3.4c.8.5 1.4.2 1.6-.8l3-13.9c.3-1.2-.4-1.7-1.7-1.2Z',
+  mastodon:
+    'M20.9 8.5c0-3.6-2.4-4.7-2.4-4.7-1.2-.6-3.3-.8-5.5-.8h-.05c-2.2 0-4.3.2-5.5.8 0 0-2.4 1.1-2.4 4.7v3.4c0 4.3.3 7.3 4.3 7.9 1.9.3 3.5.3 3.5.3 2.6 0 4-.4 4-.4l-.1-1.9s-1.8.6-3.8.5c-2-.1-4.1-.2-4.4-2.7l-.03-.5s2-.5 4.5-.6c1.5-.2 3-.5 4.5-.7 3.1-.4 3.4-2.1 3.4-4.1V8.5Zm-3.3 4.4h-2v-4.6c0-1-.4-1.5-1.3-1.5-.9 0-1.4.6-1.4 1.8v2.6h-2V8.6c0-1.2-.5-1.8-1.4-1.8-.9 0-1.3.5-1.3 1.5v4.6H6.2V8.2c0-1 .3-1.8.8-2.4.5-.6 1.2-.9 2.1-.9 1 0 1.8.4 2.3 1.2l.5.9.5-.9c.5-.8 1.3-1.2 2.3-1.2.9 0 1.6.3 2.1.9.5.6.8 1.4.8 2.4v4.7Z',
+  matrix:
+    'M2 2.5h1.6v19H2V2.5Zm18.4 0H22v19h-1.6V2.5ZM6.2 8.2h1.9v1.3h.05c.5-1 1.5-1.5 2.6-1.5 1.1 0 2 .5 2.4 1.5.6-1 1.6-1.5 2.8-1.5 1.7 0 2.8 1 2.8 3.1v4.8h-2v-4.4c0-1.1-.4-1.7-1.4-1.7-1 0-1.7.7-1.7 2v4.1h-2v-4.4c0-1.1-.4-1.7-1.4-1.7-1 0-1.7.7-1.7 2v4.1h-2V8.2Z',
+  discord:
+    'M19.3 5.6A16.9 16.9 0 0 0 15.1 4.3l-.2.4a15.7 15.7 0 0 0-5.8 0l-.2-.4A16.9 16.9 0 0 0 4.7 5.6C2 9.6 1.3 13.5 1.7 17.4a17 17 0 0 0 5.1 2.6l1-1.7a11 11 0 0 1-1.8-.9l.4-.3a12.1 12.1 0 0 0 10.4 0l.4.3a11 11 0 0 1-1.8.9l1 1.7a17 17 0 0 0 5.1-2.6c.5-4.5-.7-8.4-2.2-11.8ZM8.4 15c-1 0-1.9-.9-1.9-2.1 0-1.2.8-2.1 1.9-2.1 1 0 1.9 1 1.9 2.1 0 1.2-.9 2.1-1.9 2.1Zm7.2 0c-1 0-1.9-.9-1.9-2.1 0-1.2.8-2.1 1.9-2.1 1 0 1.9 1 1.9 2.1 0 1.2-.9 2.1-1.9 2.1Z',
+  slack:
+    'M5.1 14.6a2.1 2.1 0 1 1-2.1-2.1h2.1v2.1Zm1 0a2.1 2.1 0 0 1 4.2 0v5.3a2.1 2.1 0 0 1-4.2 0v-5.3ZM8.2 5.1a2.1 2.1 0 1 1 2.1-2.1v2.1H8.2Zm0 1a2.1 2.1 0 0 1 0 4.2H2.9a2.1 2.1 0 0 1 0-4.2h5.3ZM17.7 8.2a2.1 2.1 0 1 1 2.1 2.1h-2.1V8.2Zm-1 0a2.1 2.1 0 0 1-4.2 0V2.9a2.1 2.1 0 0 1 4.2 0v5.3ZM14.6 17.7a2.1 2.1 0 1 1-2.1 2.1v-2.1h2.1Zm0-1a2.1 2.1 0 0 1 0-4.2h5.3a2.1 2.1 0 0 1 0 4.2h-5.3Z',
+  chat: 'M12 3c5 0 9 3.3 9 7.5S17 18 12 18a11 11 0 0 1-2.6-.3L4.5 20l1.2-3.6A7.9 7.9 0 0 1 3 10.5C3 6.3 7 3 12 3Z',
+  mail: 'M3 6.5A2.5 2.5 0 0 1 5.5 4h13A2.5 2.5 0 0 1 21 6.5v11a2.5 2.5 0 0 1-2.5 2.5h-13A2.5 2.5 0 0 1 3 17.5v-11Zm2.3.3 6.7 5 6.7-5H5.3Z',
+  video:
+    'M3 6.5A2.5 2.5 0 0 1 5.5 4h9A2.5 2.5 0 0 1 17 6.5v11a2.5 2.5 0 0 1-2.5 2.5h-9A2.5 2.5 0 0 1 3 17.5v-11ZM19 9l3-2v10l-3-2V9Z',
+  x: 'M17.5 3h3l-6.6 7.5L21.8 21h-6l-4.7-6.1L5.6 21h-3l7-8-6.9-10h6.2l4.3 5.6L17.5 3Zm-1 16h1.7L7.6 4.8H5.8L16.5 19Z',
+  linkedin:
+    'M4.98 3.5A2.5 2.5 0 1 0 5 8.5a2.5 2.5 0 0 0 0-5ZM3 9.5h4V21H3V9.5Zm6.5 0h3.8v1.6h.05c.53-.95 1.83-1.95 3.75-1.95 4 0 4.75 2.5 4.75 5.8V21h-4v-5.3c0-1.3 0-3-1.85-3s-2.15 1.4-2.15 2.9V21h-4V9.5Z',
+  bluesky:
+    'M12 10.8C10.9 8.6 7.9 4.6 5.2 2.7 2.6.9 1.6 1.2 1 1.5.2 1.9 0 3.1 0 3.8c0 .7.4 5.8.7 6.6.9 2.8 3.9 3.8 6.7 3.5h.1c-2.8.4-5.3 1.5-2 5 3.5 3.7 4.8-.8 5.5-3.1.7 2.3 1.5 6.6 5.5 3.1 3-3.2.8-4.5-2-5h.1c2.8.3 5.8-.7 6.7-3.5.3-.8.7-5.9.7-6.6 0-.7-.2-1.9-1-2.3-.6-.3-1.6-.6-4.2 1.2-2.7 1.9-5.7 5.9-6.8 8.1Z',
+  wiki: 'M4 4.5h11a5 5 0 0 1 0 10H6.5v5H4v-15Zm2.5 2.3v5.4H15a2.7 2.7 0 0 0 0-5.4H6.5Z',
+  calendar:
+    'M3 6.5A2.5 2.5 0 0 1 5.5 4h13A2.5 2.5 0 0 1 21 6.5v12a2.5 2.5 0 0 1-2.5 2.5h-13A2.5 2.5 0 0 1 3 18.5v-12ZM5 10h14v8.5a.5.5 0 0 1-.5.5h-13a.5.5 0 0 1-.5-.5V10ZM7.5 2v3h2V2h-2Zm7 0v3h2V2h-2Z',
+  stackoverflow:
+    'M17.2 20.5v-5.3h1.8V22H4.5v-6.8h1.8v5.3h10.9ZM7.8 14.6l8.7 1.8.4-1.8-8.7-1.8-.4 1.8Zm1.2-4.2 8 3.8.8-1.6-8-3.8-.8 1.6Zm2.3-4 6.8 5.7 1.2-1.4-6.8-5.7-1.2 1.4ZM15.9 2l-1.5 1.1 5.3 7.1 1.5-1.1L15.9 2Z',
+  link: 'M10.5 13.5a4.5 4.5 0 0 0 6.4 0l2.6-2.6a4.5 4.5 0 0 0-6.4-6.4l-1.5 1.5m2.5 4.5a4.5 4.5 0 0 0-6.4 0l-2.6 2.6a4.5 4.5 0 0 0 6.4 6.4l1.5-1.5',
+};
+
+/** Which icon each kind draws. */
+const ICON_FOR: Record<string, string> = {
+  'telegram-channel': 'telegram',
+  'telegram-group': 'telegram',
+  mastodon: 'mastodon',
+  matrix: 'matrix',
+  discord: 'discord',
+  slack: 'slack',
+  zulip: 'chat',
+  irc: 'chat',
+  forum: 'chat',
+  'mailing-list': 'mail',
+  stackoverflow: 'stackoverflow',
+  youtube: 'video',
+  peertube: 'video',
+  x: 'x',
+  linkedin: 'linkedin',
+  bluesky: 'bluesky',
+  wiki: 'wiki',
+  blog: 'wiki',
+  calendar: 'calendar',
+  other: 'link',
+};
+
+/** Icons that are outlines rather than solid shapes. */
+const STROKED = new Set(['chat', 'link']);
+---
+
+<ul class="links">
+  {links.map((link) => {
+    const icon = ICON_FOR[link.kind] ?? 'link';
+    const stroked = STROKED.has(icon);
+    return (
+      <li>
+        <a href={link.url} rel="noopener" data-kind={link.kind} title={link.note}>
+          <svg
+            viewBox="0 0 24 24"
+            width="16"
+            height="16"
+            fill={stroked ? 'none' : 'currentColor'}
+            stroke={stroked ? 'currentColor' : undefined}
+            stroke-width={stroked ? 2 : undefined}
+            stroke-linecap={stroked ? 'round' : undefined}
+            stroke-linejoin={stroked ? 'round' : undefined}
+            aria-hidden="true"
+          >
+            <path d={ICONS[icon]}></path>
+          </svg>
+          <span>{link.label ?? LABELS[link.kind] ?? 'پیوند'}</span>
+        </a>
+      </li>
+    );
+  })}
+</ul>
+
+<style>
+  .links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  a {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    min-height: 44px;
+    padding: 0.45rem 0.95rem;
+    border: 1px solid var(--border);
+    border-radius: var(--r-sm);
+    background: var(--surface);
+    color: var(--text-muted);
+    font-size: var(--step--1);
+    font-weight: 600;
+    text-decoration: none;
+    transition: border-color 0.16s var(--ease), color 0.16s var(--ease), transform 0.16s var(--ease);
+  }
+  a:hover,
+  a:focus-visible {
+    color: var(--text);
+    border-color: var(--accent);
+    transform: translateY(-2px);
+  }
+  svg { flex: none; }
+
+  /* Brand tints on hover only, so the row stays calm at rest. */
+  [data-kind^='telegram']:hover { border-color: #2AABEE; color: #2AABEE; }
+  [data-kind='mastodon']:hover { border-color: #6364FF; color: #6364FF; }
+  [data-kind='matrix']:hover { border-color: #0DBD8B; color: #0DBD8B; }
+  [data-kind='discord']:hover { border-color: #5865F2; color: #5865F2; }
+  [data-kind='slack']:hover { border-color: #4A154B; color: var(--text); }
+  [data-kind='zulip']:hover { border-color: #6492FE; color: #6492FE; }
+  [data-kind='stackoverflow']:hover { border-color: #F48024; color: #F48024; }
+  [data-kind='youtube']:hover { border-color: #FF0000; color: #FF0000; }
+  [data-kind='linkedin']:hover { border-color: #0A66C2; color: #0A66C2; }
+  [data-kind='bluesky']:hover { border-color: #0285FF; color: #0285FF; }
+
+  @media (prefers-reduced-motion: reduce) {
+    a:hover, a:focus-visible { transform: none; }
+  }
+</style>

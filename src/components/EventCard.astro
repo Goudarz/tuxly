@@ -1,7 +1,7 @@
 ---
 import type { CollectionEntry } from 'astro:content';
 import { faDateTime } from '../lib/persian';
-import { slugOf } from '../lib/entities';
+import { slugOf, priceLabel } from '../lib/entities';
 
 interface Props { event: CollectionEntry<'events'>; past?: boolean; compact?: boolean }
 const { event, past = false, compact = false } = Astro.props;
@@ -28,7 +28,7 @@ const place = d.mode === 'online' ? 'آنلاین' : [d.venue, d.city].filter(Bo
 
     <ul class="facts">
       <li><span class="k">مکان</span> {place}</li>
-      {!compact && d.price && <li><span class="k">هزینه</span> {d.price}</li>}
+      {!compact && <li><span class="k">هزینه</span> {priceLabel(event)}</li>}
       {!compact && <li><span class="k">زبان</span> {d.language}</li>}
     </ul>
   </div>

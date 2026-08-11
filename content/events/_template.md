@@ -5,14 +5,25 @@ summary: یک تا دو جمله دربارهٔ اینکه این رویداد �
 startsAt: 2026-09-12T17:00:00+03:30
 endsAt: 2026-09-12T20:00:00+03:30
 mode: hybrid            # in-person | online | hybrid
-organizer: communities/tehran-linux-user-group
+organizer: communities/shirazlug
 venue: نام محل
-city: تهران
+city: شیراز
 address: نشانی دقیق
 mapUrl: https://www.openstreetmap.org/…
-onlineUrl: https://meet.example.org/…
-registerUrl: https://example.org/register
-price: رایگان
+onlineUrl: https://meet.tuxly.ir/…
+registerUrl: https://tuxly.ir/register
+registerLabel: نام‌نویسی          # فقط اگر دکمه چیز دیگری است
+
+# هزینه: price فقط عدد است (برای موتورهای جستجو)، متن خوانا در priceNote می‌آید.
+# price: 500000
+# priceCurrency: IRR
+priceNote: رایگان
+
+# سخنرانان — فیلد performer در داده‌های ساختاریافته را پر می‌کند.
+# performers: [نام سخنران]
+
+# اگر نام‌نویسی از تاریخ مشخصی باز می‌شود:
+# registerOpensAt: 2026-09-01
 language: فارسی
 topics: [لینوکس, میزکار]
 entities: []

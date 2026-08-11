@@ -81,3 +81,11 @@ export function paginate<T>(items: T[], page: number, perPage: number) {
     hasNext: current < total,
   };
 }
+
+export function priceLabel(event: Event): string | undefined {
+  const { price, priceNote, priceCurrency } = event.data;
+  if (priceNote) return priceNote;
+  if (price === undefined || price === 0) return 'رایگان';
+  const unit = priceCurrency === 'IRR' ? 'ریال' : priceCurrency;
+  return `${price.toLocaleString('fa-IR')} ${unit}`;
+}

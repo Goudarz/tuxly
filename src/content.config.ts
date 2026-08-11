@@ -117,6 +117,43 @@ const entities = defineCollection({
       docs: z.url().optional(),
       wikidata: z.string().regex(/^Q\d+$/).optional(),
       sameAs: z.array(z.url()).default([]),
+
+      /**
+       * Community links, shown as buttons next to the website and repo.
+       * `kind` picks the icon and the default label; `label` overrides it
+       * when one entity has several of the same kind (channel vs group).
+       */
+      links: z
+        .array(
+          z.object({
+            kind: z.enum([
+              'telegram-channel',
+              'telegram-group',
+              'mastodon',
+              'matrix',
+              'discord',
+              'slack',
+              'zulip',
+              'irc',
+              'forum',
+              'mailing-list',
+              'stackoverflow',
+              'youtube',
+              'peertube',
+              'x',
+              'linkedin',
+              'bluesky',
+              'wiki',
+              'blog',
+              'calendar',
+              'other',
+            ]),
+            url: z.url(),
+            label: z.string().optional(),
+            note: z.string().optional(),
+          }),
+        )
+        .default([]),
       license: z.string().optional(),
       firstRelease: z.coerce.date().optional(),
       related: z.array(reference('entities')).default([]),
@@ -197,7 +234,15 @@ const events = defineCollection({
         mapUrl: z.url().optional(),
         onlineUrl: z.url().optional(),
         registerUrl: z.url().optional(),
-        price: z.string().optional(),
+        /** Overrides the "نام‌نویسی" button label when it is not registration. */
+        registerLabel: z.string().optional(),
+        price: z.number().nonnegative().optional(),
+        priceCurrency: z.string().length(3).default('IRR'),
+        /** Human-readable note shown in the UI, e.g. "رایگان" or "با نام‌نویسی". */
+        priceNote: z.string().optional(),
+        registerOpensAt: z.coerce.date().optional(),
+        /** Speakers or hosts. Fills schema.org `performer`. */
+        performers: z.array(z.string()).default([]),
         language: z.string().default('فارسی'),
         topics: z.array(z.string()).default([]),
         entities: z.array(reference('entities')).default([]),

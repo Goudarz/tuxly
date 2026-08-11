@@ -7,7 +7,7 @@ import SearchIndex from '../../components/SearchIndex.astro';
 import ShareBar from '../../components/ShareBar.astro';
 import { faDateTime } from '../../lib/persian';
 import { eventSchema } from '../../lib/schema';
-import { entityUrl, entityLabel } from '../../lib/entities';
+import { entityUrl, entityLabel, priceLabel } from '../../lib/entities';
 import { SITE } from '../../consts';
 
 export async function getStaticPaths() {
@@ -22,7 +22,13 @@ const organizer = d.organizer ? await getEntry(d.organizer) : undefined;
 const related = d.entities.length ? await getEntries(d.entities) : [];
 
 const url = new URL(Astro.url.pathname, SITE.url).href;
-const schema = eventSchema(event, url, organizer ? entityLabel(organizer) : d.organizerName);
+const schema = eventSchema(event, url, {
+  organizerName: organizer ? entityLabel(organizer) : d.organizerName,
+  organizerUrl: organizer
+    ? new URL(entityUrl(organizer), SITE.url).href
+    : undefined,
+  imageUrl: d.cover ? new URL(d.cover.src, SITE.url).href : undefined,
+});
 
 const MODE = { 'in-person': 'حضوری', online: 'آنلاین', hybrid: 'حضوری و آنلاین' };
 const isPast = (d.endsAt ?? d.startsAt) < new Date();
@@ -74,7 +80,7 @@ const googleUrl =
           </div>
         )}
         {!organizer && d.organizerName && <div><dt>برگزارکننده</dt><dd>{d.organizerName}</dd></div>}
-        {d.price && <div><dt>هزینه</dt><dd>{d.price}</dd></div>}
+        <div><dt>هزینه</dt><dd>{priceLabel(event)}</dd></div>
         <div><dt>زبان</dt><dd>{d.language}</dd></div>
       </dl>
 
@@ -91,7 +97,7 @@ const googleUrl =
           </a>
         )}
         {d.registerUrl && !isPast && !d.cancelled && (
-          <a class="btn btn-primary" href={d.registerUrl} rel="noopener">ثبت‌نام</a>
+          <a class="btn btn-primary" href={d.registerUrl} rel="noopener">نام‌نویسی</a>
         )}
         {d.onlineUrl && <a class="btn" href={d.onlineUrl} rel="noopener">پیوند اتصال</a>}
         {d.mapUrl && <a class="btn" href={d.mapUrl} rel="noopener">نقشه</a>}
@@ -103,7 +109,7 @@ const googleUrl =
           اپل، اوت‌لوک، <bdi class="latin">Thunderbird</bdi> و هر برنامهٔ
           دیگری باز می‌شود. یادآور یک‌ساعت‌قبل هم داخلش هست.
           {' '}
-          <a href={googleUrl} rel="noopener">یا مستقیم به تقویم گوگل اضافه کنید</a>
+          <a href={googleUrl} rel="noopener"> یا مستقیم به تقویم گوگل اضافه کنید </a>
         </p>
       )}
     </header>

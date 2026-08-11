@@ -6,6 +6,8 @@ type Entity = CollectionEntry<'entities'>;
 type Author = CollectionEntry<'authors'>;
 type EventEntry = CollectionEntry<'events'>;
 
+const BUILD_TIME = new Date();
+
 const ORG_ID = `${SITE.url}/#organization`;
 const SITE_ID = `${SITE.url}/#website`;
 
@@ -136,6 +138,9 @@ export function entitySchema(entity: Entity, url: string, relatedUrls: string[] 
   if (entity.data.wikidata) sameAs.push(`https://www.wikidata.org/wiki/${entity.data.wikidata}`);
   if (entity.data.website) sameAs.push(entity.data.website);
   if (entity.data.repo) sameAs.push(entity.data.repo);
+  // Community links are other profiles of the same entity, which is exactly
+  // what sameAs is for.
+  for (const link of entity.data.links) sameAs.push(link.url);
 
   const node: Record<string, unknown> = {
     '@type': type,
@@ -168,61 +173,90 @@ export function entitySchema(entity: Entity, url: string, relatedUrls: string[] 
   );
 }
 
-export function eventSchema(event: EventEntry, url: string, organizerName?: string) {
+export function eventSchema(
+  event: EventEntry,
+  url: string,
+  opts: { organizerName?: string; organizerUrl?: string; imageUrl?: string } = {},
+) {
+  const d = event.data;
+
   const mode = {
     'in-person': 'https://schema.org/OfflineEventAttendanceMode',
     online: 'https://schema.org/OnlineEventAttendanceMode',
     hybrid: 'https://schema.org/MixedEventAttendanceMode',
-  }[event.data.mode];
+  }[d.mode];
 
   const location: unknown[] = [];
-  if (event.data.mode !== 'online') {
+  if (d.mode !== 'online') {
     location.push({
       '@type': 'Place',
-      name: event.data.venue ?? event.data.city,
+      name: d.venue ?? d.city,
       address: {
         '@type': 'PostalAddress',
-        addressLocality: event.data.city,
-        addressCountry: event.data.country,
-        ...(event.data.address ? { streetAddress: event.data.address } : {}),
+        addressLocality: d.city,
+        addressCountry: d.country,
+        ...(d.address ? { streetAddress: d.address } : {}),
       },
     });
   }
-  if (event.data.mode !== 'in-person' && event.data.onlineUrl) {
-    location.push({ '@type': 'VirtualLocation', url: event.data.onlineUrl });
+  if (d.mode !== 'in-person' && d.onlineUrl) {
+    location.push({ '@type': 'VirtualLocation', url: d.onlineUrl });
   }
+
+  /*
+   * Offer.price must be a bare number. Free text such as "رایگان" is
+   * rejected outright, so the human-readable wording lives in `priceNote`
+   * and never reaches the structured data.
+   */
+  const offers = d.registerUrl
+    ? {
+        '@type': 'Offer',
+        url: d.registerUrl,
+        price: d.price ?? 0,
+        priceCurrency: d.priceCurrency,
+        availability: 'https://schema.org/InStock',
+        validFrom: (d.registerOpensAt ?? BUILD_TIME).toISOString(),
+      }
+    : undefined;
+
+  const organizer = opts.organizerName
+    ? {
+        '@type': 'Organization',
+        name: opts.organizerName,
+        ...(opts.organizerUrl ? { url: opts.organizerUrl } : {}),
+      }
+    : undefined;
 
   return graph(
     {
       '@type': 'Event',
       '@id': `${url}#event`,
-      name: event.data.title,
-      description: event.data.summary,
-      startDate: event.data.startsAt.toISOString(),
-      ...(event.data.endsAt ? { endDate: event.data.endsAt.toISOString() } : {}),
+      name: d.title,
+      description: d.summary,
+      startDate: d.startsAt.toISOString(),
+      ...(d.endsAt ? { endDate: d.endsAt.toISOString() } : {}),
       eventAttendanceMode: mode,
-      eventStatus: event.data.cancelled
+      eventStatus: d.cancelled
         ? 'https://schema.org/EventCancelled'
         : 'https://schema.org/EventScheduled',
       inLanguage: SITE.lang,
       location: location.length === 1 ? location[0] : location,
-      ...(organizerName ? { organizer: { '@type': 'Organization', name: organizerName } } : {}),
-      ...(event.data.registerUrl
-        ? {
-            offers: {
-              '@type': 'Offer',
-              url: event.data.registerUrl,
-              price: event.data.price ?? '0',
-              priceCurrency: 'IRR',
-              availability: 'https://schema.org/InStock',
-            },
-          }
-        : {}),
+      // Every event needs an image; without a cover we fall back to the
+      // site's own card, which is better than omitting the field.
+      image: [opts.imageUrl ?? `${SITE.url}/og/default.png`],
+      ...(organizer ? { organizer } : {}),
+      ...(d.performers.length
+        ? { performer: d.performers.map((name) => ({ '@type': 'Person', name })) }
+        : // No named speakers: the organiser is the one presenting.
+          organizer
+          ? { performer: organizer }
+          : {}),
+      ...(offers ? { offers } : {}),
     },
     breadcrumb([
       { name: 'خانه', url: '/' },
       { name: 'رویدادها', url: '/events' },
-      { name: event.data.title, url: new URL(url).pathname },
+      { name: d.title, url: new URL(url).pathname },
     ]),
   );
 }

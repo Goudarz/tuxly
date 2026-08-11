@@ -7,6 +7,7 @@ import PostCard from '../components/PostCard.astro';
 import EventCard from '../components/EventCard.astro';
 import EntityChip from '../components/EntityChip.astro';
 import ShareBar from '../components/ShareBar.astro';
+import CommunityLinks from '../components/CommunityLinks.astro';
 import SearchIndex from '../components/SearchIndex.astro';
 import {
   getPostsForEntity, getEventsForEntity, entityUrl, entityFeedUrl, entityLabel,
@@ -97,6 +98,13 @@ const MODEL: Record<string, string> = {
         )}
         <a class="btn" href={entityFeedUrl(entity)}>خوراک این صفحه</a>
       </div>
+
+      {d.links.length > 0 && (
+        <div class="community">
+          <h2 class="community-title">راه‌های ارتباط</h2>
+          <CommunityLinks links={d.links} />
+        </div>
+      )}
     </header>
 
     <div class="prose"><Content /></div>
@@ -158,6 +166,13 @@ const MODEL: Record<string, string> = {
   .checked { font-size: var(--step--2); margin: 0 0 1.2rem; max-width: 60ch; }
 
   .links { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+  .community { margin-top: 1.4rem; }
+  .community-title {
+    font-size: var(--step--2);
+    color: var(--text-muted);
+    font-weight: 600;
+    margin: 0 0 0.6rem;
+  }
   .chips { display: flex; flex-wrap: wrap; gap: 0.5rem; }
   section { margin-top: 2.5rem; }
   section h2 { font-size: var(--step-1); margin-top: 0; }

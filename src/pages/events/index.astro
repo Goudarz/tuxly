@@ -21,7 +21,7 @@ const url = new URL('/events', SITE.url).href;
     <p class="intro">
       نشست‌ها، کارگاه‌ها، کنفرانس‌ها و هکاتون‌های نرم‌افزار آزاد — داخلی و
       بین‌المللی، حضوری و آنلاین. هر رویداد صفحهٔ خودش را دارد با زمان دقیق،
-      مکان، برگزارکننده و لینک ثبت‌نام.
+      مکان، برگزارکننده و لینک نام‌نویسی.
     </p>
     <p class="add muted">
       رویدادی می‌شناسید که اینجا نیست؟ 
@@ -32,7 +32,7 @@ const url = new URL('/events', SITE.url).href;
     <section>
       <h2>پیش‌رو <span class="n tnum">{faNumber(upcoming.length)}</span></h2>
       {upcoming.length === 0 ? (
-        <p class="muted">فعلاً رویداد پیش‌رویی ثبت نشده.</p>
+        <p class="muted"> فعلاً رویداد پیش‌رویی ثبت نشده .</p>
       ) : (
         upcoming.map((event) => <EventCard event={event} />)
       )}

@@ -83,9 +83,9 @@ export async function GET(context: APIContext) {
   const description = [
     d.summary,
     organizerName ? `برگزارکننده: ${organizerName}` : '',
-    d.price ? `هزینه: ${d.price}` : '',
+    `هزینه: ${d.priceNote ?? (d.price ? `${d.price} ${d.priceCurrency}` : 'رایگان')}`,
     d.language ? `زبان: ${d.language}` : '',
-    d.registerUrl ? `ثبت‌نام: ${d.registerUrl}` : '',
+    d.registerUrl ? `نام‌نویسی: ${d.registerUrl}` : '',
     d.onlineUrl && d.mode !== 'in-person' ? `پیوند اتصال: ${d.onlineUrl}` : '',
     '',
     pageUrl,
