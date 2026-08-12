@@ -29,6 +29,73 @@ const url = new URL('/events', SITE.url).href;
       یا مستقیم در <a href={`${SITE.repo}/tree/master/content/events`} rel="noopener">مخزن</a> اضافه‌اش کنید.
     </p>
 
+    <section id="calendar" class="subscribe">
+      <h2>دنبال کردن تقویم</h2>
+      <p>
+        به‌جای اینکه هر بار سر بزنید، تقویم را در برنامهٔ خودتان دنبال کنید.
+        رویدادهای تازه خودکار اضافه می‌شوند و تغییرها هم می‌رسند.
+      </p>
+
+      <div class="cal-actions">
+        <a class="btn btn-primary" href="/events/calendar.ics" data-no-ext>
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <rect x="3" y="4.5" width="18" height="16" rx="2.5"></rect>
+            <path d="M3 9.5h18M8 2.5v4M16 2.5v4M12 12v5m0 0-2-2m2 2 2-2"></path>
+          </svg>
+          دریافت فایل تقویم
+        </a>
+        <button
+          type="button"
+          class="btn"
+          data-copy={`${SITE.url}/events/calendar.ics`}
+          data-copy-label="نشانی تقویم"
+        >
+          رونوشت نشانی برای هم‌رسانی
+        </button>
+      </div>
+
+      <details class="how">
+        <summary>راهنمای دنبال کردن در برنامه‌های مختلف</summary>
+        <dl>
+          <div>
+            <dt>تقویم پروتون</dt>
+            <dd>
+              تنظیمات ← همهٔ تنظیمات ← تقویم‌ها ← بخش
+              <bdi class="latin">Other calendars</bdi> ←
+              <bdi class="latin">Add calendar from URL</bdi>، بعد نشانی بالا را بچسبانید.
+            </dd>
+          </div>
+          <div>
+            <dt>نکست‌کلود</dt>
+            <dd>در برنامهٔ تقویم، پایین ستون کنار ← «اشتراک تقویم» ← نشانی را بچسبانید.</dd>
+          </div>
+          <div>
+            <dt><bdi class="latin">Thunderbird</bdi></dt>
+            <dd>
+              تقویم ← تقویم تازه ← «روی شبکه» ← قالب
+              <bdi class="latin">iCalendar (ICS)</bdi> ← نشانی را بچسبانید.
+            </dd>
+          </div>
+          <div>
+            <dt>تقویم اپل</dt>
+            <dd>
+              پرونده ← <bdi class="latin">New Calendar Subscription</bdi> ← نشانی را بچسبانید.
+              روی آیفون: تنظیمات ← برنامه‌ها ← تقویم ← حساب‌ها ← افزودن حساب ← دیگر ←
+              افزودن تقویم اشتراکی.
+            </dd>
+          </div>
+          <div>
+            <dt>هر برنامهٔ دیگری</dt>
+            <dd>
+              <bdi class="latin">ICS</bdi> استاندارد باز
+              <bdi class="latin">RFC 5545</bdi> است — هر تقویمی که «اشتراک از
+              نشانی» یا <bdi class="latin">subscribe from web</bdi> داشته باشد کار می‌کند.
+            </dd>
+          </div>
+        </dl>
+      </details>
+    </section>
+
     <section>
       <h2>پیش‌رو <span class="n tnum">{faNumber(upcoming.length)}</span></h2>
       {upcoming.length === 0 ? (
@@ -51,6 +118,38 @@ const url = new URL('/events', SITE.url).href;
   .intro { max-width: var(--measure); color: var(--text-muted); }
   .add { font-size: var(--step--1); }
   section { margin-top: 2.5rem; }
+
+  .subscribe {
+    border: 1px solid var(--border);
+    border-radius: var(--r-md);
+    background: var(--surface);
+    padding: 1.2rem 1.4rem;
+  }
+  .subscribe h2 { margin-top: 0; font-size: var(--step-1); }
+  .subscribe p { color: var(--text-muted); max-width: var(--measure); margin: 0 0 1rem; }
+  .cal-actions { display: flex; flex-wrap: wrap; gap: 0.6rem; align-items: center; }
+  .cal-actions .btn svg { flex: none; }
+
+  .how { margin-top: 1.2rem; }
+  .how summary {
+    cursor: pointer;
+    font-size: var(--step--1);
+    font-weight: 600;
+    color: var(--text-muted);
+    padding: 0.4rem 0;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+  }
+  .how summary:hover { color: var(--text); }
+  .how dl { margin: 0.6rem 0 0; display: grid; gap: 0.9rem; }
+  .how dt { font-weight: 700; font-size: var(--step--1); }
+  .how dd {
+    margin: 0.2rem 0 0;
+    font-size: var(--step--1);
+    color: var(--text-muted);
+    line-height: 1.85;
+  }
   h2 { font-size: var(--step-1); display: flex; align-items: baseline; gap: 0.6rem; }
   .n { font-size: var(--step--1); color: var(--text-muted); font-weight: 400; }
 </style>

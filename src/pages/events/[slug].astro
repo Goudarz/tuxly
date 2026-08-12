@@ -44,17 +44,6 @@ const isPast = (d.endsAt ?? d.startsAt) < new Date();
 const slug = event.id.split('/').pop()!;
 const icsUrl = `/events/${slug}/event.ics`;
 
-// Google Calendar wants basic-format UTC, same as the .ics file.
-const gcal = (date: Date) => date.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '');
-const end = d.endsAt ?? new Date(d.startsAt.getTime() + 2 * 60 * 60 * 1000);
-const googleUrl =
-  'https://calendar.google.com/calendar/render?action=TEMPLATE&' +
-  new URLSearchParams({
-    text: d.title,
-    dates: `${gcal(d.startsAt)}/${gcal(end)}`,
-    details: `${d.summary}\n\n${url}`,
-    location: d.mode === 'online' ? (d.onlineUrl ?? 'Online') : [d.venue, d.city].filter(Boolean).join('، '),
-  }).toString();
 ---
 
 <BaseLayout title={d.title} description={d.summary} schema={schema} ogType="article">
@@ -127,11 +116,12 @@ const googleUrl =
 
       {!d.cancelled && (
         <p class="cal-note muted">
-          فایل <bdi class="latin">ICS</bdi> استاندارد است و در تقویم گوگل،
-          اپل، اوت‌لوک، <bdi class="latin">Thunderbird</bdi> و هر برنامهٔ
-          دیگری باز می‌شود. یادآور یک‌ساعت‌قبل هم داخلش هست.
+          فایل <bdi class="latin">ICS</bdi> استاندارد باز تقویم است و در
+          پروتون، نکست‌کلود، <bdi class="latin">Thunderbird</bdi>،
+          اوت‌لوک و هر برنامهٔ دیگری باز می‌شود. یادآور یک‌ساعت‌قبل هم
+          داخلش هست.
           {' '}
-          <a href={googleUrl} rel="noopener"> یا مستقیم به تقویم گوگل اضافه کنید </a>
+          <a href="/events#calendar">یا کل تقویم رویدادها را دنبال کنید</a>
         </p>
       )}
     </header>
