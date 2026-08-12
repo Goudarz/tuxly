@@ -34,7 +34,12 @@ export default defineConfig({
 
   image: {
     // Images are converted to AVIF and WebP at build time, in several sizes.
-    responsiveStyles: true,
+    /*
+     * Astro's built-in responsive stylesheet emits every object-position
+     * combination, including nonsense pairs like `top bottom`, which fail
+     * W3C validation. global.css ships the valid subset instead.
+     */
+    responsiveStyles: false,
     layout: 'constrained',
   },
 
@@ -45,7 +50,14 @@ export default defineConfig({
     },
   },
 
-  build: { format: 'directory', inlineStylesheets: 'auto' },
+  build: {
+    format: 'directory',
+    /*
+     * Inline every stylesheet. The whole sheet is ~5 KB — smaller than the
+     * cost of a render-blocking request for it.
+     */
+    inlineStylesheets: 'always',
+  },
 
   prefetch: { prefetchAll: true, defaultStrategy: 'viewport' },
 });

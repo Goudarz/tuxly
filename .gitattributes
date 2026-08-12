@@ -1,0 +1,41 @@
+# Normalise line endings.
+#
+# Without this, every contributor's editor decides for itself and Windows
+# checkouts rewrite whole files to CRLF — which shows up as "modified"
+# files nobody actually touched, and noisy diffs on every pull request.
+#
+# `text=auto eol=lf` stores everything as LF in the repository and hands
+# Windows whatever its tooling expects on checkout.
+* text=auto eol=lf
+
+# Scripts must stay LF even on Windows: a shell or Python file with CRLF
+# line endings fails on Linux with a confusing "bad interpreter" error.
+*.sh    text eol=lf
+*.mjs   text eol=lf
+*.js    text eol=lf
+*.ts    text eol=lf
+*.py    text eol=lf
+
+# Binary — never touch, never diff.
+*.woff2 binary
+*.png   binary
+*.jpg   binary
+*.jpeg  binary
+*.webp  binary
+*.avif  binary
+*.ico   binary
+*.pdf   binary
+*.zip   binary
+
+# SVG is text and benefits from diffing, but mark it so git does not guess.
+*.svg   text eol=lf
+
+# Generated calendar files require CRLF per RFC 5545. They are build
+# output rather than sources, but the rule is here in case one is ever
+# committed by hand.
+*.ics   text eol=crlf
+
+# Keep language stats honest: generated assets are not hand-written code.
+public/brand/**  linguist-generated=true
+public/og/**     linguist-generated=true
+public/fonts/**  linguist-vendored=true
