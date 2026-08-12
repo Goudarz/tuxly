@@ -129,6 +129,7 @@ AVIF و WebP و چند اندازه تبدیل می‌شوند. نه سرویس 
 | [`docs/VERSIONS.md`](docs/VERSIONS.md) | اگر نسخه خودکار گرفته نشد چه کنیم |
 | [`docs/COMMITS.md`](docs/COMMITS.md) | قرارداد پیام کامیت |
 | [`NOTICE.md`](NOTICE.md) | خلاصهٔ پروانه‌ها به زبان ساده |
+| [`CODE_OF_CONDUCT.md`](CODE_OF_CONDUCT.md) | منشور رفتاری اجتماع |
 
 ## پروانه
 
