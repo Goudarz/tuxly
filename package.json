@@ -23,8 +23,10 @@
     "check": "astro check",
     "info": "node scripts/banner.mjs --full",
     "update:versions": "node scripts/update-versions.mjs",
-    "ingest": "node pipeline/ingest.mjs",
-    "ingest:dry": "node pipeline/ingest.mjs --dry-run"
+    "brand:mascots": "python3 scripts/build-mascots.py",
+    "brand:banner": "node scripts/build-readme-banner.mjs",
+    "brand:social": "node scripts/build-social-preview.mjs",
+    "fonts:subset": "node scripts/subset-fonts.mjs"
   },
   "dependencies": {
     "@astrojs/mdx": "^7.0.5",
