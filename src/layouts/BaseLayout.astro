@@ -48,6 +48,7 @@ const ogImageUrl = new URL(ogImage, Astro.site ?? SITE.url).href;
     <title>{fullTitle}</title>
     <meta name="description" content={description} />
     <link rel="canonical" href={canonical} />
+    <meta name="generator" content={`Tuxly ${SITE.version} — https://github.com/goudarz/tuxly`} />
     {noindex
       ? <meta name="robots" content="noindex, follow" />
       : <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />}
