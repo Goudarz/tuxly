@@ -26,7 +26,8 @@
     "brand:mascots": "python3 scripts/build-mascots.py",
     "brand:banner": "node scripts/build-readme-banner.mjs",
     "brand:social": "node scripts/build-social-preview.mjs",
-    "fonts:subset": "node scripts/subset-fonts.mjs"
+    "fonts:subset": "node scripts/subset-fonts.mjs",
+    "brand:social-kit": "node scripts/build-social-kit.mjs"
   },
   "dependencies": {
     "@astrojs/mdx": "^7.0.5",
