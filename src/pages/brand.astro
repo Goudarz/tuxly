@@ -21,16 +21,55 @@ const COLORS = [
   { fa: 'برف', en: 'Snow', hex: '#FAFAF7', use: 'پس‌زمینهٔ روشن' },
 ];
 
-const FILES = [
-  { f: 'tuxly-logo-horizontal.svg', d: 'ترکیب افقی لاتین — تیره' },
-  { f: 'tuxly-logo-horizontal-light.svg', d: 'ترکیب افقی لاتین — روشن' },
-  { f: 'tuxly-logo-fa.svg', d: 'ترکیب فارسی — تیره' },
-  { f: 'tuxly-logo-fa-light.svg', d: 'ترکیب فارسی — روشن' },
-  { f: 'tuxly-logo-vertical.svg', d: 'ترکیب عمودی' },
-  { f: 'tuxly-mark.svg', d: 'نشان تنها — تیره' },
-  { f: 'tuxly-mark-light.svg', d: 'نشان تنها — روشن' },
-  { f: 'tuxly-mark-black.svg', d: 'تک‌رنگ سیاه — چاپ' },
-  { f: 'tuxly-mark-white.svg', d: 'تک‌رنگ سفید — چاپ' },
+const GROUPS = [
+  {
+    title: 'لوگو',
+    note: 'SVG برداری است و در هر اندازه‌ای باکیفیت می‌ماند. برای چاپ همین را بفرستید، نه PNG.',
+    files: [
+      { f: 'brand/tuxly-logo-horizontal.svg', d: 'ترکیب افقی لاتین', on: 'dark' },
+      { f: 'brand/tuxly-logo-horizontal-light.svg', d: 'ترکیب افقی لاتین — روی تیره', on: 'light' },
+      { f: 'brand/tuxly-logo-fa.svg', d: 'ترکیب فارسی', on: 'dark' },
+      { f: 'brand/tuxly-logo-fa-light.svg', d: 'ترکیب فارسی — روی تیره', on: 'light' },
+      { f: 'brand/tuxly-logo-vertical.svg', d: 'ترکیب عمودی', on: 'dark' },
+      { f: 'brand/tuxly-logo-vertical-light.svg', d: 'ترکیب عمودی — روی تیره', on: 'light' },
+    ],
+  },
+  {
+    title: 'نشان',
+    note: 'وقتی فضا کم است یا نام تاکسلی از متن معلوم است.',
+    files: [
+      { f: 'brand/tuxly-mark.svg', d: 'نشان', on: 'dark' },
+      { f: 'brand/tuxly-mark-light.svg', d: 'نشان — حالت تیره', on: 'light' },
+      { f: 'brand/tuxly-mark-black.svg', d: 'تک‌رنگ سیاه — چاپ', on: 'dark' },
+      { f: 'brand/tuxly-mark-white.svg', d: 'تک‌رنگ سفید — چاپ', on: 'light' },
+    ],
+  },
+  {
+    title: 'ماسکات',
+    note: 'نُه حالت پنگوئن، برای صفحه‌های خطا، نتیجهٔ خالی، راهنما و مانند این.',
+    files: [
+      { f: 'brand/mascots/tuxly-wave-light.svg', d: 'خوش‌آمد', on: 'light' },
+      { f: 'brand/mascots/tuxly-search-light.svg', d: 'جست‌وجو', on: 'light' },
+      { f: 'brand/mascots/tuxly-read-light.svg', d: 'مطالعه', on: 'light' },
+      { f: 'brand/mascots/tuxly-code-light.svg', d: 'کد', on: 'light' },
+      { f: 'brand/mascots/tuxly-oops-light.svg', d: 'خطا', on: 'light' },
+      { f: 'brand/mascots/tuxly-sleep-light.svg', d: 'خالی یا آفلاین', on: 'light' },
+      { f: 'brand/mascots/tuxly-think-light.svg', d: 'پرسش', on: 'light' },
+      { f: 'brand/mascots/tuxly-cheer-light.svg', d: 'موفقیت', on: 'light' },
+      { f: 'brand/mascots/tuxly-love-light.svg', d: 'سپاس', on: 'light' },
+    ],
+  },
+];
+
+/** Raster files, shown as a plain table since a tile preview adds nothing. */
+const RASTER = [
+  { f: 'brand/social/avatar-1000.png', d: 'آواتار — ۱۰۰۰×۱۰۰۰' },
+  { f: 'brand/social/banner-x-1500x500.png', d: 'بنر ایکس و ماستودون — ۱۵۰۰×۵۰۰' },
+  { f: 'brand/social/banner-bluesky-3000x1000.png', d: 'بنر بلواسکای — ۳۰۰۰×۱۰۰۰' },
+  { f: 'brand/social/banner-linkedin-page-1128x191.png', d: 'کاور صفحهٔ لینکدین — ۱۱۲۸×۱۹۱' },
+  { f: 'brand/social/banner-linkedin-profile-1584x396.png', d: 'کاور پروپرونده لینکدین — ۱۵۸۴×۳۹۶' },
+  { f: 'brand/readme-banner.png', d: 'بنر ریدمی — ۱۲۸۰×۳۲۰' },
+  { f: 'og/github-social-preview.png', d: 'پیش‌نمایش اجتماعی گیت‌هاب — ۱۲۸۰×۶۴۰' },
 ];
 ---
 
@@ -43,7 +82,7 @@ const FILES = [
     <h1>هویت بصری تاکسلی</h1>
     <p class="intro">
       این صفحه همه‌چیز مربوط به ظاهر تاکسلی را یک‌جا دارد. اگر دربارهٔ ما
-      می‌نویسید یا به سایت لینک می‌دهید، از همین فایل‌ها استفاده کنید.
+      می‌نویسید یا به سایت لینک می‌دهید، از همین پرونده‌ها استفاده کنید.
     </p>
 
     <section>
@@ -109,20 +148,62 @@ const FILES = [
     </section>
 
     <section>
-      <h2>فایل‌ها</h2>
-      <ul class="files">
-        {FILES.map((x) => (
-          <li>
-            <a href={`/brand/${x.f}`} download>
-              <bdi class="latin f">{x.f}</bdi>
-              <span class="muted">{x.d}</span>
-            </a>
-          </li>
-        ))}
-      </ul>
+      <h2>پرونده‌ها</h2>
+      <p class="files-intro">
+        روی هر کارت بزنید تا پرونده با کیفیت دانلود شود.
+      </p>
+
+      {GROUPS.map((group) => (
+        <div class="group">
+          <h3>{group.title}</h3>
+          <p class="g-note muted">{group.note}</p>
+          <ul class="tiles">
+            {group.files.map((x) => (
+              <li>
+                <a href={`/${x.f}`} download data-no-ext>
+                  <span class:list={['preview', x.on]}>
+                    <img src={`/${x.f}`} alt="" loading="lazy" decoding="async" />
+                  </span>
+                  <span class="meta">
+                    <span class="name">{x.d}</span>
+                    <span class="file"><bdi class="latin">{x.f.split('/').pop()}</bdi></span>
+                  </span>
+                  <span class="dl" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M12 3v12m0 0-4-4m4 4 4-4M4 19h16"></path>
+                    </svg>
+                  </span>
+                </a>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ))}
+
+      <div class="group">
+        <h3>تصویرهای شبکه‌های اجتماعی</h3>
+        <p class="g-note muted">
+          هر شبکه اندازه‌های متفاوتی دارند، پس اندازه‌ها جدا هستند. راهنمای اینکه
+          هرکدام کجا می‌رود در
+          <a href={`${SITE.repo}/blob/master/public/brand/social/README.md`} rel="noopener"> مخزن </a>
+          هست.
+        </p>
+        <ul class="raster">
+          {RASTER.map((x) => (
+            <li>
+              <a href={`/${x.f}`} download data-no-ext>
+                <span class="name">{x.d}</span>
+                <bdi class="latin file">{x.f.split('/').pop()}</bdi>
+              </a>
+            </li>
+          ))}
+        </ul>
+      </div>
+
       <p class="muted">
-        نسخهٔ PNG با پس‌زمینهٔ شفاف و راهنمای کامل در
-        <a href={`${SITE.repo}/tree/master/public/brand`} rel="noopener"> مخزن </a> موجود است.
+        همهٔ پرونده‌ها در
+        <a href={`${SITE.repo}/tree/master/public/brand`} rel="noopener"> مخزن </a>
+        هم موجودند، به‌همراه اسکریپت‌هایی که می‌سازندشان.
       </p>
     </section>
 
@@ -214,14 +295,90 @@ const FILES = [
   dt { font-size: var(--step-1); font-weight: 700; }
   dd { margin: 0.2rem 0 0; color: var(--text-muted); font-size: var(--step--1); }
 
-  .files { list-style: none; padding: 0; display: grid; gap: 0.5rem; grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr)); }
-  .files a {
-    display: grid; gap: 0.15rem; padding: 0.7rem 0.9rem;
-    border: 1px solid var(--border); border-radius: var(--r-sm); text-decoration: none;
+  .files-intro { font-size: var(--step--1); color: var(--text-muted); }
+  .group { margin-top: 2rem; }
+  .group h3 { font-size: var(--step-0); margin: 0 0 0.2rem; }
+  .g-note { font-size: var(--step--2); margin: 0 0 0.9rem; max-width: var(--measure); }
+
+  .tiles {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    gap: 0.7rem;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 190px), 1fr));
   }
-  .files a:hover { border-color: var(--accent); }
-  .files .f { font-size: var(--step--1); }
-  .files span { font-size: var(--step--2); }
+  .tiles a {
+    position: relative;
+    display: grid;
+    align-content: start;
+    gap: 0.55rem;
+    padding: 0.6rem;
+    border: 1px solid var(--border);
+    border-radius: var(--r-md);
+    background: var(--surface);
+    text-decoration: none;
+    transition: border-color 0.16s var(--ease), transform 0.16s var(--ease);
+  }
+  .tiles a:hover,
+  .tiles a:focus-visible { border-color: var(--accent); transform: translateY(-2px); }
+  .preview {
+    display: block;
+    height: 120px;
+    border-radius: var(--r-sm);
+    padding: 0.8rem;
+    border: 1px solid var(--border-soft);
+    overflow: hidden;
+  }
+  .preview.dark { background: #FAFAF7; }
+  .preview.light { background: #0F141C; }
+  .preview img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+
+  .tiles .meta { display: grid; gap: 0.1rem; padding-inline: 0.2rem; }
+  .tiles .name { font-size: var(--step--1); font-weight: 600; }
+  .tiles .file { font-size: var(--step--2); color: var(--text-muted); }
+  .dl {
+    position: absolute;
+    inset-block-start: 0.9rem;
+    inset-inline-end: 0.9rem;
+    display: grid;
+    place-items: center;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background: color-mix(in srgb, var(--bg) 80%, transparent);
+    color: var(--text-muted);
+    opacity: 0;
+    transition: opacity 0.16s var(--ease);
+  }
+  .tiles a:hover .dl,
+  .tiles a:focus-visible .dl { opacity: 1; color: var(--accent); }
+  @media (hover: none) { .dl { opacity: 1; } }
+
+  .raster { list-style: none; padding: 0; margin: 0; display: grid; gap: 0.4rem; }
+  .raster a {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+    align-items: baseline;
+    padding: 0.6rem 0.9rem;
+    min-height: 44px;
+    border: 1px solid var(--border);
+    border-radius: var(--r-sm);
+    text-decoration: none;
+    font-size: var(--step--1);
+  }
+  .raster a:hover { border-color: var(--accent); }
+  .raster .file { font-size: var(--step--2); color: var(--text-muted); }
+
+  @media (prefers-reduced-motion: reduce) {
+    .tiles a:hover, .tiles a:focus-visible { transform: none; }
+  }
 
   .rules { padding-inline-start: 1.2rem; max-width: var(--measure); }
   .rules li { margin-block: 0.5rem; }
