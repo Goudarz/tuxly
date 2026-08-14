@@ -1,32 +1,28 @@
 @import './tokens.css';
+@font-face {
+  font-family: 'Vazirmatn';
+  src: url('/fonts/Vazirmatn.woff2') format('woff2') tech(variations),
+       url('/fonts/Vazirmatn.woff2') format('woff2');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
 
-/* Fonts are self-hosted. Google's CDN is slow or unreachable for Iranian
-   users, which would undo all the performance work. */
-@font-face {
-  font-family: 'Vazirmatn';
-  src: url('/fonts/Vazirmatn.woff2') format('woff2-variations');
-  font-weight: 100 900;
-  font-display: swap;
-  unicode-range: U+0600-06FF, U+200C-200E, U+2010-2011, U+204F, U+2E41, U+FB8A, U+FBFC-FBFD, U+FE70-FEFF;
-}
-@font-face {
-  font-family: 'Vazirmatn';
-  src: url('/fonts/Vazirmatn.woff2') format('woff2-variations');
-  font-weight: 100 900;
-  font-display: swap;
-  unicode-range: U+0000-00FF, U+2000-206F, U+2190-21BB, U+2212;
-}
 @font-face {
   font-family: 'Space Grotesk';
-  src: url('/fonts/SpaceGrotesk.woff2') format('woff2-variations');
+  src: url('/fonts/SpaceGrotesk.woff2') format('woff2') tech(variations),
+       url('/fonts/SpaceGrotesk.woff2') format('woff2');
   font-weight: 300 700;
+  font-style: normal;
   font-display: swap;
-  unicode-range: U+0000-00FF, U+2000-206F, U+2190-21BB;
+  /* Latin only — this face never loads for Persian-only text. */
+  unicode-range: U+0000-00FF, U+2000-206F, U+2190-21BB, U+2212;
 }
-/* Adjusted metrics so the page does not shift on font swap (CLS). */
+
 @font-face {
   font-family: 'Vazirmatn Fallback';
-  src: local('Tahoma'), local('Arial'), local('Noto Sans Arabic');
+  src: local('Tahoma'), local('Segoe UI'), local('Noto Sans Arabic'),
+       local('DejaVu Sans'), local('Arial');
   size-adjust: 96%;
   ascent-override: 92%;
   descent-override: 28%;
