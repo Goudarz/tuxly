@@ -17,12 +17,12 @@ export const SITE = {
 
 /** Placeholders — replace these handles with the real accounts. */
 export const SOCIAL = [
-  { id: 'telegram', label: 'تلگرام', href: 'https://t.me/tuxly', handle: '@tuxly' },
-  { id: 'mastodon', label: 'ماستودون', href: 'https://fosstodon.org/@tuxly', handle: '@tuxly@fosstodon.org' },
+  { id: 'telegram', label: 'تلگرام', href: 'https://t.me/tuxlyir', handle: '@tuxlyir' },
+  { id: 'mastodon', label: 'ماستودون', href: '#', handle: '@tuxly' },
   { id: 'github', label: 'گیت‌هاب', href: 'https://github.com/goudarz/tuxly', handle: 'goudarz/tuxly' },
-  { id: 'peertube', label: 'پیرتیوب', href: 'https://video.ploud.fr/c/tuxly', handle: '@tuxly' },
+  { id: 'peertube', label: 'پیرتیوب', href: '#', handle: '@tuxly' },
   { id: 'linkedin', label: 'لینکدین', href: 'https://www.linkedin.com/company/tuxly', handle: 'tuxly' },
-  { id: 'x', label: 'ایکس', href: 'https://x.com/tuxly', handle: '@tuxly' },
+  { id: 'x', label: 'ایکس', href: 'https://x.com/tuxlyir', handle: '@tuxlyir' },
   { id: 'rss', label: 'خوراک RSS', href: '/rss.xml', handle: 'rss.xml' },
 ] as const;
 
