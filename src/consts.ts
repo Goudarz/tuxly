@@ -1,3 +1,5 @@
+import pkg from '../package.json' with { type: 'json' };
+
 export const SITE = {
   url: 'https://tuxly.ir',
   name: 'تاکسلی',
@@ -10,8 +12,7 @@ export const SITE = {
   email: 'hi@tuxly.ir',
   repo: 'https://github.com/goudarz/tuxly',
   postsPerPage: 12,
-  /** Read by the generator meta tag. Bump with each notable release. */
-  version: '0.2.0',
+  version: pkg.version,
 } as const;
 
 /** Placeholders — replace these handles with the real accounts. */
