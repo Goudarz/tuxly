@@ -22,6 +22,10 @@ priceNote: رایگان
 # سخنرانان — فیلد performer در داده‌های ساختاریافته را پر می‌کند.
 # performers: [نام سخنران]
 
+# پوستر. فایل را در src/assets/events/ بگذارید و با مسیر نسبی صدا بزنید.
+# cover: ../../src/assets/events/my-event.jpg
+# coverAlt: توضیح تصویر برای کسی که آن را نمی‌بیند
+
 # اگر نام‌نویسی از تاریخ مشخصی باز می‌شود:
 # registerOpensAt: 2026-09-01
 language: فارسی
