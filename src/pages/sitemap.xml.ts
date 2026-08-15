@@ -1,5 +1,6 @@
 import type { APIContext } from 'astro';
 import { getCollection } from 'astro:content';
+import { getSpeakers } from '../lib/speakers';
 import { SITE, ENTITY_ROUTES } from '../consts';
 
 /**
@@ -93,6 +94,19 @@ export async function GET(context: APIContext) {
 
   for (const author of authors) {
     entries.push({ path: `/people/${author.id}`, changefreq: 'monthly', priority: 0.5 });
+  }
+
+  // Speaker pages are generated from events, so they belong here exactly
+  // like any other route.
+  entries.push({ path: '/speakers', changefreq: 'weekly', priority: 0.5 });
+  for (const speaker of await getSpeakers()) {
+    if (speaker.authorId) continue;
+    entries.push({
+      path: `/speakers/${encodeURIComponent(speaker.slug)}`,
+      lastmod: speaker.talks[0]?.event.data.startsAt,
+      changefreq: 'monthly',
+      priority: 0.4,
+    });
   }
 
   // Tag pages, including their own pagination.

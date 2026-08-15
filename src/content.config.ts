@@ -242,7 +242,44 @@ const events = defineCollection({
         priceNote: z.string().optional(),
         registerOpensAt: z.coerce.date().optional(),
         /** Speakers or hosts. Fills schema.org `performer`. */
-        performers: z.array(z.string()).default([]),
+        /**
+         * Speakers or hosts. Shown on the page and used for schema.org
+         * `performer`.
+         *
+         * Accepts a bare name or an object — a plain name should stay a
+         * one-liner:
+         *
+         *   performers:
+         *     - گودرز جعفری
+         *     - name: ساناز کوهپایه
+         *       talk: چطور درایور برای توزیع‌های مختلف گنو/لینوکس توسعه بدهیم؟
+         *       role: توسعه‌دهندهٔ وب
+         *       url: https://example.org
+         *       author: goudarz-jafari
+         */
+        performers: z
+          .array(
+            z.union([
+              z.string(),
+              z.object({
+                name: z.string(),
+                /** Title of this person's talk, if the event has several. */
+                talk: z.string().optional(),
+                /** Short descriptor: job, affiliation, whatever fits. */
+                role: z.string().optional(),
+                url: z.url().optional(),
+                /**
+                 * Link to an author profile instead of the generated
+                 * speaker page. Use it when the speaker also writes here,
+                 * so one person does not end up with two pages.
+                 */
+                author: reference('authors').optional(),
+              }),
+            ]),
+          )
+          .default([])
+          // Normalise here so every consumer sees the same shape.
+          .transform((list) => list.map((p) => (typeof p === 'string' ? { name: p } : p))),
         language: z.string().default('فارسی'),
         topics: z.array(z.string()).default([]),
         entities: z.array(reference('entities')).default([]),

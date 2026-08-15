@@ -246,7 +246,14 @@ export function eventSchema(
       image: [opts.imageUrl ?? `${SITE.url}/og/default.png`],
       ...(organizer ? { organizer } : {}),
       ...(d.performers.length
-        ? { performer: d.performers.map((name) => ({ '@type': 'Person', name })) }
+        ? {
+            performer: d.performers.map((p) => ({
+              '@type': 'Person',
+              name: p.name,
+              ...(p.role ? { jobTitle: p.role } : {}),
+              ...(p.url ? { url: p.url } : {}),
+            })),
+          }
         : // No named speakers: the organiser is the one presenting.
           organizer
           ? { performer: organizer }

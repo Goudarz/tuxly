@@ -5,6 +5,9 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import EntityChip from '../../components/EntityChip.astro';
 import SearchIndex from '../../components/SearchIndex.astro';
 import ShareBar from '../../components/ShareBar.astro';
+import EventSpeakers from '../../components/EventSpeakers.astro';
+import { speakerUrl } from '../../lib/speakers';
+import { slugify } from '../../lib/persian';
 import { faDateTimeWeekday, faTimeIn, tzLabel, offsetFromTehran, SITE_TZ } from '../../lib/persian';
 import { eventSchema } from '../../lib/schema';
 import { entityUrl, entityLabel, priceLabel } from '../../lib/entities';
@@ -91,6 +94,21 @@ const icsUrl = `/events/${slug}/event.ics`;
           </div>
         )}
         {!organizer && d.organizerName && <div><dt>برگزارکننده</dt><dd>{d.organizerName}</dd></div>}
+        {d.performers.length > 0 && (
+          <div>
+            <dt>{d.performers.length > 1 ? 'ارائه‌دهندگان' : 'ارائه‌دهنده'}</dt>
+            <dd class="people">
+              {d.performers.map((p, i) => (
+                <>
+                  {i > 0 && '، '}
+                  <a href={speakerUrl({ slug: slugify(p.name), authorId: p.author?.id })}>
+                    <bdi>{p.name}</bdi>
+                  </a>
+                </>
+              ))}
+            </dd>
+          </div>
+        )}
         <div><dt>هزینه</dt><dd>{priceLabel(event)}</dd></div>
         <div><dt>زبان</dt><dd>{d.language}</dd></div>
       </dl>
@@ -117,8 +135,8 @@ const icsUrl = `/events/${slug}/event.ics`;
       {!d.cancelled && (
         <p class="cal-note muted">
           فایل <bdi class="latin">ICS</bdi> استاندارد باز تقویم است و در
-          پروتون، نکست‌کلود، <bdi class="latin">Thunderbird</bdi>،
-          اوت‌لوک و هر برنامهٔ دیگری باز می‌شود. یادآور یک‌ساعت‌قبل هم
+          پروتون، نکست‌کلود، <bdi class="latin">Thunderbird</bdi> 
+           و هر برنامهٔ دیگری باز می‌شود. یادآور یک‌ساعت‌قبل هم
           داخلش هست.
           {' '}
           <a href="/events#calendar">یا کل تقویم رویدادها را دنبال کنید</a>
@@ -143,7 +161,13 @@ const icsUrl = `/events/${slug}/event.ics`;
 
     <div class="prose"><Content /></div>
 
-    <SearchIndex text={`${d.title} ${d.summary} ${d.topics.join(' ')} ${d.city ?? ''}`} />
+    <EventSpeakers speakers={d.performers} />
+
+    <SearchIndex
+      text={`${d.title} ${d.summary} ${d.topics.join(' ')} ${d.city ?? ''} ${d.performers
+        .map((p) => `${p.name} ${p.talk ?? ''}`)
+        .join(' ')}`}
+    />
 
     {(related.length > 0 || d.topics.length > 0) && (
       <section class="prose">
@@ -180,6 +204,7 @@ const icsUrl = `/events/${slug}/event.ics`;
   .facts > div { display: grid; gap: 0.1rem; }
   dt { color: var(--text-muted); font-size: var(--step--2); }
   dd { margin: 0; font-size: var(--step--1); font-weight: 600; }
+  .people { max-width: 28ch; }
   .tz { font-weight: 400; opacity: 0.8; }
   .alt-tz {
     display: block;

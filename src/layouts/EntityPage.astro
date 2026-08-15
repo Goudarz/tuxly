@@ -8,6 +8,7 @@ import EventCard from '../components/EventCard.astro';
 import EntityChip from '../components/EntityChip.astro';
 import ShareBar from '../components/ShareBar.astro';
 import CommunityLinks from '../components/CommunityLinks.astro';
+import { getTalksForOrganizer, speakerUrl } from '../lib/speakers';
 import SearchIndex from '../components/SearchIndex.astro';
 import {
   getPostsForEntity, getEventsForEntity, entityUrl, entityFeedUrl, entityLabel,
@@ -22,6 +23,9 @@ const d = entity.data;
 
 const posts = await getPostsForEntity(entity.id);
 const events = await getEventsForEntity(entity.id);
+// Talks given at this community's own events, so the page credits the
+// people who actually presented, not just the events.
+const talks = await getTalksForOrganizer(entity.id);
 const related = d.related.length ? await getEntries(d.related) : [];
 const basedOn = d.basedOn.length ? await getEntries(d.basedOn) : [];
 const { Content } = await render(entity);
@@ -134,6 +138,25 @@ const MODEL: Record<string, string> = {
       </section>
     )}
 
+    {talks.length > 0 && (
+      <section>
+        <h2>ارائه‌ها در رویدادهای این اجتماع</h2>
+        <ul class="talks">
+          {talks.map((t) => (
+            <li>
+              <a class="t-name" href={speakerUrl({ slug: t.slug, authorId: t.authorId })}>
+                <bdi>{t.name}</bdi>
+              </a>
+              {t.talk && <span class="t-title">{t.talk}</span>}
+              <a class="t-event" href={`/events/${t.event.id.split('/').pop()}`}>
+                {faDate(t.event.data.startsAt)}
+              </a>
+            </li>
+          ))}
+        </ul>
+      </section>
+    )}
+
     <section>
       <h2>مطالب مرتبط</h2>
       {posts.length === 0 ? (
@@ -175,6 +198,32 @@ const MODEL: Record<string, string> = {
   }
   .chips { display: flex; flex-wrap: wrap; gap: 0.5rem; }
   section { margin-top: 2.5rem; }
+
+  .talks { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.15rem; }
+  .talks li {
+    display: grid;
+    gap: 0.1rem 1rem;
+    padding: 0.75rem 0.6rem;
+    border-radius: var(--r-sm);
+    border-bottom: 1px solid var(--border-soft);
+  }
+  .talks li:last-child { border-bottom: 0; }
+  .talks li:hover { background: var(--surface); }
+  /* Name and date sit on one line once there is room for both. */
+  @media (min-width: 640px) {
+    .talks li { grid-template-columns: 1fr auto; align-items: baseline; }
+    .talks .t-title { grid-column: 1 / -1; }
+  }
+  .t-name { font-weight: 700; text-decoration: none; }
+  .t-name:hover { color: var(--accent); }
+  .t-title { font-size: var(--step--1); color: var(--text-muted); line-height: 1.7; }
+  .t-event {
+    font-size: var(--step--2);
+    color: var(--text-muted);
+    text-decoration: none;
+    white-space: nowrap;
+  }
+  .t-event:hover { color: var(--accent); text-decoration: underline; }
   section h2 { font-size: var(--step-1); margin-top: 0; }
   .count { font-size: var(--step--1); }
 </style>

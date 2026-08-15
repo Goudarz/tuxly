@@ -1,0 +1,201 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import EventCard from '../../components/EventCard.astro';
+import ShareBar from '../../components/ShareBar.astro';
+import SearchIndex from '../../components/SearchIndex.astro';
+import Mark from '../../components/Mark.astro';
+import { getSpeakers, type Speaker } from '../../lib/speakers';
+import { graph } from '../../lib/schema';
+import { faNumber } from '../../lib/persian';
+import { SITE } from '../../consts';
+
+export async function getStaticPaths() {
+  const speakers = await getSpeakers();
+  // Anyone linked to an author profile lives there instead, so no page is
+  // generated for them here.
+  return speakers
+    .filter((s) => !s.authorId)
+    .map((speaker) => ({ params: { slug: speaker.slug }, props: { speaker } }));
+}
+
+const { speaker } = Astro.props as { speaker: Speaker };
+const url = new URL(Astro.url.pathname, SITE.url).href;
+
+const upcoming = speaker.talks.filter(
+  (t) => (t.event.data.endsAt ?? t.event.data.startsAt) >= new Date(),
+);
+const past = speaker.talks.filter(
+  (t) => (t.event.data.endsAt ?? t.event.data.startsAt) < new Date(),
+);
+
+/** Communities this person has presented at, each counted once. */
+const venues = [
+  ...new Map(
+    speaker.talks
+      .filter((t) => t.organizerName)
+      .map((t) => [t.organizerName!, { name: t.organizerName!, url: t.organizerUrl }]),
+  ).values(),
+];
+
+const description = `${speaker.name} — ${
+  speaker.talks.length > 1
+    ? `${faNumber(speaker.talks.length)} ارائه در رویدادهای نرم‌افزار آزاد`
+    : 'ارائه در رویدادهای نرم‌افزار آزاد'
+}${venues.length ? `، از جمله ${venues[0].name}` : ''}.`;
+
+const schema = graph(
+  {
+    '@type': 'ProfilePage',
+    '@id': `${url}#profile`,
+    url,
+    inLanguage: SITE.lang,
+    mainEntity: { '@id': `${url}#person` },
+  },
+  {
+    '@type': 'Person',
+    '@id': `${url}#person`,
+    name: speaker.name,
+    url,
+    ...(speaker.role ? { jobTitle: speaker.role } : {}),
+    ...(speaker.url ? { sameAs: [speaker.url] } : {}),
+    performerIn: speaker.talks.map((t) => ({
+      '@id': `${SITE.url}/events/${t.event.id.split('/').pop()}#event`,
+    })),
+  },
+);
+
+const initial = [...speaker.name.trim()][0];
+const hasInitial = initial ? /\p{L}/u.test(initial) : false;
+---
+
+<BaseLayout title={speaker.name} description={description} schema={schema} ogType="profile">
+  <div class="wrap" data-pagefind-body data-pagefind-meta="kind:ارائه‌دهنده">
+    <header class="head">
+      <span class="avatar" aria-hidden="true">
+        {hasInitial ? <bdi>{initial}</bdi> : <Mark size={30} />}
+      </span>
+
+      <div class="info">
+        <p class="kind">ارائه‌دهنده</p>
+        <h1><bdi>{speaker.name}</bdi></h1>
+        {speaker.role && <p class="role"><bdi>{speaker.role}</bdi></p>}
+
+        <p class="count muted">
+          <span class="tnum">{faNumber(speaker.talks.length)}</span>
+          {speaker.talks.length > 1 ? ' ارائه' : ' ارائه'}
+          {venues.length > 0 && (
+            <>
+              {' در '}
+              {venues.map((v, i) => (
+                <>
+                  {i > 0 && '، '}
+                  {v.url ? <a href={v.url}>{v.name}</a> : v.name}
+                </>
+              ))}
+            </>
+          )}
+        </p>
+
+        {speaker.url && (
+          <p class="link">
+            <a href={speaker.url} rel="noopener nofollow">
+              <bdi class="latin">{speaker.url.replace(/^https?:\/\//, '')}</bdi>
+            </a>
+          </p>
+        )}
+      </div>
+    </header>
+
+    {upcoming.length > 0 && (
+      <section>
+        <h2>ارائه‌های پیش‌رو</h2>
+        <ol class="talks">
+          {upcoming.map((t) => (
+            <li>
+              {t.talk && <p class="talk">{t.talk}</p>}
+              <EventCard event={t.event} compact />
+            </li>
+          ))}
+        </ol>
+      </section>
+    )}
+
+    {past.length > 0 && (
+      <section>
+        <h2>{upcoming.length > 0 ? 'ارائه‌های گذشته' : 'ارائه‌ها'}</h2>
+        <ol class="talks">
+          {past.map((t) => (
+            <li>
+              {t.talk && <p class="talk">{t.talk}</p>}
+              <EventCard event={t.event} compact past />
+            </li>
+          ))}
+        </ol>
+      </section>
+    )}
+
+    <SearchIndex
+      text={`${speaker.name} ${speaker.role ?? ''} ${speaker.talks
+        .map((t) => t.talk ?? '')
+        .join(' ')}`}
+    />
+
+    <ShareBar title={speaker.name} compact />
+
+    <p class="note muted">
+      این صفحه از روی رویدادهای ثبت‌شده در تاکسلی ساخته می‌شود. اگر ارائه‌ای
+      از قلم افتاده یا اطلاعاتی درست نیست،
+      <a href={`mailto:${SITE.email}?subject=${encodeURIComponent(speaker.name)}`}>خبرمان کنید</a>.
+    </p>
+  </div>
+</BaseLayout>
+
+<style>
+  .head {
+    display: flex;
+    align-items: flex-start;
+    gap: 1.2rem;
+    padding-block: 1rem 1.8rem;
+    border-bottom: 1px solid var(--border-soft);
+  }
+  .avatar {
+    display: grid;
+    place-items: center;
+    flex: none;
+    width: 76px;
+    height: 76px;
+    border-radius: 50%;
+    background: color-mix(in srgb, var(--accent) 16%, transparent);
+    border: 1px solid color-mix(in srgb, var(--accent) 35%, transparent);
+    color: var(--accent);
+    font-size: var(--step-2);
+    font-weight: 700;
+    line-height: 1;
+  }
+  .info { min-width: 0; }
+  .kind { color: var(--accent); font-weight: 700; font-size: var(--step--1); margin: 0; }
+  h1 { margin: 0.2rem 0 0; }
+  .role { margin: 0.3rem 0 0; color: var(--text-muted); font-size: var(--step--1); }
+  .count { margin: 0.6rem 0 0; font-size: var(--step--1); }
+  .link { margin: 0.4rem 0 0; font-size: var(--step--1); }
+
+  section { margin-top: 2.5rem; }
+  section h2 { font-size: var(--step-1); margin-top: 0; }
+
+  .talks { list-style: none; margin: 0; padding: 0; }
+  .talks > li + li { margin-top: 0.6rem; }
+  /* The talk title leads; the event is context underneath it. */
+  .talk {
+    margin: 0 0 0.2rem;
+    font-size: var(--step-0);
+    font-weight: 700;
+    line-height: 1.6;
+  }
+
+  .note { margin-top: 2.5rem; font-size: var(--step--2); max-width: var(--measure); }
+
+  @media (max-width: 520px) {
+    .head { gap: 0.9rem; }
+    .avatar { width: 58px; height: 58px; font-size: var(--step-1); }
+  }
+</style>
