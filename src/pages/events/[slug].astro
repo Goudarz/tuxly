@@ -130,6 +130,9 @@ const icsUrl = `/events/${slug}/event.ics`;
         )}
         {d.onlineUrl && <a class="btn" href={d.onlineUrl} rel="noopener">پیوند اتصال</a>}
         {d.mapUrl && <a class="btn" href={d.mapUrl} rel="noopener">نقشه</a>}
+        {d.notesUrl && (
+          <a class="btn" href={d.notesUrl} rel="noopener">یادداشت‌های رسمی نشست</a>
+        )}
       </div>
 
       {!d.cancelled && (

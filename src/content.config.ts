@@ -286,6 +286,14 @@ const events = defineCollection({
         cover: image().optional(),
         coverAlt: z.string().optional(),
         cancelled: z.boolean().default(false),
+
+        /**
+         * Where the organisers published their own notes. Shown as a link
+         * after the event, so a reader can go to the source rather than
+         * relying on our summary.
+         */
+        notesUrl: z.url().optional(),
+
         draft: z.boolean().default(false),
       })
       .superRefine((d, ctx) => {
