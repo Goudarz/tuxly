@@ -1,0 +1,191 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import {
+  getAnniversariesOn,
+  getUpcomingAnniversaries,
+  getAnniversariesByMonth,
+  ageAt,
+} from '../lib/anniversaries';
+import { collectionSchema } from '../lib/schema';
+import { faNumber } from '../lib/persian';
+import { SITE } from '../consts';
+
+/*
+ * Anchored to the build, not the request. A static page cannot know the
+ * reader's "today", so the honest thing is to say when it was generated.
+ */
+const BUILT = new Date();
+
+const today = await getAnniversariesOn(BUILT);
+const upcoming = (await getUpcomingAnniversaries(BUILT, 8)).filter(
+  (a) => !today.some((t) => t.id === a.id),
+);
+const byMonth = await getAnniversariesByMonth();
+
+const MONTHS = [
+  'ژانویه', 'فوریه', 'مارس', 'آوریل', 'مه', 'ژوئن',
+  'ژوئیه', 'اوت', 'سپتامبر', 'اکتبر', 'نوامبر', 'دسامبر',
+];
+
+const KIND = {
+  founded: 'آغاز',
+  release: 'انتشار',
+  milestone: 'نقطهٔ عطف',
+  person: 'چهره',
+};
+
+const total = byMonth.reduce((n, m) => n + m.items.length, 0);
+const url = new URL('/anniversaries', SITE.url).href;
+---
+
+<BaseLayout
+  title="تقویم سالگردها"
+  description="سالگرد آغاز پروژه‌ها، انتشارهای تاریخی و نقطه‌های عطف نرم‌افزار آزاد، ماه به ماه."
+  schema={collectionSchema('تقویم سالگردها', url, 'سالگردهای نرم‌افزار آزاد', total)}
+>
+  <div class="wrap" data-pagefind-body data-pagefind-meta="kind:صفحه">
+    <h1>تقویم سالگردها</h1>
+    <p class="intro">
+      نرم‌افزار آزاد تاریخ دارد و بیشترش در ایمیل‌ها و کامیت‌های قدیمی
+      دفن شده. اینجا سالگرد آغاز پروژه‌ها، انتشارهای تاریخی و لحظه‌هایی که
+      مسیر را عوض کردند جمع شده — ماه به ماه، مستقل از سال.
+    </p>
+
+    {today.length > 0 && (
+      <section class="today">
+        <h2>امروز</h2>
+        <ul class="cards">
+          {today.map((a) => (
+            <li>
+              <span class="age tnum">{faNumber(ageAt(a, BUILT))}</span>
+              <span class="body">
+                <span class="t">
+                  {a.url ? <a href={a.url}>{a.title}</a> : a.title}
+                </span>
+                <span class="k">{KIND[a.kind]} · <span class="tnum">{a.date.getUTCFullYear()}</span></span>
+                {a.note && <span class="note">{a.note}</span>}
+                {a.source && (
+                  <a class="src" href={a.source} rel="noopener">منبع اصلی</a>
+                )}
+              </span>
+            </li>
+          ))}
+        </ul>
+      </section>
+    )}
+
+    {upcoming.length > 0 && (
+      <section>
+        <h2>پیش‌رو</h2>
+        <ul class="rows">
+          {upcoming.map((a) => (
+            <li>
+              <span class="when tnum">{faNumber(a.day)} {MONTHS[a.month - 1]}</span>
+              <span class="t">{a.url ? <a href={a.url}>{a.title}</a> : a.title}</span>
+              <span class="yrs tnum">{faNumber(ageAt(a, BUILT) + 1)} ساله می‌شود</span>
+            </li>
+          ))}
+        </ul>
+      </section>
+    )}
+
+    <section>
+      <h2>همهٔ سالگردها</h2>
+      <p class="hint muted">
+        <span class="tnum">{faNumber(total)}</span> مورد. تاریخ‌ها میلادی‌اند،
+        چون خود رویدادها با همان تقویم ثبت شده‌اند.
+      </p>
+
+      {byMonth.map(({ month, items }) => (
+        <div class="month">
+          <h3>{MONTHS[month - 1]}</h3>
+          <ul class="rows">
+            {items.map((a) => (
+              <li>
+                <span class="when tnum">{faNumber(a.day)}</span>
+                <span class="t">{a.url ? <a href={a.url}>{a.title}</a> : a.title}</span>
+                <span class="yrs tnum">{a.date.getUTCFullYear()}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ))}
+    </section>
+
+    <p class="note-foot muted">
+      این فهرست از دو جا ساخته می‌شود: تاریخ آغاز هر موجودیت که در صفحهٔ
+      خودش ثبت شده، و
+      <a href={`${SITE.repo}/blob/master/content/milestones.json`} rel="noopener">
+        <bdi class="latin">content/milestones.json</bdi>
+      </a>
+      برای لحظه‌هایی که به پروژهٔ خاصی وصل نیستند. سالگردی می‌شناسید که اینجا
+      نیست؟ <a href={`mailto:${SITE.email}`}> خبرمان کنید </a>.
+    </p>
+  </div>
+</BaseLayout>
+
+<style>
+  .intro { max-width: var(--measure); color: var(--text-muted); }
+  section { margin-top: 2.5rem; }
+  section h2 { font-size: var(--step-1); }
+  .hint { font-size: var(--step--1); }
+
+  .today {
+    border: 1px solid color-mix(in srgb, var(--accent) 35%, transparent);
+    background: color-mix(in srgb, var(--accent) 8%, var(--surface));
+    border-radius: var(--r-md);
+    padding: 1.2rem 1.4rem;
+  }
+  .today h2 { margin-top: 0; }
+
+  .cards { list-style: none; margin: 0; padding: 0; display: grid; gap: 1rem; }
+  .cards li { display: flex; gap: 1rem; align-items: flex-start; }
+  .age {
+    flex: none;
+    display: grid;
+    place-items: center;
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background: var(--accent);
+    color: var(--accent-ink);
+    font-size: var(--step-2);
+    font-weight: 800;
+    line-height: 1;
+  }
+  .cards .body { display: grid; gap: 0.15rem; min-width: 0; }
+  .cards .t { font-size: var(--step-1); font-weight: 700; }
+  .cards .k { font-size: var(--step--2); color: var(--text-muted); }
+  .cards .note { margin-top: 0.3rem; color: var(--text-muted); font-size: var(--step--1); line-height: 1.8; }
+  .cards .src { margin-top: 0.3rem; font-size: var(--step--2); }
+
+  .rows { list-style: none; margin: 0.6rem 0 0; padding: 0; display: grid; }
+  .rows li {
+    display: grid;
+    gap: 0.1rem 1rem;
+    padding: 0.6rem 0.5rem;
+    border-bottom: 1px solid var(--border-soft);
+    border-radius: var(--r-sm);
+  }
+  .rows li:last-child { border-bottom: 0; }
+  .rows li:hover { background: var(--surface); }
+  @media (min-width: 560px) {
+    .rows li { grid-template-columns: 7rem 1fr auto; align-items: baseline; }
+  }
+  .when { font-size: var(--step--1); color: var(--text-muted); }
+  .rows .t { font-weight: 600; }
+  .rows .t a { text-decoration: none; }
+  .rows .t a:hover { color: var(--accent); text-decoration: underline; }
+  .yrs { font-size: var(--step--2); color: var(--text-muted); white-space: nowrap; }
+
+  .month { margin-top: 1.6rem; }
+  .month h3 {
+    font-size: var(--step-0);
+    color: var(--accent);
+    margin: 0;
+    padding-bottom: 0.3rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .note-foot { margin-top: 3rem; font-size: var(--step--2); max-width: var(--measure); }
+</style>

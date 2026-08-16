@@ -309,6 +309,27 @@ const events = defineCollection({
       }),
 });
 
+/**
+ * Dated moments in free software history.
+ *
+ * Only for things that have no natural home elsewhere. Anything that is a
+ * project's own birth is better expressed as `firstRelease` on its entity,
+ * which the anniversaries page already reads — one fact, one place.
+ */
+const milestones = defineCollection({
+  loader: file('content/milestones.json'),
+  schema: z.object({
+    id: z.string(),
+    date: z.coerce.date(),
+    titleFa: z.string(),
+    kind: z.enum(['founded', 'release', 'milestone', 'person']),
+    /** Optional link to the entity this moment belongs to. */
+    entity: reference('entities').optional(),
+    note: z.string().optional(),
+    source: z.url().optional(),
+  }),
+});
+
 const glossary = defineCollection({
   loader: file('content/glossary/terms.json'),
   schema: z.object({
@@ -321,4 +342,4 @@ const glossary = defineCollection({
   }),
 });
 
-export const collections = { posts, entities, authors, events, sources, glossary };
+export const collections = { posts, entities, authors, events, sources, glossary, milestones };

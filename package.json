@@ -27,7 +27,8 @@
     "brand:banner": "node scripts/build-readme-banner.mjs",
     "brand:social": "node scripts/build-social-preview.mjs",
     "fonts:subset": "node scripts/subset-fonts.mjs",
-    "brand:social-kit": "node scripts/build-social-kit.mjs"
+    "brand:social-kit": "node scripts/build-social-kit.mjs",
+    "brand:anniversary": "node scripts/build-anniversary.mjs"
   },
   "dependencies": {
     "@astrojs/mdx": "^7.0.5",

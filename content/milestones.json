@@ -1,0 +1,75 @@
+[
+  {
+    "id": "gnome-announced",
+    "date": "1997-08-15",
+    "titleFa": "اعلام پروژهٔ گنوم",
+    "kind": "founded",
+    "entity": "desktops/gnome",
+    "note": "میگل د ایکازا در فهرست پستی GTK اعلام کرد می‌خواهد میزکاری کاملاً آزاد بسازد.",
+    "source": "https://mail.gnome.org/archives/gtk-list/1997-August/msg00123.html"
+  },
+  {
+    "id": "linux-announced",
+    "date": "1991-08-25",
+    "titleFa": "اعلام هستهٔ لینوکس",
+    "kind": "founded",
+    "entity": "projects/linux-kernel",
+    "note": "لینوس توروالدز در گروه خبری comp.os.minix نوشت روی «یک سیستم‌عامل رایگان» کار می‌کند — و تأکید کرد که فقط یک سرگرمی است و بزرگ نخواهد شد.",
+    "source": "https://groups.google.com/g/comp.os.minix/c/dlNtH7RRrGA"
+  },
+  {
+    "id": "gnu-announced",
+    "date": "1983-09-27",
+    "titleFa": "اعلام پروژهٔ گنو",
+    "kind": "founded",
+    "note": "ریچارد استالمن اعلام کرد سیستم‌عاملی کاملاً آزاد و سازگار با یونیکس خواهد ساخت. تمام آنچه امروز نرم‌افزار آزاد می‌نامیم از همین‌جا شروع شد.",
+    "source": "https://www.gnu.org/gnu/initial-announcement.html"
+  },
+  {
+    "id": "debian-founded",
+    "date": "1993-08-16",
+    "titleFa": "آغاز پروژهٔ دبیان",
+    "kind": "founded",
+    "entity": "distributions/debian",
+    "note": "یان مرداک اعلام کرد توزیع تازه‌ای می‌سازد که آزادانه و به‌صورت جمعی نگهداری شود.",
+    "source": "https://www.debian.org/doc/manuals/project-history/"
+  },
+  {
+    "id": "gpl-v1",
+    "date": "1989-02-25",
+    "titleFa": "انتشار نخستین نسخهٔ GPL",
+    "kind": "milestone",
+    "note": "پروانه‌ای که مفهوم کپی‌لفت را عملی کرد و مبنای حقوقی بخش بزرگی از نرم‌افزار آزاد شد."
+  },
+  {
+    "id": "kde-announced",
+    "date": "1996-10-14",
+    "titleFa": "اعلام پروژهٔ KDE",
+    "kind": "founded",
+    "entity": "desktops/kde-plasma",
+    "note": "ماتیاس اتریش فراخوان ساخت یک محیط میزکار یکپارچه برای لینوکس را منتشر کرد."
+  },
+  {
+    "id": "firefox-1",
+    "date": "2004-11-09",
+    "titleFa": "انتشار فایرفاکس ۱٫۰",
+    "kind": "release",
+    "entity": "projects/firefox",
+    "note": "نخستین نسخهٔ پایدار مرورگری که سلطهٔ اینترنت اکسپلورر را شکست."
+  },
+  {
+    "id": "git-first-commit",
+    "date": "2005-04-07",
+    "titleFa": "نخستین کامیت گیت",
+    "kind": "founded",
+    "entity": "projects/git",
+    "note": "لینوس توروالدز در چند روز ابزاری نوشت که امروز استاندارد جهانی کنترل نسخه است."
+  },
+  {
+    "id": "osi-founded",
+    "date": "1998-02-03",
+    "titleFa": "تأسیس ابتکار متن‌باز",
+    "kind": "founded",
+    "note": "اصطلاح «متن‌باز» رسماً معرفی شد و بنیاد OSI برای تعریف و تأیید پروانه‌ها شکل گرفت."
+  }
+]
