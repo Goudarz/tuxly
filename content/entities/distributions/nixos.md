@@ -17,7 +17,7 @@ currentVersion: '26.05'
 releasedAt: 2026-05-30
 eolAt: 2026-12-31
 wikidata: Q21998874
-versionCheckedAt: 2026-08-10
+versionCheckedAt: 2026-08-17
 ---
 
 نیکس‌او‌اس با هر توزیع دیگری تفاوت بنیادی دارد. به‌جای نصب بسته‌ها، کل

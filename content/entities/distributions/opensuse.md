@@ -17,7 +17,7 @@ currentVersion: '16.0'
 releasedAt: 2025-10-01
 eolAt: 2027-10-31
 wikidata: Q16691
-versionCheckedAt: 2026-08-10
+versionCheckedAt: 2026-08-17
 ---
 
 اوپن‌سوزه دو نسخهٔ کاملاً متفاوت دارد. Leap مدل انتشار ثابت دارد و

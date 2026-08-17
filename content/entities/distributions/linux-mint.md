@@ -17,7 +17,7 @@ currentVersion: '22.3'
 releasedAt: 2026-01-11
 eolAt: 2029-04-30
 wikidata: Q2027
-versionCheckedAt: 2026-08-10
+versionCheckedAt: 2026-08-17
 ---
 
 مینت روی اوبونتوی LTS ساخته می‌شود ولی چیزهایی را که جامعه از اوبونتو

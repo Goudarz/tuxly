@@ -15,7 +15,7 @@ tags: [توزیع]
 currentVersion: '3.24.1'
 releasedAt: 2026-06-13
 eolAt: 2028-06-01
-versionCheckedAt: 2026-08-10
+versionCheckedAt: 2026-08-17
 ---
 
 آلپاین به‌جای glibc از musl و به‌جای coreutils از BusyBox استفاده می‌کند.

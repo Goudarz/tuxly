@@ -17,7 +17,7 @@ currentVersion: '26.04'
 releasedAt: 2026-04-23
 eolAt: 2031-04-30
 wikidata: Q381
-versionCheckedAt: 2026-08-10
+versionCheckedAt: 2026-08-17
 ---
 
 اوبونتو را شرکت Canonical در سال ۲۰۰۴ با یک هدف روشن ساخت: گنو/لینوکسی که
