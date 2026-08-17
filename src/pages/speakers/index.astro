@@ -2,7 +2,7 @@
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import Mark from '../../components/Mark.astro';
 import { getSpeakers, speakerUrl } from '../../lib/speakers';
-import { collectionSchema } from '../../lib/schema';
+import { graph, breadcrumb } from '../../lib/schema';
 import { faNumber } from '../../lib/persian';
 import { SITE } from '../../consts';
 
@@ -14,7 +14,9 @@ const url = new URL('/speakers', SITE.url).href;
  * A regex literal inside a template expression trips Astro's parser — the
  * leading `/` reads as markup — so anything needing one is computed here.
  */
-const speakers = (await getSpeakers()).map((speaker) => {
+const all = await getSpeakers();
+
+const speakers = all.map((speaker) => {
   const first = [...speaker.name.trim()][0];
   return {
     ...speaker,
@@ -23,12 +25,45 @@ const speakers = (await getSpeakers()).map((speaker) => {
     initial: first && /\p{L}/u.test(first) ? first : null,
   };
 });
+
+/*
+ * An ItemList of the people themselves, not just a page count. It lets a
+ * search engine see who is on this page rather than only that a list
+ * exists.
+ */
+const schema = graph(
+  {
+    '@type': 'CollectionPage',
+    '@id': `${url}#collection`,
+    url,
+    name: 'ارائه‌دهندگان',
+    description: 'کسانی که در رویدادهای ثبت‌شده در تاکسلی ارائه داده‌اند.',
+    inLanguage: SITE.lang,
+    mainEntity: {
+      '@type': 'ItemList',
+      numberOfItems: speakers.length,
+      itemListElement: speakers.map((s, i) => ({
+        '@type': 'ListItem',
+        position: i + 1,
+        item: {
+          '@type': 'Person',
+          name: s.name,
+          url: new URL(s.href, SITE.url).href,
+        },
+      })),
+    },
+  },
+  breadcrumb([
+    { name: 'خانه', url: '/' },
+    { name: 'ارائه‌دهندگان', url: '/speakers' },
+  ]),
+);
 ---
 
 <BaseLayout
   title="ارائه‌دهندگان"
   description="کسانی که در رویدادهای ثبت‌شده در تاکسلی ارائه داده‌اند."
-  schema={collectionSchema('ارائه‌دهندگان', url, 'ارائه‌دهندگان رویدادها', speakers.length)}
+  schema={schema}
 >
   <div class="wrap">
     <h1>ارائه‌دهندگان</h1>
