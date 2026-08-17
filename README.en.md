@@ -62,6 +62,7 @@ npm run update:versions
 | `npm run info` | project status and every command |
 | `npm run update:versions` | refresh versions from Wikidata and `endoflife.date` |
 | `npm run update:versions -- --verbose` | same, with full error detail |
+| `npm run brand:anniversary` | anniversary poster |
 | `npm run brand:mascots` | regenerate the mascot set |
 | `npm run brand:banner` | README banner |
 | `npm run brand:social` | GitHub social preview image |

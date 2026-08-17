@@ -14,6 +14,9 @@
  * Usage:
  *   node scripts/build-anniversary.mjs \
  *     --name=گنوم --latin=GNOME --since=1997 --out=gnome-29
+ *
+ * Add --until=2016 only for something that has ended; leaving it off
+ * prints an open range and the words "تا امروز".
  */
 
 import { readFile, mkdir } from 'node:fs/promises';
@@ -29,10 +32,21 @@ const name = arg('name', 'گنوم');
 const latin = arg('latin', 'GNOME');
 const since = Number(arg('since', '1997'));
 const year = Number(arg('year', String(new Date().getUTCFullYear())));
+/**
+ * When it ended. Omit for anything still going — the card then prints an
+ * open range, which is how "and still running" is normally written. A
+ * closing year would quietly say the opposite.
+ */
+const until = arg('until');
 const out = arg('out', 'anniversary');
 const outDir = arg('dir', 'src/assets/posts');
 
-const age = year - since;
+/*
+ * Age today for something ongoing; the span it lasted for something that
+ * ended. Printing 53 for a person who died at 42 would be counting years
+ * that did not happen.
+ */
+const age = (until ? Number(until) : year) - since;
 
 const INK = '#0F141C';
 const AMBER = '#FFB020';
@@ -114,8 +128,25 @@ const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="1200" 
   <text class="en" x="600" y="806" font-size="34" font-weight="500"
         fill="${MUTED}" text-anchor="middle" letter-spacing="8">${latin}</text>
 
-  <text class="en" x="600" y="900" font-size="30" font-weight="500"
-        fill="${MUTED}" text-anchor="middle">${since} – ${year}</text>
+  ${
+    until
+      ? `<text class="en" x="600" y="900" font-size="30" font-weight="500"
+             fill="${MUTED}" text-anchor="middle">${since} – ${until}</text>`
+      : /*
+         * Open range on one line: `1997 — تا امروز`. A bare trailing dash
+         * reads as a year that failed to render, and putting the words on a
+         * second line splits the date into two things the eye has to join
+         * back together.
+         *
+         * One <text> with tspans rather than three elements, so the range
+         * centres as a unit whatever the numbers are.
+         */
+        `<text class="en" x="600" y="900" font-size="30" font-weight="500"
+             fill="${MUTED}" text-anchor="middle">${since}<tspan fill="${AMBER}"
+             font-size="36" font-weight="700" dx="16">—</tspan><tspan
+             font-family="Vazirmatn" fill="${AMBER}" font-size="27"
+             font-weight="600" dx="16">تا امروز</tspan></text>`
+  }
 
   <!-- footer -->
   <rect x="140" y="1010" width="920" height="1.5" fill="${MUTED}" opacity="0.3"/>

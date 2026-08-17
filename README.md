@@ -52,6 +52,7 @@ npm run update:versions
 | `npm run info` | نمایش وضعیت پروژه و همهٔ دستورها |
 | `npm run update:versions` | به‌روزرسانی نسخه‌ها از ویکی‌داده و `endoflife.date` |
 | `npm run update:versions -- --verbose` | همان، با جزئیات کامل خطا |
+| `npm run brand:anniversary` | پوستر سالگرد |
 | `npm run brand:mascots` | بازتولید ماسکات‌ها |
 | `npm run brand:banner` | بنر ریدمی |
 | `npm run brand:social` | تصویر پیش‌نمایش گیت‌هاب |
