@@ -87,8 +87,25 @@ export async function getAnniversaries(): Promise<Anniversary[]> {
     });
   }
 
-  // 2. Hand-written moments that belong to no single entity.
-  for (const m of await getCollection('milestones')) {
+  /*
+   * 2. Hand-written moments.
+   *
+   * A milestone that names an entity and lands on the same day as that
+   * entity's own `firstRelease` is the same fact told twice — and the
+   * milestone tells it better, because it carries a note and a source. So
+   * the derived one steps aside.
+   */
+  const milestones = await getCollection('milestones');
+  const covered = new Set(
+    milestones
+      .filter((m) => m.data.entity)
+      .map(
+        (m) =>
+          `${m.data.entity!.id}|${m.data.date.getUTCMonth() + 1}|${m.data.date.getUTCDate()}`,
+      ),
+  );
+
+  for (const m of milestones) {
     const entity = m.data.entity ? await getEntry(m.data.entity) : undefined;
     out.push({
       id: m.data.id,
@@ -104,7 +121,11 @@ export async function getAnniversaries(): Promise<Anniversary[]> {
     });
   }
 
-  return out.sort((a, b) => a.month - b.month || a.day - b.day);
+  return out
+    .filter((a) => !a.id.startsWith('entity-') || !covered.has(
+      `${a.id.slice('entity-'.length)}|${a.month}|${a.day}`,
+    ))
+    .sort((a, b) => a.month - b.month || a.day - b.day);
 }
 
 /** How many years old an anniversary is on a given day. */
