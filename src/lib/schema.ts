@@ -37,7 +37,7 @@ export const websiteNode = {
   },
 };
 
-function breadcrumb(trail: Array<{ name: string; url: string }>) {
+export function breadcrumb(trail: Array<{ name: string; url: string }>) {
   return {
     '@type': 'BreadcrumbList',
     itemListElement: trail.map((t, i) => ({
