@@ -5,7 +5,7 @@ import ShareBar from '../../components/ShareBar.astro';
 import SearchIndex from '../../components/SearchIndex.astro';
 import Mark from '../../components/Mark.astro';
 import { getSpeakers, type Speaker } from '../../lib/speakers';
-import { graph } from '../../lib/schema';
+import { graph, breadcrumb } from '../../lib/schema';
 import { faNumber } from '../../lib/persian';
 import { SITE } from '../../consts';
 
@@ -61,7 +61,26 @@ const schema = graph(
     performerIn: speaker.talks.map((t) => ({
       '@id': `${SITE.url}/events/${t.event.id.split('/').pop()}#event`,
     })),
+    /*
+     * Communities this person presented at. `affiliation` is loose enough
+     * to be honest here — speaking at a group's event is not membership,
+     * but it is a real link between the two.
+     */
+    ...(venues.length
+      ? {
+          affiliation: venues.map((v) => ({
+            '@type': 'Organization',
+            name: v.name,
+            ...(v.url ? { url: new URL(v.url, SITE.url).href } : {}),
+          })),
+        }
+      : {}),
   },
+  breadcrumb([
+    { name: 'خانه', url: '/' },
+    { name: 'ارائه‌دهندگان', url: '/speakers' },
+    { name: speaker.name, url: new URL(url).pathname },
+  ]),
 );
 
 const initial = [...speaker.name.trim()][0];
@@ -145,7 +164,7 @@ const hasInitial = initial ? /\p{L}/u.test(initial) : false;
     <p class="note muted">
       این صفحه از روی رویدادهای ثبت‌شده در تاکسلی ساخته می‌شود. اگر ارائه‌ای
       از قلم افتاده یا اطلاعاتی درست نیست،
-      <a href={`mailto:${SITE.email}?subject=${encodeURIComponent(speaker.name)}`}>خبرمان کنید</a>.
+      <a href={`mailto:${SITE.email}?subject=${encodeURIComponent(speaker.name)}`}> خبرمان کنید </a>.
     </p>
   </div>
 </BaseLayout>
