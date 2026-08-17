@@ -1,10 +1,10 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import {
-  getAnniversariesOn,
-  getUpcomingAnniversaries,
-  getAnniversariesByMonth,
-  ageAt,
+  getDatedAnniversariesOn,
+  getDatedUpcoming,
+  getAnniversariesByJalaliMonth,
+  toJalali,
 } from '../lib/anniversaries';
 import { collectionSchema } from '../lib/schema';
 import { faNumber } from '../lib/persian';
@@ -16,13 +16,22 @@ import { SITE } from '../consts';
  */
 const BUILT = new Date();
 
-const today = await getAnniversariesOn(BUILT);
-const upcoming = (await getUpcomingAnniversaries(BUILT, 8)).filter(
+const today = await getDatedAnniversariesOn(BUILT);
+const upcoming = (await getDatedUpcoming(BUILT, 8)).filter(
   (a) => !today.some((t) => t.id === a.id),
 );
-const byMonth = await getAnniversariesByMonth();
+const byMonth = await getAnniversariesByJalaliMonth(BUILT.getUTCFullYear());
 
-const MONTHS = [
+/*
+ * Persian months lead, since that is the calendar the reader plans in.
+ * The Gregorian date stays alongside because the original events were
+ * recorded with it, and dropping it would make them hard to look up.
+ */
+const JMONTHS = [
+  'فروردین', 'اردیبهشت', 'خرداد', 'تیر', 'مرداد', 'شهریور',
+  'مهر', 'آبان', 'آذر', 'دی', 'بهمن', 'اسفند',
+];
+const GMONTHS = [
   'ژانویه', 'فوریه', 'مارس', 'آوریل', 'مه', 'ژوئن',
   'ژوئیه', 'اوت', 'سپتامبر', 'اکتبر', 'نوامبر', 'دسامبر',
 ];
@@ -35,6 +44,7 @@ const KIND = {
 };
 
 const total = byMonth.reduce((n, m) => n + m.items.length, 0);
+const jNow = toJalali(BUILT);
 const url = new URL('/anniversaries', SITE.url).href;
 ---
 
@@ -57,12 +67,19 @@ const url = new URL('/anniversaries', SITE.url).href;
         <ul class="cards">
           {today.map((a) => (
             <li>
-              <span class="age tnum">{faNumber(ageAt(a, BUILT))}</span>
+              <span class="age tnum">{faNumber(a.turns)}</span>
               <span class="body">
                 <span class="t">
                   {a.url ? <a href={a.url}>{a.title}</a> : a.title}
                 </span>
-                <span class="k">{KIND[a.kind]} · <span class="tnum">{a.date.getUTCFullYear()}</span></span>
+                <span class="k">
+                  {KIND[a.kind]} ·
+                  <span class="tnum">{faNumber(a.jDay)} {JMONTHS[a.jMonth - 1]}</span>
+                  {' '}
+                  <span class="g tnum">
+                    ({faNumber(a.day)} {GMONTHS[a.month - 1]} {a.date.getUTCFullYear()})
+                  </span>
+                </span>
                 {a.note && <span class="note">{a.note}</span>}
                 {a.source && (
                   <a class="src" href={a.source} rel="noopener">منبع اصلی</a>
@@ -80,9 +97,9 @@ const url = new URL('/anniversaries', SITE.url).href;
         <ul class="rows">
           {upcoming.map((a) => (
             <li>
-              <span class="when tnum">{faNumber(a.day)} {MONTHS[a.month - 1]}</span>
+              <span class="when tnum">{faNumber(a.jDay)} {JMONTHS[a.jMonth - 1]}</span>
               <span class="t">{a.url ? <a href={a.url}>{a.title}</a> : a.title}</span>
-              <span class="yrs tnum">{faNumber(ageAt(a, BUILT) + 1)} ساله می‌شود</span>
+              <span class="yrs tnum">{faNumber(a.turns)} ساله می‌شود</span>
             </li>
           ))}
         </ul>
@@ -92,19 +109,24 @@ const url = new URL('/anniversaries', SITE.url).href;
     <section>
       <h2>همهٔ سالگردها</h2>
       <p class="hint muted">
-        <span class="tnum">{faNumber(total)}</span> مورد. تاریخ‌ها میلادی‌اند،
-        چون خود رویدادها با همان تقویم ثبت شده‌اند.
+        <span class="tnum">{faNumber(total)}</span> مورد، به تقویم شمسی.
+        چون سال کبیسهٔ دو تقویم بر هم منطبق نیست، تاریخ شمسی هر سالگرد
+        سالی یک روز جابه‌جا می‌شود؛ آنچه می‌بینید مربوط به سال
+        <span class="tnum">{faNumber(jNow.year)}</span> است. تاریخ میلادی
+        اصلی هم کنارش آمده.
       </p>
 
       {byMonth.map(({ month, items }) => (
         <div class="month">
-          <h3>{MONTHS[month - 1]}</h3>
+          <h3>{JMONTHS[month - 1]}</h3>
           <ul class="rows">
             {items.map((a) => (
               <li>
-                <span class="when tnum">{faNumber(a.day)}</span>
+                <span class="when tnum">{faNumber(a.jDay)} {JMONTHS[a.jMonth - 1]}</span>
                 <span class="t">{a.url ? <a href={a.url}>{a.title}</a> : a.title}</span>
-                <span class="yrs tnum">{a.date.getUTCFullYear()}</span>
+                <span class="yrs tnum">
+                  {faNumber(a.day)} {GMONTHS[a.month - 1]} {a.date.getUTCFullYear()}
+                </span>
               </li>
             ))}
           </ul>
@@ -156,6 +178,7 @@ const url = new URL('/anniversaries', SITE.url).href;
   .cards .body { display: grid; gap: 0.15rem; min-width: 0; }
   .cards .t { font-size: var(--step-1); font-weight: 700; }
   .cards .k { font-size: var(--step--2); color: var(--text-muted); }
+  .cards .g { opacity: 0.7; }
   .cards .note { margin-top: 0.3rem; color: var(--text-muted); font-size: var(--step--1); line-height: 1.8; }
   .cards .src { margin-top: 0.3rem; font-size: var(--step--2); }
 
@@ -170,7 +193,7 @@ const url = new URL('/anniversaries', SITE.url).href;
   .rows li:last-child { border-bottom: 0; }
   .rows li:hover { background: var(--surface); }
   @media (min-width: 560px) {
-    .rows li { grid-template-columns: 7rem 1fr auto; align-items: baseline; }
+    .rows li { grid-template-columns: 9rem 1fr auto; align-items: baseline; }
   }
   .when { font-size: var(--step--1); color: var(--text-muted); }
   .rows .t { font-weight: 600; }

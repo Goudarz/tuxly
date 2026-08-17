@@ -20,6 +20,36 @@ import { entityUrl, entityLabel, type Entity } from './entities';
 
 export type AnniversaryKind = 'founded' | 'release' | 'milestone' | 'person';
 
+/**
+ * Jalali year, month and day for an instant, in Tehran time.
+ *
+ * Via Intl, so no conversion library and no bundle cost.
+ */
+export function toJalali(date: Date): { year: number; month: number; day: number } {
+  const parts = new Intl.DateTimeFormat('en-u-ca-persian', {
+    timeZone: 'Asia/Tehran',
+    year: 'numeric',
+    month: 'numeric',
+    day: 'numeric',
+  }).formatToParts(date);
+  const get = (type: string) => Number(parts.find((p) => p.type === type)?.value);
+  return { year: get('year'), month: get('month'), day: get('day') };
+}
+
+/**
+ * This year's occurrence of an anniversary.
+ *
+ * Needed because a fixed Gregorian day is *not* a fixed Jalali day — 16
+ * August was 26 Mordad in 1403 and 25 Mordad in 1404. So the Jalali date
+ * has to be computed per year rather than stored once.
+ *
+ * Noon UTC, not midnight: it keeps the date the same on both sides of the
+ * Tehran offset.
+ */
+export function occurrenceIn(anniversary: { month: number; day: number }, year: number): Date {
+  return new Date(Date.UTC(year, anniversary.month - 1, anniversary.day, 12));
+}
+
 export interface Anniversary {
   id: string;
   /** Original date, kept whole — the year is what makes the age. */
@@ -117,17 +147,70 @@ export async function getUpcomingAnniversaries(
   return ordered.slice(0, limit);
 }
 
-/** Grouped by month, for the full listing. */
-export async function getAnniversariesByMonth(): Promise<
-  Array<{ month: number; items: Anniversary[] }>
-> {
-  const all = await getAnniversaries();
-  const months = new Map<number, Anniversary[]>();
+/**
+ * An anniversary with this year's Jalali date attached.
+ *
+ * The Jalali fields describe *this year's* occurrence, since that is the
+ * only year they are true for.
+ */
+export interface DatedAnniversary extends Anniversary {
+  jMonth: number;
+  jDay: number;
+  /** Turning this many years old at this year's occurrence. */
+  turns: number;
+}
+
+function withJalali(a: Anniversary, year: number): DatedAnniversary {
+  const { month, day } = toJalali(occurrenceIn(a, year));
+  return {
+    ...a,
+    jMonth: month,
+    jDay: day,
+    turns: year - a.date.getUTCFullYear(),
+  };
+}
+
+/**
+ * Grouped by Jalali month, for the full listing.
+ *
+ * Persian months, not Gregorian: the reader plans their year in Mordad and
+ * Shahrivar, so a list ordered by January is a list they have to convert
+ * in their head.
+ */
+export async function getAnniversariesByJalaliMonth(
+  year = new Date().getUTCFullYear(),
+): Promise<Array<{ month: number; items: DatedAnniversary[] }>> {
+  const all = (await getAnniversaries()).map((a) => withJalali(a, year));
+
+  const months = new Map<number, DatedAnniversary[]>();
   for (const a of all) {
-    if (!months.has(a.month)) months.set(a.month, []);
-    months.get(a.month)!.push(a);
+    if (!months.has(a.jMonth)) months.set(a.jMonth, []);
+    months.get(a.jMonth)!.push(a);
   }
+
   return [...months.entries()]
     .sort(([a], [b]) => a - b)
-    .map(([month, items]) => ({ month, items }));
+    .map(([month, items]) => ({
+      month,
+      items: items.sort((x, y) => x.jDay - y.jDay),
+    }));
+}
+
+/** Today's anniversaries, with this year's Jalali date. */
+export async function getDatedAnniversariesOn(date: Date): Promise<DatedAnniversary[]> {
+  return (await getAnniversariesOn(date)).map((a) => withJalali(a, date.getUTCFullYear()));
+}
+
+/** The next few, wrapping past year end, with this year's Jalali date. */
+export async function getDatedUpcoming(
+  from = new Date(),
+  limit = 8,
+): Promise<DatedAnniversary[]> {
+  const year = from.getUTCFullYear();
+  return (await getUpcomingAnniversaries(from, limit)).map((a) => {
+    // Wrapped into next year, so its occurrence belongs to that year.
+    const key = (m: number, d: number) => m * 100 + d;
+    const wrapped = key(a.month, a.day) < key(from.getUTCMonth() + 1, from.getUTCDate());
+    return withJalali(a, wrapped ? year + 1 : year);
+  });
 }
