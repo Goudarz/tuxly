@@ -3,6 +3,7 @@ name: Slackware
 nameFa: اسلکور
 type: distribution
 summary: قدیمی‌ترین توزیع گنو/لینوکس که هنوز فعال است؛ ساده، بدون لایه‌های اضافه و کاملاً یونیکسی.
+firstRelease: 1993-07-17
 website: http://www.slackware.com
 docs: https://docs.slackware.com
 family: Independent

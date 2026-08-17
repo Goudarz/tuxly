@@ -3,6 +3,7 @@ name: Arch Linux
 nameFa: آرچ لینوکس
 type: distribution
 summary: توزیعی که هیچ تصمیمی را به‌جای شما نمی‌گیرد؛ سیستم را از صفر خودتان می‌سازید.
+firstRelease: 2002-03-11
 website: https://archlinux.org
 repo: https://gitlab.archlinux.org/archlinux
 docs: https://wiki.archlinux.org

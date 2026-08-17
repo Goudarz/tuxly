@@ -3,6 +3,7 @@ name: Zorin OS
 nameFa: زورین او اس
 type: distribution
 summary: طراحی‌شده برای مهاجرت از ویندوز و مک‌او‌اس؛ ظاهرش را می‌توانید شبیه هرکدام کنید.
+firstRelease: 2009-07-01
 website: https://zorin.com/os/
 docs: https://help.zorin.com
 family: Ubuntu

@@ -3,6 +3,7 @@ name: Linux kernel
 nameFa: هستهٔ لینوکس
 type: project
 summary: قلب همهٔ توزیع‌ها؛ بزرگ‌ترین پروژهٔ مشارکتی نرم‌افزار در تاریخ.
+firstRelease: 1991-08-25
 website: https://www.kernel.org
 repo: https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git
 docs: https://docs.kernel.org

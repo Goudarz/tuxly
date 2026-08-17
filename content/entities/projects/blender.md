@@ -3,6 +3,7 @@ name: Blender
 nameFa: بلندر
 type: project
 summary: نرم‌افزار سه‌بعدی آزادی که با محصولات تجاری گران‌قیمت رقابت می‌کند.
+firstRelease: 1994-01-02
 website: https://www.blender.org
 repo: https://projects.blender.org/blender/blender
 docs: https://docs.blender.org

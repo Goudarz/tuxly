@@ -3,6 +3,7 @@ name: KDE Plasma
 nameFa: پلاسما
 type: desktop
 summary: قابل‌تنظیم‌ترین میزکار گنو/لینوکس؛ تقریباً هر چیزی را می‌توانید تغییر دهید.
+firstRelease: 1996-10-14
 website: https://kde.org/plasma-desktop/
 repo: https://invent.kde.org/plasma
 docs: https://docs.kde.org

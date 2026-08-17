@@ -3,6 +3,7 @@ name: Kali Linux
 nameFa: کالی لینوکس
 type: distribution
 summary: توزیع تخصصی تست نفوذ و امنیت تهاجمی، با صدها ابزار از پیش نصب‌شده.
+firstRelease: 2013-03-13
 website: https://www.kali.org
 repo: https://gitlab.com/kalilinux
 docs: https://www.kali.org/docs/

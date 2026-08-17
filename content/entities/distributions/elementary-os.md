@@ -3,6 +3,7 @@ name: elementary OS
 nameFa: المنتری او اس
 type: distribution
 summary: وسواسی‌ترین توزیع در طراحی؛ میزکار Pantheon و راهنمای رابط کاربری سخت‌گیرانه‌اش شبیه هیچ‌کدام نیست.
+firstRelease: 2011-03-31
 website: https://elementary.io
 repo: https://github.com/elementary
 docs: https://docs.elementary.io

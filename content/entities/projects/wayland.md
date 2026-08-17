@@ -3,6 +3,7 @@ name: Wayland
 nameFa: وی‌لند
 type: project
 summary: پروتکل جانشین X11 برای نمایش گرافیکی در لینوکس.
+firstRelease: 2008-09-30
 website: https://wayland.freedesktop.org
 repo: https://gitlab.freedesktop.org/wayland/wayland
 docs: https://wayland.freedesktop.org/docs/html/

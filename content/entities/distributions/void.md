@@ -3,6 +3,7 @@ name: Void Linux
 nameFa: وید لینوکس
 type: distribution
 summary: توزیع مستقل با init جایگزین runit و سیستم بستهٔ خودش؛ سبک و بدون systemd.
+firstRelease: 2008-10-20
 website: https://voidlinux.org
 repo: https://github.com/void-linux/void-packages
 docs: https://docs.voidlinux.org

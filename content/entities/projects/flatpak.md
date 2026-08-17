@@ -3,6 +3,7 @@ name: Flatpak
 nameFa: فلت‌پک
 type: project
 summary: بسته‌بندی مستقل از توزیع با جداسازی امنیتی؛ استاندارد عملی توزیع برنامهٔ میزکار.
+firstRelease: 2015-05-13
 website: https://flatpak.org
 repo: https://github.com/flatpak/flatpak
 docs: https://docs.flatpak.org

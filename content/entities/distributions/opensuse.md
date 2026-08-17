@@ -3,6 +3,7 @@ name: openSUSE
 nameFa: اوپن‌سوزه
 type: distribution
 summary: 'توزیع آلمانی با دو شخصیت: Leap پایدار برای سرور و Tumbleweed پیوسته برای میز کار.'
+firstRelease: 1994-03-29
 website: https://www.opensuse.org
 repo: https://github.com/openSUSE
 docs: https://doc.opensuse.org

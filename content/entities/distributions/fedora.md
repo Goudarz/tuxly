@@ -3,6 +3,7 @@ name: Fedora Linux
 nameFa: فدورا
 type: distribution
 summary: آزمایشگاه جلوداری متن‌باز؛ فناوری‌های تازه اول اینجا می‌آیند و بعد به RHEL و بقیهٔ دنیا می‌رسند.
+firstRelease: 2003-11-06
 website: https://fedoraproject.org
 repo: https://src.fedoraproject.org
 docs: https://docs.fedoraproject.org

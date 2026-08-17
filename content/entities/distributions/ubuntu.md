@@ -3,6 +3,7 @@ name: Ubuntu
 nameFa: اوبونتو
 type: distribution
 summary: شناخته‌شده‌ترین توزیع گنو/لینوکس که بیش از هر توزیع دیگری کاربر تازه‌وارد را وارد دنیای آزاد کرده است.
+firstRelease: 2004-10-20
 website: https://ubuntu.com
 repo: https://git.launchpad.net/ubuntu
 docs: https://help.ubuntu.com

@@ -3,6 +3,7 @@ name: GTK
 nameFa: جی‌تی‌کی
 type: project
 summary: جعبه‌ابزار رابط کاربری که گنوم و صدها برنامهٔ دیگر روی آن ساخته شده‌اند.
+firstRelease: 1998-04-13
 website: https://www.gtk.org
 repo: https://gitlab.gnome.org/GNOME/gtk
 docs: https://docs.gtk.org

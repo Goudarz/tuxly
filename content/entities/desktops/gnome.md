@@ -3,6 +3,7 @@ name: GNOME
 nameFa: گنوم
 type: desktop
 summary: پرکاربردترین میزکار گنو/لینوکس؛ ساده، منسجم و پیش‌فرض فدورا، اوبونتو و دبیان.
+firstRelease: 1999-03-03
 website: https://www.gnome.org
 repo: https://gitlab.gnome.org/GNOME
 docs: https://help.gnome.org
