@@ -52,6 +52,7 @@ const url = new URL('/anniversaries', SITE.url).href;
   title="تقویم سالگردها"
   description="سالگرد آغاز پروژه‌ها، انتشارهای تاریخی و نقطه‌های عطف نرم‌افزار آزاد، ماه به ماه."
   schema={collectionSchema('تقویم سالگردها', url, 'سالگردهای نرم‌افزار آزاد', total)}
+  feed={{ href: '/anniversaries/rss.xml', title: `${SITE.name} — تقویم سالگردها` }}
 >
   <div class="wrap" data-pagefind-body data-pagefind-meta="kind:صفحه">
     <h1>تقویم سالگردها</h1>
@@ -130,6 +131,18 @@ const url = new URL('/anniversaries', SITE.url).href;
       ))}
     </section>
 
+    <p class="follow">
+      <a class="btn" href="/anniversaries/rss.xml">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true">
+          <circle cx="6.2" cy="17.8" r="2.4"></circle>
+          <path d="M4 10.2v3.1a6.7 6.7 0 0 1 6.7 6.7h3.1A9.8 9.8 0 0 0 4 10.2Z"></path>
+          <path d="M4 4v3.1A12.9 12.9 0 0 1 16.9 20H20A16 16 0 0 0 4 4Z"></path>
+        </svg>
+        دنبال کردن با خوراک RSS
+      </a>
+      <span class="muted">هر سالگرد که در روز خودش می‌رسد.</span>
+    </p>
+
     <p class="note-foot muted">
       این فهرست از دو جا ساخته می‌شود: تاریخ آغاز هر موجودیت که در صفحهٔ
       خودش ثبت شده، و
@@ -206,5 +219,15 @@ const url = new URL('/anniversaries', SITE.url).href;
     border-bottom: 1px solid var(--border);
   }
 
-  .note-foot { margin-top: 3rem; font-size: var(--step--2); max-width: var(--measure); }
+  .follow {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.8rem;
+    margin-top: 2.5rem;
+    font-size: var(--step--1);
+  }
+  .follow .btn svg { flex: none; }
+
+  .note-foot { margin-top: 1.5rem; font-size: var(--step--2); max-width: var(--measure); }
 </style>

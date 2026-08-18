@@ -28,7 +28,8 @@
     "brand:social": "node scripts/build-social-preview.mjs",
     "fonts:subset": "node scripts/subset-fonts.mjs",
     "brand:social-kit": "node scripts/build-social-kit.mjs",
-    "brand:anniversary": "node scripts/build-anniversary.mjs"
+    "brand:anniversary": "node scripts/build-anniversary.mjs",
+    "announce:dry": "node scripts/announce.mjs --anniversaries --dry-run"
   },
   "dependencies": {
     "@astrojs/mdx": "^7.0.5",
