@@ -300,6 +300,13 @@
     "source": "https://groups.google.com/g/comp.os.minix/c/dlNtH7RRrGA"
   },
   {
+    "id": "software-freedom-day",
+    "date": "2004-08-28",
+    "titleFa": "نخستین روز آزادی نرم‌افزار",
+    "kind": "milestone",
+    "note": "از ۲۰۰۴ هر سال در سومین شنبهٔ سپتامبر برگزار می‌شود؛ روزی برای معرفی نرم‌افزار آزاد به کسانی که هنوز نمی‌شناسندش."
+  },
+  {
     "id": "freedos",
     "date": "1994-09-03",
     "titleFa": "آغاز پروژهٔ FreeDOS",
