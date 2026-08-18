@@ -1,0 +1,33 @@
+name: Announce anniversaries
+
+on:
+  schedule:
+    # 05:30 UTC = 09:00 Tehran. Early enough to be the morning post, late
+    # enough that the day has actually started for the reader.
+    - cron: '30 5 * * *'
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Print without sending'
+        type: boolean
+        default: true
+
+jobs:
+  announce:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      - name: Post today's anniversaries
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          MASTODON_TOKEN: ${{ secrets.MASTODON_TOKEN }}
+          MASTODON_HOST: ${{ vars.MASTODON_HOST }}
+        run: |
+          node scripts/announce.mjs --anniversaries \
+            ${{ inputs.dry_run && '--dry-run' || '' }}

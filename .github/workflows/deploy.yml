@@ -49,3 +49,29 @@ jobs:
     steps:
       - id: deployment
         uses: actions/deploy-pages@v4
+
+  # Only after the deploy succeeds, so a link is never posted before the
+  # page it points at exists.
+  announce:
+    needs: deploy
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # The script diffs two commits, so a shallow clone is not enough.
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      - name: Post new articles
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          MASTODON_TOKEN: ${{ secrets.MASTODON_TOKEN }}
+          MASTODON_HOST: ${{ vars.MASTODON_HOST }}
+        run: |
+          node scripts/announce.mjs --posts \
+            --before=${{ github.event.before }} \
+            --after=${{ github.sha }}
