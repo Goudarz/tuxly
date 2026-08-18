@@ -4,6 +4,8 @@ summary: سوم شهریور ماه ۱۳۸۰، گروهی از طرفداران 
 publishedAt: 2026-08-18
 type: article
 author: goudarz-jafari
+cover: ../../src/assets/posts/haiku-25.png
+coverAlt: پوستر بیست‌وپنج سالگرد هایکو با عدد ۲۵ و نشان تاکسلی
 tags: [هایکو, BeOS, سیستم‌عامل, تاریخ, متن‌باز]
 draft: false
 featured: true
