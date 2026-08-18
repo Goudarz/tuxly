@@ -10,7 +10,7 @@ docs: https://wiki.freecad.org
 wikidata: Q567406
 license: LGPL-2.0-or-later
 firstRelease: 2002-10-29
-priority: 30
+priority: 100
 tags: [اجتماع, طراحی, مهندسی, متن‌باز]
 links:
   - kind: forum

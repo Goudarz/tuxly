@@ -5,7 +5,7 @@ aliases: [Isfahan GNU\Linux Users Group, اصفهان لاگ, IsfahanLUG]
 type: community
 summary: اجتماع کاربران و علاقه‌مندان گنو/لینوکس در اصفهان، با نشست‌های حضوری منظم و ارائه‌هایی دربارهٔ نرم‌افزار آزاد و فناوری‌های روز.
 website: https://www.isfahanlug.com
-priority: 3
+priority: 100
 tags: [اجتماع, ایران, اصفهان, لینوکس]
 links:
   - kind: calendar

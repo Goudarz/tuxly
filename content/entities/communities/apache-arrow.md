@@ -10,7 +10,7 @@ docs: https://arrow.apache.org/docs/
 wikidata: Q56312950
 license: Apache-2.0
 firstRelease: 2016-10-10
-priority: 20
+priority: 100
 tags: [اجتماع, داده, آپاچی, متن‌آزاد]
 links:
   - kind: zulip

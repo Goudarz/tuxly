@@ -4,7 +4,7 @@ nameFa: فاسدم
 type: community
 summary: بزرگ‌ترین گردهمایی رایگان نرم‌افزار آزاد در اروپا که هر سال در بروکسل برگزار می‌شود.
 website: https://fosdem.org
-priority: 50
+priority: 100
 tags: [اجتماع]
 ---
 

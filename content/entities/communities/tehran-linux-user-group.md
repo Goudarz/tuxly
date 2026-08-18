@@ -4,7 +4,7 @@ nameFa: گروه کاربران گنو/لینوکس تهران
 aliases: [Tehran Linux User Group, تهلاگ, لاگ تهران]
 type: community
 summary: اجتماع کاربران گنو/لینوکس تهران در ایران با نشست‌های منظم و کارگاه‌های آموزشی.
-priority: 50
+priority: 100
 tags: [اجتماع]
 ---
 

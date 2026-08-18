@@ -4,7 +4,7 @@ nameFa: گروه کاربران گنو/لینوکس تبریز
 aliases: [Tabriz Linux Users Group, تبریز لاگ, TabrizLUG]
 type: community
 summary: اجتماع کاربران و علاقه‌مندان گنو/لینوکس در تبریز، با رویدادهای آنلاین دوره‌ای و کانال فعال تلگرام برای پرسش و پاسخ.
-priority: 2
+priority: 100
 tags: [اجتماع, ایران, تبریز, گنو/لینوکس]
 links:
   - kind: telegram-channel
