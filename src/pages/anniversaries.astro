@@ -7,7 +7,7 @@ import {
   toJalali,
 } from '../lib/anniversaries';
 import { collectionSchema } from '../lib/schema';
-import { faNumber } from '../lib/persian';
+import { faNumber, faYear } from '../lib/persian';
 import { SITE } from '../consts';
 
 /*
@@ -77,7 +77,7 @@ const url = new URL('/anniversaries', SITE.url).href;
                   <span class="tnum">{faNumber(a.jDay)} {JMONTHS[a.jMonth - 1]}</span>
                   {' '}
                   <span class="g tnum">
-                    ({faNumber(a.day)} {GMONTHS[a.month - 1]} {a.date.getUTCFullYear()})
+                    ({faNumber(a.day)} {GMONTHS[a.month - 1]} {faYear(a.date.getUTCFullYear())})
                   </span>
                 </span>
                 {a.note && <span class="note">{a.note}</span>}
@@ -109,7 +109,7 @@ const url = new URL('/anniversaries', SITE.url).href;
     <section>
       <h2>همهٔ سالگردها</h2>
       <p class="hint muted">
-        <span class="tnum">{faNumber(total)}</span> مورد اضافه شده است؛ این فهرست مربوط به تقویم سال <span class="tnum">{faNumber(jNow.year)}</span> می‌باشد و به‌خاطر اینکه می خواییم تقویم را به صورت شمسی نگه‌داری کنیم که کاربران راحت متوجه بشوند چه زمانی رخ داده است و تاریخ میلادی هم واسه هر مورد جلوش اضافه کردیم که هر دو در دسترس‌تون باشد.
+        <span class="tnum">{faNumber(total)}</span> مورد اضافه شده است؛ این فهرست مربوط به تقویم سال <span class="tnum">{faYear(jNow.year)}</span> می‌باشد و به‌خاطر اینکه می خواییم تقویم را به صورت شمسی نگه‌داری کنیم که کاربران راحت متوجه بشوند چه زمانی رخ داده است و تاریخ میلادی هم واسه هر مورد جلوش اضافه کردیم که هر دو در دسترس‌تون باشد.
       </p>
 
       {byMonth.map(({ month, items }) => (
@@ -121,7 +121,7 @@ const url = new URL('/anniversaries', SITE.url).href;
                 <span class="when tnum">{faNumber(a.jDay)} {JMONTHS[a.jMonth - 1]}</span>
                 <span class="t">{a.url ? <a href={a.url}>{a.title}</a> : a.title}</span>
                 <span class="yrs tnum">
-                  {faNumber(a.day)} {GMONTHS[a.month - 1]} {a.date.getUTCFullYear()}
+                  {faNumber(a.day)} {GMONTHS[a.month - 1]} {faYear(a.date.getUTCFullYear())}
                 </span>
               </li>
             ))}
