@@ -286,9 +286,10 @@
   {
     "id": "haiku",
     "date": "2001-08-18",
-    "titleFa": "آغاز پروژهٔ Haiku",
+    "titleFa": "آغاز پروژهٔ هایکو",
     "kind": "founded",
-    "note": "بازسازی آزاد BeOS، که ابتدا OpenBeOS نام داشت."
+    "note": "مایکل فیپس بازنویسی BeOS از صفر را آغاز کرد، چند ماه پس از فروش دارایی‌های Be به Palm. ابتدا OpenBeOS نام داشت و در ۲۰۰۴ به هایکو تغییر نام داد.",
+    "source": "https://www.haiku-os.org/about/"
   },
   {
     "id": "linux-announced",
