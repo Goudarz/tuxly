@@ -96,6 +96,16 @@ export function faDigits(input: string | number): string {
   return String(input).replace(/[0-9]/g, (d) => String.fromCharCode(0x06f0 + Number(d)));
 }
 
+/**
+ * A year, in Persian digits and with no thousands separator.
+ *
+ * `faNumber` would render 1405 as «۱٬۴۰۵», which is correct for a quantity
+ * and wrong for a year — nobody writes the current year with a separator.
+ */
+export function faYear(n: number): string {
+  return faDigits(n);
+}
+
 /** Persian thousands separator (U+066C), not the Latin comma. */
 export function faNumber(n: number): string {
   return faDigits(n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '\u066C'));
