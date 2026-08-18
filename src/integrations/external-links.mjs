@@ -27,6 +27,15 @@ const SKIP_PROTOCOLS = new Set(['mailto:', 'tel:', 'sms:', 'javascript:', 'data:
 /** Hosts that must not get the ref parameter — they mishandle the query. */
 const NO_PARAM_HOSTS = new Set(['www.wikidata.org', 'wikidata.org']);
 
+/**
+ * Links that must survive untouched.
+ *
+ * A rel="me" link is an identity claim: Mastodon fetches this page and
+ * compares the href with the URL on the profile. Appending a tracking
+ * parameter makes the two differ and verification silently fails.
+ */
+const isIdentityLink = (rel) => rel.has('me');
+
 export default function externalLinks(options = {}) {
   const {
     siteHost,
@@ -78,7 +87,12 @@ export default function externalLinks(options = {}) {
               if (target === host || target.endsWith(`.${host}`)) continue;
 
               // Referral parameter — leave any existing value alone.
-              if (!NO_PARAM_HOSTS.has(url.hostname) && !url.searchParams.has(refParam)) {
+              const relNow = new Set((a.getAttribute('rel') ?? '').split(/\s+/).filter(Boolean));
+              if (
+                !isIdentityLink(relNow) &&
+                !NO_PARAM_HOSTS.has(url.hostname) &&
+                !url.searchParams.has(refParam)
+              ) {
                 url.searchParams.set(refParam, refValue);
                 a.setAttribute('href', url.toString());
               }

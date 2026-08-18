@@ -18,7 +18,7 @@ export const SITE = {
 /** Placeholders — replace these handles with the real accounts. */
 export const SOCIAL = [
   { id: 'telegram', label: 'تلگرام', href: 'https://t.me/tuxlyir', handle: '@tuxlyir' },
-  { id: 'mastodon', label: 'ماستودون', href: '#', handle: '@tuxly' },
+  { id: 'mastodon', label: 'ماستودون', href: 'https://techhub.social/@tuxly', handle: '@tuxly@techhub.social' },
   { id: 'github', label: 'گیت‌هاب', href: 'https://github.com/goudarz/tuxly', handle: 'goudarz/tuxly' },
   { id: 'peertube', label: 'پیرتیوب', href: '#', handle: '@tuxly' },
   { id: 'linkedin', label: 'لینکدین', href: 'https://www.linkedin.com/company/tuxly', handle: 'tuxly' },
