@@ -17,7 +17,7 @@ currentVersion: '10.2'
 releasedAt: 2026-05-29
 eolAt: 2035-05-31
 wikidata: Q104102686
-versionCheckedAt: 2026-08-10
+versionCheckedAt: 2026-08-17
 ---
 
 راکی را Gregory Kurtzer — از بنیان‌گذاران CentOS — بعد از تغییر سیاست

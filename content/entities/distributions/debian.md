@@ -18,7 +18,7 @@ currentVersion: '13.6'
 releasedAt: 2026-07-11
 eolAt: 2028-08-09
 wikidata: Q7715973
-versionCheckedAt: 2026-08-10
+versionCheckedAt: 2026-08-17
 ---
 
 دبیان از سال ۱۹۹۳ وجود دارد و هیچ شرکتی مالکش نیست، یک پروژهٔ کاملاً
