@@ -234,7 +234,9 @@ export function eventSchema(
       name: d.title,
       description: d.summary,
       startDate: d.startsAt.toISOString(),
-      ...(d.endsAt ? { endDate: d.endsAt.toISOString() } : {}),
+      endDate: (
+        d.endsAt ?? new Date(d.startsAt.getTime() + 2 * 60 * 60 * 1000)
+      ).toISOString(),
       eventAttendanceMode: mode,
       eventStatus: d.cancelled
         ? 'https://schema.org/EventCancelled'

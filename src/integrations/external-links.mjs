@@ -72,7 +72,28 @@ export default function externalLinks(options = {}) {
 
             for (const a of doc.querySelectorAll('a[href]')) {
               const href = a.getAttribute('href') ?? '';
-              if (!href || href.startsWith('#') || href.startsWith('/') || href.startsWith('.')) continue;
+              if (!href || href.startsWith('#')) continue;
+
+              /*
+               * Internal links get a trailing slash.
+               *
+               * `build.format: 'directory'` writes /news/index.html, so a
+               * request for /news answers 301 to /news/. Googlebot follows
+               * it and files the page under "Page with redirect" — wasted
+               * crawl budget on every internal link. Normalising here fixes
+               * every link at once, rather than hunting them down one
+               * component at a time.
+               */
+              if (href.startsWith('/')) {
+                const [path, rest = ''] = href.split(/(?=[?#])/, 2);
+                const isFile = path.split('/').pop()?.includes('.');
+                if (path !== '/' && !path.endsWith('/') && !isFile) {
+                  a.setAttribute('href', `${path}/${rest}`);
+                  touched++;
+                }
+                continue;
+              }
+              if (href.startsWith('.')) continue;
 
               let url;
               try {

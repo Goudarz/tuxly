@@ -29,6 +29,17 @@ const xmlEscape = (s: string) =>
 
 const iso = (d: Date) => d.toISOString().split('T')[0];
 
+/**
+ * Trailing slash on every path.
+ *
+ * `build.format: 'directory'` writes `/news/index.html`, so a request for
+ * `/news` answers with a redirect. Listing the redirecting form in the
+ * sitemap is what makes Search Console report "Page with redirect", the
+ * canonical URL already carries the slash, so the sitemap must match it.
+ */
+const withSlash = (path: string) =>
+  path === '/' || path.includes('.') ? path : `${path}/`;
+
 export async function GET(context: APIContext) {
   const base = (context.site ?? new URL(SITE.url)).origin;
   const live = <T extends { data: { draft?: boolean } }>(e: T) => !e.data.draft;
@@ -130,7 +141,7 @@ export async function GET(context: APIContext) {
   const body = entries
     .filter((e) => (seen.has(e.path) ? false : seen.add(e.path)))
     .map((e) => {
-      const loc = xmlEscape(new URL(e.path, base).href);
+      const loc = xmlEscape(new URL(withSlash(e.path), base).href);
       return (
         '  <url>\n' +
         `    <loc>${loc}</loc>\n` +
