@@ -14,11 +14,11 @@ eolId: debian
 defaultDesktop: [GNOME]
 architectures: [x86_64]
 tags: [توزیع]
-currentVersion: '13.6'
-releasedAt: 2026-07-11
-eolAt: 2028-08-09
+currentVersion: '13.7'
+releasedAt: 2026-09-12
+eolAt: 2030-06-30
 wikidata: Q7715973
-versionCheckedAt: 2026-08-31
+versionCheckedAt: 2026-09-21
 ---
 
 دبیان از سال ۱۹۹۳ وجود دارد و هیچ شرکتی مالکش نیست، یک پروژهٔ کاملاً
