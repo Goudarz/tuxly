@@ -37,7 +37,7 @@ const style = `--conf: ${d.theme.accent}; --conf-ink: ${d.theme.ink};`;
       </a>
       {(trail ?? [{ label: d.name, href: conferenceUrl(conference), latin: true }]).map((t) => (
         <>
-          <span class="sep" aria-hidden="true">/</span>
+          <span class="sep" aria-hidden="true">\</span>
           <a href={t.href} class="crumb"><bdi class:list={{ latin: t.latin }}>{t.label}</bdi></a>
         </>
       ))}
