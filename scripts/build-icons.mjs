@@ -5,7 +5,7 @@
  * The manifest declared three icons that were never produced, so browsers
  * logged a download error on every visit and the install prompt had nothing
  * to show. Generating them from the same geometry as the mark keeps them in
- * step with the logo — no exported PNG to forget to update.
+ * step with the logo - no exported PNG to forget to update.
  *
  * Maskable icons need the mark inside a safe circle covering the middle 80%
  * of the canvas: Android crops the rest to whatever shape the launcher uses.

@@ -1,5 +1,5 @@
 import type { APIContext } from 'astro';
-import { getCollection, getEntry } from 'astro:content';
+import { getCollection, getEntry, getEntries } from 'astro:content';
 import { SITE } from '../../consts';
 
 /**
@@ -22,7 +22,7 @@ const stamp = (d: Date) => d.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}
 
 /**
  * Fold to 75 octets per line, counted in UTF-8 bytes rather than
- * characters — Persian text is two bytes per character, so counting
+ * characters - Persian text is two bytes per character, so counting
  * characters would produce lines twice the legal length.
  */
 function fold(line: string): string {
@@ -59,7 +59,7 @@ export async function GET(context: APIContext) {
     `PRODID:-//${SITE.nameLatin}//${SITE.url}//FA`,
     'CALSCALE:GREGORIAN',
     'METHOD:PUBLISH',
-    `X-WR-CALNAME:${esc(`${SITE.name} — رویدادها`)}`,
+    `X-WR-CALNAME:${esc(`${SITE.name} - رویدادها`)}`,
     `X-WR-CALDESC:${esc('رویدادهای نرم‌افزار آزاد و متن‌باز، داخلی و بین‌المللی')}`,
     'X-WR-TIMEZONE:Asia/Tehran',
     // Hint to subscribers: no need to poll more than twice a day.
@@ -74,6 +74,9 @@ export async function GET(context: APIContext) {
 
     const organizer = d.organizer ? await getEntry(d.organizer) : undefined;
     const organizerName = organizer?.data.nameFa ?? organizer?.data.name ?? d.organizerName;
+    const partnerNames = (d.partners.length ? await getEntries(d.partners) : []).map(
+      (p) => p.data.nameFa ?? p.data.name,
+    );
 
     // No end time given: assume two hours rather than emitting an
     // open-ended event, which some clients render as all-day.
@@ -87,6 +90,7 @@ export async function GET(context: APIContext) {
     const description = [
       d.summary,
       organizerName ? `برگزارکننده: ${organizerName}` : '',
+      partnerNames.length ? `با همراهی: ${partnerNames.join('، ')}` : '',
       d.priceNote ? `هزینه: ${d.priceNote}` : '',
       d.language ? `زبان: ${d.language}` : '',
       d.registerUrl ? `${d.registerLabel ?? 'نام‌نویسی'}: ${d.registerUrl}` : '',

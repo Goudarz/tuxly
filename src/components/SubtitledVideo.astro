@@ -1,0 +1,939 @@
+---
+/**
+ * YouTube player with our own subtitles drawn on top.
+ *
+ * YouTube cannot load a caption file from another site, so the player is
+ * driven through the IFrame API instead: the SRT is fetched from our own
+ * host, and the cue for the current time is rendered in an overlay above
+ * the video. Two things follow from that:
+ *
+ * - Fullscreen must belong to our wrapper, not to the player, otherwise the
+ *   overlay is left behind. YouTube's button is off, but its `f` shortcut
+ *   and double-click still fullscreen the bare iframe; see `onFullscreen`
+ *   in the script for how that is redirected to the wrapper.
+ * - Like MediaEmbed, nothing loads from YouTube until the reader presses
+ *   play, and the page stays fast.
+ *
+ * The player uses www.youtube.com, not youtube-nocookie.com. When YouTube
+ * suspects an IP (VPNs, shared or datacenter addresses) it answers with
+ * "Sign in to confirm you're not a bot"; the nocookie host never sees the
+ * reader's YouTube session, so signing in could not clear that check.
+ *
+ * `mirror` is a direct video file (our own host, PeerTube, anywhere that
+ * serves MP4/WebM). When set, the reader can play it without YouTube at
+ * all, which is the only thing that works where YouTube is blocked. The
+ * same subtitle overlay runs on top of either source.
+ *
+ * Subtitle appearance (size, colour, background, weight, position, timing)
+ * is the reader's choice and is remembered in localStorage.
+ *
+ * Chapter buttons anywhere on the page (`[data-seek="<seconds>"]` inside
+ * the same `[data-video-root]`) jump the player, loading it first if needed.
+ */
+interface Subtitle { lang: string; label: string; src: string }
+interface Props {
+  youtube: string;
+  title: string;
+  duration?: string;
+  subtitles?: Subtitle[];
+  /** Direct MP4/WebM URL, played natively as an alternative to YouTube. */
+  mirror?: string;
+}
+import { faDigits } from '../lib/persian';
+
+const { youtube, title, duration, subtitles = [], mirror } = Astro.props;
+const primary = subtitles[0];
+// Radio groups need names unique to this player.
+const uid = `sv${Math.random().toString(36).slice(2, 8)}`;
+
+const SETTINGS = [
+  {
+    key: 'size',
+    legend: 'اندازه',
+    options: [
+      { value: 's', label: 'کوچک' },
+      { value: 'm', label: 'متوسط' },
+      { value: 'l', label: 'بزرگ' },
+      { value: 'xl', label: 'خیلی بزرگ' },
+    ],
+  },
+  {
+    key: 'color',
+    legend: 'رنگ متن',
+    options: [
+      { value: 'white', label: 'سفید', swatch: '#FFFFFF' },
+      { value: 'yellow', label: 'زرد', swatch: '#FFE14D' },
+      { value: 'indigo', label: 'نیلی', swatch: '#A5B4FC' },
+      { value: 'violet', label: 'بنفش', swatch: '#D8B4FE' },
+    ],
+  },
+  {
+    key: 'bg',
+    legend: 'پس‌زمینه',
+    options: [
+      { value: 'none', label: 'بی‌رنگ' },
+      { value: 'soft', label: 'مشکی کم‌رنگ' },
+      { value: 'solid', label: 'مشکی' },
+    ],
+  },
+  {
+    key: 'weight',
+    legend: 'ضخامت قلم',
+    options: [
+      { value: 'normal', label: 'عادی' },
+      { value: 'bold', label: 'پررنگ' },
+    ],
+  },
+  {
+    key: 'pos',
+    legend: 'جای زیرنویس',
+    options: [
+      { value: 'low', label: 'پایین' },
+      { value: 'high', label: 'کمی بالاتر' },
+      { value: 'top', label: 'بالای تصویر' },
+    ],
+  },
+] as const;
+---
+
+<figure class="sv" data-sv data-video={youtube} data-mirror={mirror} data-title={title}>
+  <div class="stage" data-stage>
+    <div class="frame" data-frame>
+      <div class="poster">
+        <span class="label">
+          <span class="t"><bdi>{title}</bdi></span>
+          <span class="s">
+            {duration && <><bdi class="tnum" dir="ltr">{faDigits(duration)}</bdi> · </>}
+            {primary ? <>با زیرنویس {primary.label} روی ویدیو</> : 'ویدیو'}
+          </span>
+        </span>
+        <span class="choices">
+          {mirror && (
+            <button type="button" class="play" data-play="direct">
+              <span class="icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor"><path d="M8 5.5v13l11-6.5-11-6.5Z"></path></svg>
+              </span>
+              <span>پخش مستقیم <small>بدون یوتیوب</small></span>
+            </button>
+          )}
+          <button type="button" class:list={['play', { alt: mirror }]} data-play="youtube">
+            <span class="icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor"><path d="M8 5.5v13l11-6.5-11-6.5Z"></path></svg>
+            </span>
+            <span>پخش از یوتیوب</span>
+          </button>
+        </span>
+      </div>
+    </div>
+    <p class="cue" data-cue hidden dir="rtl"></p>
+
+    <!-- Reachable in fullscreen too, where the bar below is out of sight. -->
+    <div class="hud" data-pagefind-ignore>
+      {subtitles.length > 0 && (
+        <button type="button" class="hud-btn" data-panel-toggle aria-label="تنظیمات زیرنویس" title="تنظیمات زیرنویس">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="12" cy="12" r="3"></circle>
+            <path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1Z"></path>
+          </svg>
+        </button>
+      )}
+      <button type="button" class="hud-btn" data-fs-exit aria-label="خروج از تمام‌صفحه" title="خروج از تمام‌صفحه (Esc)">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+          <path d="M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5"></path>
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <div class="bar" data-pagefind-ignore>
+    {subtitles.length > 0 && (
+      <>
+        <button type="button" class="ctl" data-cc aria-pressed="true" title="روشن و خاموش کردن زیرنویس (کلید C)">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <rect x="3" y="5" width="18" height="14" rx="2.5"></rect>
+            <path d="M10.5 10.2a2.2 2.2 0 1 0 0 3.6M17 10.2a2.2 2.2 0 1 0 0 3.6" stroke-linecap="round"></path>
+          </svg>
+          زیرنویس
+        </button>
+        <button type="button" class="ctl" data-panel-toggle aria-expanded="false" aria-controls={`${uid}-panel`}>
+          تنظیمات زیرنویس
+        </button>
+        {subtitles.length > 1 && (
+          <label class="ctl select">
+            <span class="visually-hidden">زبان زیرنویس</span>
+            <select data-lang>
+              {subtitles.map((s) => <option value={s.src}>{s.label}</option>)}
+            </select>
+          </label>
+        )}
+      </>
+    )}
+    <button type="button" class="ctl" data-fs title="تمام‌صفحه (کلید F)">
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+        <path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"></path>
+      </svg>
+      تمام‌صفحه
+    </button>
+    <span class="spacer"></span>
+    {subtitles.map((s) => (
+      <a class="ctl" href={s.src} download data-no-ext>
+        دریافت زیرنویس {subtitles.length > 1 && s.label} <bdi class="latin">SRT</bdi>
+      </a>
+    ))}
+    <a class="ctl" href={`https://www.youtube.com/watch?v=${youtube}`} rel="noopener">دیدن در یوتیوب</a>
+  </div>
+
+  {subtitles.length > 0 && (
+    <section class="panel" id={`${uid}-panel`} data-panel hidden aria-label="تنظیمات زیرنویس" data-pagefind-ignore>
+      <div class="panel-head">
+        <strong>تنظیمات زیرنویس</strong>
+        <button type="button" class="x" data-panel-close aria-label="بستن تنظیمات">✕</button>
+      </div>
+
+      <div class="preview" aria-hidden="true">
+        <p class="cue sample"><span>این یک نمونه از زیرنویس است</span></p>
+      </div>
+
+      {SETTINGS.map((group) => (
+        <fieldset>
+          <legend>{group.legend}</legend>
+          <div class="opts">
+            {group.options.map((o) => (
+              <label class="opt">
+                <input type="radio" name={`${uid}-${group.key}`} value={o.value} data-pref={group.key} />
+                <span>
+                  {'swatch' in o && <i class="sw" style={`background:${o.swatch}`}></i>}
+                  {o.label}
+                </span>
+              </label>
+            ))}
+          </div>
+        </fieldset>
+      ))}
+
+      <fieldset>
+        <legend>هم‌زمانی با صدا</legend>
+        <div class="opts sync">
+          <button type="button" class="opt-btn" data-offset="0.25">زودتر</button>
+          <output data-offset-label class="tnum">هم‌زمان</output>
+          <button type="button" class="opt-btn" data-offset="-0.25">دیرتر</button>
+        </div>
+        <p class="hint">اگر زیرنویس دیرتر از صدا می‌آید «زودتر» را بزنید. هر بار ربع ثانیه.</p>
+      </fieldset>
+
+      <div class="panel-foot">
+        <button type="button" class="opt-btn" data-reset>بازگشت به پیش‌فرض</button>
+      </div>
+      <p class="hint keys">
+        کلیدهای میان‌بر وقتی روی خود ویدیو کلیک نکرده‌اید:
+        <kbd class="latin">F</kbd> تمام‌صفحه، <kbd class="latin">C</kbd> زیرنویس.
+      </p>
+    </section>
+  )}
+
+  <details class="help" data-pagefind-ignore>
+    <summary>یوتیوب پیغام «<bdi class="latin">Sign in to confirm you’re not a bot</bdi>» می‌دهد؟</summary>
+    <p>
+      این پیغام را خود یوتیوب برای نشانی‌های اینترنتی‌ای نشان می‌دهد که به آن‌ها
+      مشکوک است، معمولاً VPNها و IPهای اشتراکی. از سمت سایت نمی‌شود خاموشش کرد،
+      ولی این راه‌ها معمولاً جواب می‌دهند:
+    </p>
+    <ul>
+      {mirror && <li>گزینهٔ <strong>پخش مستقیم</strong> را بزنید؛ ویدیو از یوتیوب بارگیری نمی‌شود.</li>}
+      <li>در همین مرورگر وارد حساب یوتیوب شوید و صفحه را دوباره باز کنید.</li>
+      <li>سرور یا کشور VPN را عوض کنید.</li>
+      <li>
+        ویدیو را <a href={`https://www.youtube.com/watch?v=${youtube}`} rel="noopener"> در خود یوتیوب </a>
+        ببینید و زیرنویس را با دکمهٔ «دریافت زیرنویس» بگیرید تا در پخش‌کنندهٔ خودتان
+        (مثل <bdi class="latin">VLC</bdi> یا <bdi class="latin">mpv</bdi>) بارش کنید.
+      </li>
+    </ul>
+  </details>
+</figure>
+
+<style>
+  .sv {
+    margin: 0;
+    /* Subtitle look; the script sets these from the reader's choices. */
+    --cc-scale: 1;
+    --cc-color: #fff;
+    --cc-bg: rgb(0 0 0 / 0.5);
+    --cc-weight: 600;
+    --cc-shadow: 0 1px 2px rgb(0 0 0 / 0.8);
+  }
+  .stage {
+    position: relative;
+    aspect-ratio: 16 / 9;
+    border-radius: var(--r-md);
+    overflow: hidden;
+    background: #000;
+    border: 1px solid var(--border);
+    container-type: inline-size;
+  }
+  .stage:fullscreen { border-radius: 0; border: 0; aspect-ratio: auto; width: 100vw; height: 100vh; }
+  /*
+   * Fills the window when the browser refuses real fullscreen (it needs a
+   * fresh click, which a key pressed inside YouTube's iframe does not give us).
+   */
+  .stage.pseudo-fs {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    width: 100vw;
+    height: 100vh;
+    height: 100dvh;
+    aspect-ratio: auto;
+    border: 0;
+    border-radius: 0;
+  }
+  :global(html.sv-lock) { overflow: hidden; }
+  .frame { position: absolute; inset: 0; }
+  .frame :global(iframe) { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+  .frame :global(video) { position: absolute; inset: 0; width: 100%; height: 100%; background: #000; }
+
+  .poster {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1.1rem;
+    padding: 1.2rem;
+    color: #fff;
+    text-align: center;
+    background:
+      radial-gradient(120% 90% at 85% 10%, color-mix(in srgb, var(--conf, var(--accent)) 55%, transparent), transparent 60%),
+      linear-gradient(160deg, #15161c, #07070a);
+  }
+  .label { display: grid; gap: 0.2rem; min-width: 0; }
+  .t { font-weight: 800; font-size: var(--step-1); }
+  .s { font-size: var(--step--1); color: rgb(255 255 255 / 0.72); }
+  .choices { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.7rem; }
+  .play {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding-inline: 0.35rem 1.1rem;
+    border: 1px solid rgb(255 255 255 / 0.18);
+    border-radius: 999px;
+    background: rgb(255 255 255 / 0.08);
+    color: #fff;
+    font: inherit;
+    font-weight: 700;
+    cursor: pointer;
+  }
+  .play small { font-weight: 400; opacity: 0.75; margin-inline-start: 0.25rem; }
+  .play:hover, .play:focus-visible { border-color: var(--conf, var(--accent)); }
+  .icon {
+    display: grid;
+    place-items: center;
+    width: 50px;
+    height: 50px;
+    flex: none;
+    border-radius: 50%;
+    background: var(--conf, var(--accent));
+    color: var(--conf-ink, var(--accent-ink));
+    padding-inline-start: 3px;
+    transition: transform 0.18s var(--ease);
+  }
+  .play.alt .icon { background: rgb(255 255 255 / 0.16); color: #fff; }
+  .play:hover .icon, .play:focus-visible .icon { transform: scale(1.07); }
+
+  /*
+   * Sits above YouTube's control bar. pointer-events: none keeps every click
+   * going to the player underneath.
+   */
+  .cue {
+    position: absolute;
+    inset-inline: 6%;
+    bottom: 13%;
+    margin: 0;
+    text-align: center;
+    pointer-events: none;
+    font-family: var(--font-fa);
+    font-weight: var(--cc-weight);
+    font-size: calc(clamp(0.9rem, 3.1cqi, 2.1rem) * var(--cc-scale));
+    line-height: 1.75;
+    white-space: pre-line;
+    color: var(--cc-color);
+    text-shadow: var(--cc-shadow);
+  }
+  .cue :global(span) {
+    background: var(--cc-bg);
+    padding: 0.08em 0.45em;
+    border-radius: 6px;
+    box-decoration-break: clone;
+    -webkit-box-decoration-break: clone;
+  }
+  .sv[data-cc-pos='high'] .stage .cue { bottom: 24%; }
+  .sv[data-cc-pos='top'] .stage .cue { bottom: auto; top: 7%; }
+  .stage:is(:fullscreen, .pseudo-fs) .cue { bottom: 9%; }
+  .sv[data-cc-pos='high'] .stage:is(:fullscreen, .pseudo-fs) .cue { bottom: 20%; }
+  .sv[data-cc-pos='top'] .stage:is(:fullscreen, .pseudo-fs) .cue { bottom: auto; top: 6%; }
+
+  .hud {
+    position: absolute;
+    top: 0.6rem;
+    inset-inline-start: 0.6rem;
+    display: flex;
+    gap: 0.4rem;
+    opacity: 0;
+    transition: opacity 0.2s var(--ease);
+  }
+  .stage.live:hover .hud,
+  .stage.live:focus-within .hud,
+  .stage:is(:fullscreen, .pseudo-fs) .hud { opacity: 1; }
+  .hud-btn {
+    display: grid;
+    place-items: center;
+    width: 40px;
+    height: 40px;
+    min-height: 40px;
+    border-radius: 50%;
+    border: 1px solid rgb(255 255 255 / 0.2);
+    background: rgb(0 0 0 / 0.6);
+    color: #fff;
+    cursor: pointer;
+  }
+  .hud-btn:hover { border-color: var(--conf, var(--accent)); }
+  [data-fs-exit] { display: none; }
+  .stage:is(:fullscreen, .pseudo-fs) [data-fs-exit] { display: grid; }
+
+  .bar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.45rem;
+    margin-top: 0.7rem;
+  }
+  .spacer { flex: 1; }
+  .ctl {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    min-height: 40px;
+    padding: 0.3rem 0.8rem;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    background: var(--surface);
+    color: var(--text);
+    font: inherit;
+    font-size: var(--step--1);
+    text-decoration: none;
+    cursor: pointer;
+  }
+  .ctl:hover { border-color: var(--accent); }
+  .ctl:is([aria-pressed='true'], [aria-expanded='true']) {
+    background: color-mix(in srgb, var(--accent) 18%, var(--surface));
+    border-color: color-mix(in srgb, var(--accent) 55%, transparent);
+  }
+  .select select { background: transparent; color: inherit; border: 0; font: inherit; }
+
+  /* Settings: a card under the bar, or an overlay while in fullscreen. */
+  .panel {
+    margin-top: 0.7rem;
+    padding: 1rem 1.1rem;
+    border: 1px solid var(--border);
+    border-radius: var(--r-md);
+    background: var(--surface);
+    color: var(--text);
+    font-size: var(--step--1);
+    display: grid;
+    gap: 0.8rem;
+  }
+  .stage .panel {
+    position: absolute;
+    top: 3.6rem;
+    inset-inline-start: 0.6rem;
+    width: min(360px, calc(100% - 1.2rem));
+    max-height: calc(100% - 4.4rem);
+    overflow: auto;
+    margin: 0;
+    background: rgb(12 13 18 / 0.94);
+    border-color: rgb(255 255 255 / 0.14);
+    color: #fff;
+    --text-muted: rgb(255 255 255 / 0.65);
+    --border: rgb(255 255 255 / 0.18);
+    --surface: rgb(255 255 255 / 0.04);
+  }
+  .panel-head { display: flex; justify-content: space-between; align-items: center; }
+  .x {
+    width: 36px;
+    height: 36px;
+    min-height: 36px;
+    border: 0;
+    border-radius: 50%;
+    background: transparent;
+    color: inherit;
+    cursor: pointer;
+  }
+  .x:hover { background: color-mix(in srgb, currentColor 12%, transparent); }
+
+  .preview {
+    position: relative;
+    height: 88px;
+    border-radius: var(--r-sm);
+    overflow: hidden;
+    container-type: inline-size;
+    background: linear-gradient(135deg, #3a4a5e, #6b5a45 55%, #1f2630);
+  }
+  .preview .cue { bottom: 50%; transform: translateY(50%); font-size: calc(clamp(0.85rem, 4.6cqi, 1.4rem) * var(--cc-scale)); }
+
+  fieldset { border: 0; margin: 0; padding: 0; min-width: 0; }
+  legend { padding: 0; margin-bottom: 0.4rem; color: var(--text-muted); font-size: var(--step--2); }
+  .opts { display: flex; flex-wrap: wrap; gap: 0.35rem; align-items: center; }
+  .opt { position: relative; }
+  .opt input { position: absolute; opacity: 0; inset: 0; margin: 0; cursor: pointer; }
+  .opt span, .opt-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    min-height: 36px;
+    padding: 0.2rem 0.75rem;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    background: var(--surface);
+    color: inherit;
+    font: inherit;
+    cursor: pointer;
+  }
+  .opt input:checked + span {
+    border-color: var(--accent);
+    background: color-mix(in srgb, var(--accent) 22%, transparent);
+    font-weight: 700;
+  }
+  .opt input:focus-visible + span { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .opt-btn:hover, .opt:hover span { border-color: var(--accent); }
+  .sw { width: 12px; height: 12px; border-radius: 50%; border: 1px solid rgb(0 0 0 / 0.35); }
+  .sync output { min-width: 9ch; text-align: center; font-weight: 700; }
+  .hint { margin: 0.35rem 0 0; color: var(--text-muted); font-size: var(--step--2); }
+  .panel-foot { display: flex; justify-content: flex-end; }
+  .keys kbd {
+    font-size: 0.85em;
+    padding: 0 0.35em;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+  }
+
+  .help {
+    margin-top: 0.7rem;
+    font-size: var(--step--1);
+    border: 1px solid var(--border);
+    border-radius: var(--r-sm);
+    padding: 0.5rem 0.9rem;
+    background: var(--surface);
+  }
+  .help summary { cursor: pointer; font-weight: 600; }
+  .help ul { margin: 0.4rem 0 0.3rem; padding-inline-start: 1.2rem; line-height: 1.9; }
+
+  @media (max-width: 560px) {
+    .poster { gap: 0.6rem; }
+    .icon { width: 40px; height: 40px; }
+    .t { font-size: var(--step-0); }
+    .spacer { display: none; }
+  }
+</style>
+
+<script>
+  interface Cue { start: number; end: number; text: string }
+  interface YTPlayer {
+    getCurrentTime(): number;
+    seekTo(s: number, allowSeekAhead: boolean): void;
+    playVideo(): void;
+  }
+  type YTNamespace = { Player: new (el: HTMLElement, opts: unknown) => YTPlayer };
+  const w = window as unknown as { YT?: YTNamespace; onYouTubeIframeAPIReady?: () => void };
+
+  const store = {
+    get(key: string) { try { return localStorage.getItem(key); } catch { return null; } },
+    set(key: string, value: string) { try { localStorage.setItem(key, value); } catch {} },
+  };
+
+  /* ---------- subtitle appearance ---------- */
+
+  interface Prefs { size: string; color: string; bg: string; weight: string; pos: string; offset: number }
+  const DEFAULTS: Prefs = { size: 'm', color: 'white', bg: 'soft', weight: 'normal', pos: 'low', offset: 0 };
+  const SIZE: Record<string, number> = { s: 0.8, m: 1, l: 1.25, xl: 1.55 };
+  const COLOR: Record<string, string> = { white: '#FFFFFF', yellow: '#FFE14D', indigo: '#A5B4FC', violet: '#D8B4FE' };
+  const BG: Record<string, string> = { none: 'transparent', soft: 'rgb(0 0 0 / 0.5)', solid: 'rgb(0 0 0 / 0.88)' };
+  // Without a box behind it, the text needs a full outline to stay readable.
+  const OUTLINE =
+    '-1.5px -1.5px 0 #000, 1.5px -1.5px 0 #000, -1.5px 1.5px 0 #000, 1.5px 1.5px 0 #000, 0 0 6px rgb(0 0 0 / 0.9)';
+  const PREFS_KEY = 'tuxly-cc-prefs';
+
+  function loadPrefs(): Prefs {
+    try {
+      const saved = JSON.parse(store.get(PREFS_KEY) ?? '{}');
+      const p = { ...DEFAULTS, ...saved };
+      if (!(p.size in SIZE)) p.size = DEFAULTS.size;
+      if (!(p.color in COLOR)) p.color = DEFAULTS.color;
+      if (!(p.bg in BG)) p.bg = DEFAULTS.bg;
+      if (typeof p.offset !== 'number' || !Number.isFinite(p.offset)) p.offset = 0;
+      return p;
+    } catch {
+      return { ...DEFAULTS };
+    }
+  }
+
+  const faNum = (n: number) => n.toLocaleString('fa-IR', { maximumFractionDigits: 2 });
+
+  /* ---------- YouTube API and SRT ---------- */
+
+  /** YouTube's iframe talks only to the window it sits in, so the API is per window. */
+  const apis = new WeakMap<Window, Promise<YTNamespace>>();
+  function loadApi(win: Window): Promise<YTNamespace> {
+    const W = win as unknown as typeof w;
+    if (W.YT?.Player) return Promise.resolve(W.YT);
+    let p = apis.get(win);
+    if (!p) {
+      p = new Promise((resolve) => {
+        const prev = W.onYouTubeIframeAPIReady;
+        W.onYouTubeIframeAPIReady = () => { prev?.(); resolve(W.YT!); };
+        const s = win.document.createElement('script');
+        s.src = 'https://www.youtube.com/iframe_api';
+        win.document.head.append(s);
+      });
+      apis.set(win, p);
+    }
+    return p;
+  }
+
+
+  const stamp = (t: string) => {
+    const [hms, ms = '0'] = t.trim().split(/[,.]/);
+    const [h, m, s] = hms.split(':').map(Number);
+    return h * 3600 + m * 60 + s + Number(ms) / 1000;
+  };
+
+  function parseSrt(raw: string): Cue[] {
+    return raw
+      .replace(/^﻿/, '')
+      .replace(/\r\n?/g, '\n')
+      .split(/\n{2,}/)
+      .map((block) => {
+        const lines = block.trim().split('\n');
+        const i = lines.findIndex((l) => l.includes('-->'));
+        if (i < 0) return null;
+        const [a, b] = lines[i].split('-->');
+        return { start: stamp(a), end: stamp(b.split(' ').filter(Boolean)[0]), text: lines.slice(i + 1).join('\n') };
+      })
+      .filter((c): c is Cue => !!c && !!c.text)
+      .sort((x, y) => x.start - y.start);
+  }
+
+  /** Last cue that has started, if it has not ended yet. */
+  function cueAt(cues: Cue[], t: number): Cue | undefined {
+    let lo = 0, hi = cues.length - 1, hit = -1;
+    while (lo <= hi) {
+      const mid = (lo + hi) >> 1;
+      if (cues[mid].start <= t) { hit = mid; lo = mid + 1; } else hi = mid - 1;
+    }
+    const c = cues[hit];
+    return c && t < c.end ? c : undefined;
+  }
+
+  /* ---------- fullscreen helpers ---------- */
+
+  type FsDoc = Document & { webkitFullscreenElement?: Element; webkitExitFullscreen?: () => Promise<void> };
+  type FsEl = HTMLElement & { webkitRequestFullscreen?: () => Promise<void> };
+  const fsDoc = document as FsDoc;
+  const fsElement = () => fsDoc.fullscreenElement ?? fsDoc.webkitFullscreenElement ?? null;
+  const exitNative = () =>
+    Promise.resolve((fsDoc.exitFullscreen ?? fsDoc.webkitExitFullscreen)?.call(fsDoc)).catch(() => {});
+
+  document.querySelectorAll<HTMLElement>('[data-sv]').forEach((root) => {
+    const scope = root.closest<HTMLElement>('[data-video-root]') ?? root;
+    const stage = root.querySelector<HTMLElement>('[data-stage]')! as FsEl;
+    const frame = root.querySelector<HTMLElement>('[data-frame]')!;
+    const cueEl = root.querySelector<HTMLElement>('[data-cue]')!;
+    const ccBtn = root.querySelector<HTMLButtonElement>('[data-cc]');
+    const langSel = root.querySelector<HTMLSelectElement>('[data-lang]');
+    const panel = root.querySelector<HTMLElement>('[data-panel]');
+    const panelHome = panel?.parentElement;
+    const panelNext = panel?.nextElementSibling ?? null;
+    const offsetLabel = root.querySelector<HTMLOutputElement>('[data-offset-label]');
+    const firstSrc = root.querySelector<HTMLAnchorElement>('a[download]')?.getAttribute('href') ?? '';
+
+    /** Whatever is playing - YouTube or a native <video> - seen the same way. */
+    interface Source { time(): number; seek(s: number): void }
+    let source: Source | undefined;
+    let loading: Promise<Source> | undefined;
+    let cues: Cue[] = [];
+    let shown: Cue | undefined;
+    let ccOn = store.get('tuxly-cc') !== 'off';
+    let prefs = loadPrefs();
+    // Direct playback first when there is a mirror: it works everywhere.
+    let preferred: 'youtube' | 'direct' = root.dataset.mirror ? 'direct' : 'youtube';
+
+    ccBtn?.setAttribute('aria-pressed', String(ccOn));
+
+    /* ----- appearance ----- */
+
+    function applyPrefs() {
+      root.style.setProperty('--cc-scale', String(SIZE[prefs.size]));
+      root.style.setProperty('--cc-color', COLOR[prefs.color]);
+      root.style.setProperty('--cc-bg', BG[prefs.bg]);
+      root.style.setProperty('--cc-weight', prefs.weight === 'bold' ? '800' : '600');
+      root.style.setProperty('--cc-shadow', prefs.bg === 'none' ? OUTLINE : '0 1px 2px rgb(0 0 0 / 0.8)');
+      root.dataset.ccPos = prefs.pos;
+      root.querySelectorAll<HTMLInputElement>('input[data-pref]').forEach((input) => {
+        input.checked = prefs[input.dataset.pref as keyof Prefs] === input.value;
+      });
+      if (offsetLabel) {
+        const o = prefs.offset;
+        offsetLabel.value = o === 0 ? 'هم‌زمان' : `${faNum(Math.abs(o))} ثانیه ${o > 0 ? 'زودتر' : 'دیرتر'}`;
+      }
+      store.set(PREFS_KEY, JSON.stringify(prefs));
+    }
+    applyPrefs();
+
+    root.querySelectorAll<HTMLInputElement>('input[data-pref]').forEach((input) => {
+      input.addEventListener('change', () => {
+        prefs = { ...prefs, [input.dataset.pref!]: input.value };
+        applyPrefs();
+      });
+    });
+    root.querySelectorAll<HTMLButtonElement>('[data-offset]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const next = Math.round((prefs.offset + Number(btn.dataset.offset)) * 100) / 100;
+        prefs = { ...prefs, offset: Math.max(-10, Math.min(10, next)) };
+        applyPrefs();
+      });
+    });
+    root.querySelector('[data-reset]')?.addEventListener('click', () => {
+      prefs = { ...DEFAULTS };
+      applyPrefs();
+    });
+
+    /* ----- settings panel ----- */
+
+    const panelToggles = root.querySelectorAll<HTMLButtonElement>('[data-panel-toggle]');
+    function setPanel(open: boolean) {
+      if (!panel) return;
+      panel.hidden = !open;
+      panelToggles.forEach((b) => b.setAttribute('aria-expanded', String(open)));
+      if (open) panel.querySelector<HTMLInputElement>('input:checked')?.focus({ preventScroll: true });
+    }
+    panelToggles.forEach((b) => b.addEventListener('click', () => setPanel(!!panel?.hidden)));
+    root.querySelector('[data-panel-close]')?.addEventListener('click', () => setPanel(false));
+
+    /** In fullscreen the panel lives inside the stage, otherwise under the bar. */
+    function placePanel(full: boolean) {
+      if (!panel || !panelHome) return;
+      if (full && panel.parentElement !== stage) stage.append(panel);
+      if (!full && panel.parentElement !== panelHome) panelHome.insertBefore(panel, panelNext);
+    }
+
+    /* ----- cues ----- */
+
+    async function loadCues(src: string) {
+      if (!src) return;
+      try {
+        const res = await fetch(src);
+        cues = parseSrt(await res.text());
+      } catch {
+        cues = [];
+      }
+      shown = undefined;
+    }
+
+    function render(cue: Cue | undefined) {
+      if (cue === shown) return;
+      shown = cue;
+      if (!cue || !ccOn) { cueEl.hidden = true; return; }
+      cueEl.replaceChildren(
+        ...cue.text.split('\n').flatMap((line, i) => {
+          const span = document.createElement('span');
+          span.textContent = line;
+          return i ? [document.createElement('br'), span] : [span];
+        }),
+      );
+      cueEl.hidden = false;
+    }
+
+    let loop = 0;
+
+    /** One frame loop per mount; starting a new one retires the old. */
+    function runLoop() {
+      const gen = ++loop;
+      const tick = () => {
+        if (gen !== loop) return;
+        if (source) {
+          // A positive offset shows each line earlier than its timestamp.
+          render(cueAt(cues, source.time() + prefs.offset));
+        }
+        requestAnimationFrame(tick);
+      };
+      requestAnimationFrame(tick);
+    }
+
+    function toggleCc() {
+      if (!ccBtn) return;
+      ccOn = !ccOn;
+      ccBtn.setAttribute('aria-pressed', String(ccOn));
+      store.set('tuxly-cc', ccOn ? 'on' : 'off');
+      const current = shown;
+      shown = undefined;
+      render(current);
+    }
+    ccBtn?.addEventListener('click', toggleCc);
+    langSel?.addEventListener('change', () => loadCues(langSel.value));
+
+    /* ----- players ----- */
+
+    function mountYouTube(YT: YTNamespace, at: number): Promise<Source> {
+      return new Promise((resolve) => {
+        const mount = document.createElement('div');
+        frame.replaceChildren(mount);
+        const p = new YT.Player(mount, {
+          // Not youtube-nocookie: see the note at the top of this file.
+          host: 'https://www.youtube.com',
+          videoId: root.dataset.video,
+          playerVars: {
+            autoplay: 1, rel: 0, fs: 0, playsinline: 1, iv_load_policy: 3, cc_load_policy: 0,
+            start: Math.floor(at), origin: location.origin, widget_referrer: location.href,
+          },
+          events: {
+            onReady: () => {
+              const iframe = frame.querySelector('iframe');
+              if (iframe) {
+                iframe.title = root.dataset.title ?? '';
+                iframe.referrerPolicy = 'strict-origin-when-cross-origin';
+              }
+              resolve({
+                time: () => p.getCurrentTime(),
+                seek: (s) => { p.seekTo(s, true); p.playVideo(); },
+              });
+            },
+          },
+        });
+      });
+    }
+
+    function mountDirect(at: number): Promise<Source> {
+      const video = document.createElement('video');
+      video.src = root.dataset.mirror!;
+      video.controls = true;
+      video.playsInline = true;
+      video.preload = 'metadata';
+      // Our wrapper owns fullscreen, so the subtitles come along.
+      video.setAttribute('controlslist', 'nofullscreen');
+      // PiP would leave the subtitles behind; off until it can carry them.
+      video.setAttribute('disablepictureinpicture', '');
+      video.title = root.dataset.title ?? '';
+      frame.replaceChildren(video);
+      if (at) video.currentTime = at;
+      video.play().catch(() => {});
+      return Promise.resolve({
+        time: () => video.currentTime,
+        seek: (s) => { video.currentTime = s; video.play().catch(() => {}); },
+      });
+    }
+
+    function start(at = 0, via = preferred): Promise<Source> {
+      if (source) {
+        source.seek(at);
+        return Promise.resolve(source);
+      }
+      preferred = via;
+      loading ??= (async () => {
+        const cuesReady = cues.length ? Promise.resolve() : loadCues(langSel?.value ?? firstSrc);
+        const s = via === 'direct' ? await mountDirect(at) : await mountYouTube(await loadApi(window), at);
+        await cuesReady;
+        source = s;
+        stage.classList.add('live');
+        runLoop();
+        return s;
+      })();
+      return loading;
+    }
+
+
+    root.querySelectorAll<HTMLButtonElement>('[data-play]').forEach((btn) => {
+      btn.addEventListener('click', () => start(0, btn.dataset.play === 'direct' ? 'direct' : 'youtube'));
+    });
+
+    scope.querySelectorAll<HTMLElement>('[data-seek]').forEach((btn) => {
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        start(Number(btn.dataset.seek));
+        stage.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      });
+    });
+
+    /* ----- fullscreen ----- */
+
+    const isPseudo = () => stage.classList.contains('pseudo-fs');
+    const isFull = () => fsElement() === stage || isPseudo();
+
+    function setPseudo(on: boolean) {
+      stage.classList.toggle('pseudo-fs', on);
+      document.documentElement.classList.toggle('sv-lock', on);
+      placePanel(on || fsElement() === stage);
+    }
+
+    async function enterFull() {
+      const request = stage.requestFullscreen ?? stage.webkitRequestFullscreen;
+      try {
+        if (!request) throw new Error('unsupported');
+        await request.call(stage);
+      } catch {
+        // No user gesture left to spend (or iPhone Safari): fill the window.
+        setPseudo(true);
+      }
+    }
+
+    async function exitFull() {
+      if (isPseudo()) setPseudo(false);
+      // Popping one level at a time; a nested iframe fullscreen needs two.
+      for (let i = 0; i < 3 && fsElement(); i++) await exitNative();
+    }
+
+    const toggleFull = () => (isFull() ? exitFull() : enterFull());
+
+    root.querySelector('[data-fs]')?.addEventListener('click', toggleFull);
+    root.querySelector('[data-fs-exit]')?.addEventListener('click', exitFull);
+
+    /*
+     * YouTube's `f` key and double-click fullscreen the iframe itself, which
+     * leaves our subtitles behind. When that happens, hand fullscreen back
+     * to the stage. If we were already fullscreen, the reader meant "exit".
+     */
+    let stageWasFull = false;
+    function onFullscreen() {
+      const el = fsElement();
+      if (el && el !== stage && stage.contains(el)) {
+        if (stageWasFull || isPseudo()) {
+          exitFull();
+        } else {
+          exitNative().then(enterFull);
+        }
+      }
+      stageWasFull = fsElement() === stage;
+      placePanel(stageWasFull || isPseudo());
+    }
+    document.addEventListener('fullscreenchange', onFullscreen);
+    document.addEventListener('webkitfullscreenchange', onFullscreen);
+
+    /*
+     * Shortcuts while focus is on our page. Once the reader clicks into the
+     * YouTube iframe, keys go to YouTube instead, and the handler above
+     * covers its `f`.
+     */
+    document.addEventListener('keydown', (e) => {
+      if (e.defaultPrevented || e.ctrlKey || e.metaKey || e.altKey) return;
+      const t = e.target as HTMLElement | null;
+      if (t?.closest('input, textarea, select, [contenteditable="true"]')) return;
+      if (e.key === 'Escape') {
+        if (panel && !panel.hidden) { setPanel(false); return; }
+        if (isPseudo()) setPseudo(false);
+        return;
+      }
+      if (!source) return;
+      // Physical keys, so they work with the Persian layout active too.
+      if (e.code === 'KeyF') { e.preventDefault(); toggleFull(); }
+      if (e.code === 'KeyC') { e.preventDefault(); toggleCc(); }
+    });
+  });
+</script>

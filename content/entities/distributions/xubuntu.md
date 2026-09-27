@@ -2,7 +2,7 @@
 name: Xubuntu
 nameFa: زوبونتو
 type: distribution
-summary: اوبونتوی سبک با میزکار Xfce؛ گزینهٔ خوب برای رایانه‌های قدیمی‌تر.
+summary: اوبونتوی سبک با میزکار Xfce؛ گزینهٔ خوب برای کامپیوتر‌های قدیمی‌تر.
 website: https://xubuntu.org
 docs: https://docs.xubuntu.org
 family: Ubuntu

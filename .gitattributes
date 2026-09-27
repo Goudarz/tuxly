@@ -1,7 +1,7 @@
 # Normalise line endings.
 #
 # Without this, every contributor's editor decides for itself and Windows
-# checkouts rewrite whole files to CRLF — which shows up as "modified"
+# checkouts rewrite whole files to CRLF - which shows up as "modified"
 # files nobody actually touched, and noisy diffs on every pull request.
 #
 # `text=auto eol=lf` stores everything as LF in the repository and hands
@@ -16,7 +16,7 @@
 *.ts    text eol=lf
 *.py    text eol=lf
 
-# Binary — never touch, never diff.
+# Binary - never touch, never diff.
 *.woff2 binary
 *.png   binary
 *.jpg   binary

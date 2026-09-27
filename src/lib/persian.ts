@@ -35,7 +35,7 @@ const SEARCH_MAP: Record<string, string> = {
   '\u0626': YEH, // ئ
 };
 
-/** Arabic to Persian letters only — for display, not search. */
+/** Arabic to Persian letters only - for display, not search. */
 const DISPLAY_MAP: Record<string, string> = {
   '\u064A': YEH,
   '\u0649': YEH,
@@ -100,7 +100,7 @@ export function faDigits(input: string | number): string {
  * A year, in Persian digits and with no thousands separator.
  *
  * `faNumber` would render 1405 as «۱٬۴۰۵», which is correct for a quantity
- * and wrong for a year — nobody writes the current year with a separator.
+ * and wrong for a year - nobody writes the current year with a separator.
  */
 export function faYear(n: number): string {
   return faDigits(n);
@@ -114,7 +114,7 @@ export function faNumber(n: number): string {
 export const SITE_TZ = 'Asia/Tehran';
 
 /**
- * Jalali dates via Intl — adds zero bytes to the bundle and is accurate
+ * Jalali dates via Intl - adds zero bytes to the bundle and is accurate
  * from 1800 to 2256 CE. For date *arithmetic*, use jalaali-js instead.
  */
 export function faDate(date: Date, opts: Intl.DateTimeFormatOptions = {}): string {
@@ -141,7 +141,7 @@ export function faWeekday(date: Date): string {
  *
  * Composed by hand rather than by passing `weekday` to Intl. Adding that
  * option makes ICU reorder the whole thing to «۱۴۰۵ مرداد ۲۱، چهارشنبه»,
- * which is not how Persian dates are written — the weekday leads, then
+ * which is not how Persian dates are written - the weekday leads, then
  * day, month, year.
  *
  * Worth the extra function: for anything a reader plans around, the

@@ -1,5 +1,5 @@
 # Cache headers for hosts that read this file (Cloudflare Pages, Netlify).
-# Not used by GitHub Pages — set the equivalent rules in the CDN dashboard.
+# Not used by GitHub Pages - set the equivalent rules in the CDN dashboard.
 
 # Content-hashed filenames can never change, so cache them forever.
 /_astro/*

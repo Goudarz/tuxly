@@ -20,7 +20,7 @@ wikidata: Q104102686
 versionCheckedAt: 2026-09-21
 ---
 
-راکی را Gregory Kurtzer — از بنیان‌گذاران CentOS — بعد از تغییر سیاست
+راکی را Gregory Kurtzer - از بنیان‌گذاران CentOS - بعد از تغییر سیاست
 Red Hat راه انداخت. هدفش دقیقاً همان چیزی است که CentOS بود: نسخهٔ
 رایگان و باینری‌سازگار RHEL.
 

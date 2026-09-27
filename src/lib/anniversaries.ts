@@ -8,7 +8,7 @@ import { entityUrl, entityLabel, type Entity } from './entities';
  *
  *   - `firstRelease` on an entity. Already recorded because it belongs on
  *     the entity page anyway, so every distribution and project that has a
- *     birth date gets an anniversary for free — no second list to keep in
+ *     birth date gets an anniversary for free - no second list to keep in
  *     step with the first.
  *   - `content/milestones.json`, for moments that are not a project's own
  *     birth: the GNU announcement, the first GPL, the founding of the OSI.
@@ -39,7 +39,7 @@ export function toJalali(date: Date): { year: number; month: number; day: number
 /**
  * This year's occurrence of an anniversary.
  *
- * Needed because a fixed Gregorian day is *not* a fixed Jalali day — 16
+ * Needed because a fixed Gregorian day is *not* a fixed Jalali day - 16
  * August was 26 Mordad in 1403 and 25 Mordad in 1404. So the Jalali date
  * has to be computed per year rather than stored once.
  *
@@ -52,7 +52,7 @@ export function occurrenceIn(anniversary: { month: number; day: number }, year: 
 
 export interface Anniversary {
   id: string;
-  /** Original date, kept whole — the year is what makes the age. */
+  /** Original date, kept whole - the year is what makes the age. */
   date: Date;
   month: number;
   day: number;
@@ -91,7 +91,7 @@ export async function getAnniversaries(): Promise<Anniversary[]> {
    * 2. Hand-written moments.
    *
    * A milestone that names an entity and lands on the same day as that
-   * entity's own `firstRelease` is the same fact told twice — and the
+   * entity's own `firstRelease` is the same fact told twice - and the
    * milestone tells it better, because it carries a note and a source. So
    * the derived one steps aside.
    */

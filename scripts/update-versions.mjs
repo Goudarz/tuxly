@@ -6,7 +6,7 @@
  * within months. Descriptions are stable and written by hand; volatile data
  * comes from upstream.
  *
- * When nothing is found the field stays empty and the UI shows "checking" —
+ * When nothing is found the field stays empty and the UI shows "checking" -
  * better than a guess.
  *
  * Usage:
@@ -104,7 +104,7 @@ async function fetchEol(id) {
   if (!Array.isArray(cycles) || !cycles.length) throw new Error('empty response');
 
   const today = new Date().toISOString().slice(0, 10);
-  // Newest cycle actually released — not future ones.
+  // Newest cycle actually released - not future ones.
   const released = cycles.filter((c) => typeof c.releaseDate === 'string' && c.releaseDate <= today);
   const latest = released[0] ?? cycles[0];
 
@@ -236,7 +236,7 @@ for (const file of targets) {
 
   yaml = setField(yaml, 'versionCheckedAt', new Date().toISOString().slice(0, 10));
   if (!DRY) await writeFile(file.path, `---\n${yaml}\n---\n${parts.body}`, 'utf8');
-  console.log(`  ${green('✓')} ${name} ${dim('— ' + changes.join(', '))}`);
+  console.log(`  ${green('✓')} ${name} ${dim('- ' + changes.join(', '))}`);
   updated++;
 }
 
@@ -251,11 +251,11 @@ if (problems.length) {
 }
 
 // A handful of failures is normal. Everything failing means the network is
-// the problem, not the data — say so plainly instead of leaving the user to
+// the problem, not the data - say so plainly instead of leaving the user to
 // guess from a wall of "fetch failed".
 const attempted = targets.length;
 if (networkFailures >= Math.min(3, attempted) && networkFailures >= attempted * 0.5) {
-  console.log(red(`\n  ${bold('Almost every request failed — this looks like a network issue.')}`));
+  console.log(red(`\n  ${bold('Almost every request failed - this looks like a network issue.')}`));
   console.log(`
   Both endpoints sit behind CDNs that are frequently unreachable from some
   regions, Iran included. Check by hand:
@@ -272,7 +272,7 @@ if (networkFailures >= Math.min(3, attempted) && networkFailures >= attempted * 
     2. Run behind a proxy:
        ${dim('HTTPS_PROXY=http://127.0.0.1:8080 npm run update:versions')}
 
-    3. Fill the fields by hand — see docs/VERSIONS.md.
+    3. Fill the fields by hand - see docs/VERSIONS.md.
 `);
   process.exitCode = 1;
 }

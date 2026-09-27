@@ -2,7 +2,7 @@
 """Generate the Tuxly mascot set.
 
 Every mascot is the brand mark in a different pose, built from the same
-geometry — same body curve, same eye positions, same amber beak — so the set
+geometry - same body curve, same eye positions, same amber beak - so the set
 reads as one character rather than eight unrelated drawings.
 
 Body, belly and eyes stay a single path with fill-rule=evenodd, exactly like
@@ -50,12 +50,12 @@ def circle(cx, cy, r):
 
 
 def happy(cx, cy):
-    """Upward crescent — a smiling, closed eye."""
+    """Upward crescent - a smiling, closed eye."""
     return f"M {cx - 9} {cy + 3} Q {cx} {cy - 11} {cx + 9} {cy + 3} Q {cx} {cy - 4} {cx - 9} {cy + 3} Z"
 
 
 def closed(cx, cy):
-    """Downward crescent — a shut, sleeping eye."""
+    """Downward crescent - a shut, sleeping eye."""
     return f"M {cx - 9} {cy - 2} Q {cx} {cy + 10} {cx + 9} {cy - 2} Q {cx} {cy + 3} {cx - 9} {cy - 2} Z"
 
 
@@ -114,7 +114,7 @@ FLIPPER_UP = "M 138 104 C 156 96, 172 74, 170 52 C 169 44, 158 43, 155 51 C 148 
 FLIPPER_OUT = "M 140 108 C 160 108, 178 118, 184 132 C 187 139, 179 146, 173 141 C 160 130, 148 124, 136 120 Z"
 FLIPPER_CHIN = "M 138 106 C 150 100, 156 88, 150 80 C 146 75, 138 78, 138 85 C 138 92, 134 98, 128 100 Z"
 FLIPPER_DOWN = "M 139 106 C 154 114, 162 132, 158 148 C 156 156, 146 155, 145 147 C 143 132, 140 118, 133 110 Z"
-# Held out to the sides — reads as a shrug, and stays clear of the body.
+# Held out to the sides - reads as a shrug, and stays clear of the body.
 FLIPPER_SHRUG = "M 134 110 C 156 104, 178 108, 191 121 C 196 126, 190 136, 183 132 C 168 124, 150 122, 132 125 Z"
 
 
@@ -192,7 +192,7 @@ def prop_heart():
 
 # ── the set ────────────────────────────────────────────────────────────
 # One viewBox for the whole set. Mascots get used side by side, so they have
-# to share a scale — per-pose cropping would make the character grow and
+# to share a scale - per-pose cropping would make the character grow and
 # shrink from screen to screen.
 VIEWBOX = "-8 6 216 182"
 

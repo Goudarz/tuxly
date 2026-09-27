@@ -26,8 +26,8 @@ const columns = [
       { href: '/anniversaries', label: 'تقویم سالگردها' },
       { href: '/communities', label: 'اجتماع‌ها و گروه‌ها' },
       { href: '/glossary', label: 'واژه‌نامه' },
-      { href: '/people', label: 'چهره‌ها' },
-      { href: '/speakers', label: 'ارائه‌دهندگان' },
+      { href: '/people', label: 'نویسندگان' },
+      { href: '/speakers', label: 'سخنرانان' },
       { href: '/rss.xml', label: 'خوراک RSS' },
       { href: '/anniversaries/rss.xml', label: 'خوراک سالگردها' },
     ],
@@ -49,7 +49,7 @@ const columns = [
   <div class="wrap">
     <div class="top">
       <div class="about">
-        <a href="/" class="brand" aria-label={`${SITE.name} — صفحهٔ خانه`}>
+        <a href="/" class="brand" aria-label={`${SITE.name} - صفحهٔ خانه`}>
           <Mark size={34} />
           <span class="name">{SITE.name}</span>
         </a>
@@ -57,7 +57,7 @@ const columns = [
           تاکسلی خانهٔ فارسی نرم‌افزار آزاد و متن‌باز است. اینجا خبرهای
           گنو/لینوکس و پروژه‌های آزاد را دنبال می‌کنیم، توزیع‌ها و میزکارها را
           معرفی می‌کنیم، آموزش می‌نویسیم و تقویم رویدادهای اجتماع را نگه
-          می‌داریم — با این باور که نرم‌افزار آزاد باید به زبان مادری هم
+          می‌داریم - با این باور که نرم‌افزار آزاد باید به زبان مادری هم
           در دسترس باشد.
         </p>
         <ul class="social">
@@ -80,6 +80,10 @@ const columns = [
                 <a href={l.href}>{'latin' in l && l.latin ? <bdi class="latin">{l.label}</bdi> : l.label}</a>
               </li>
             ))}
+            {/* Revealed by InstallPrompt when the browser can install the site. */}
+            {col.title === 'دربارهٔ ما' && (
+              <li data-install hidden><a href="/" role="button">نصب برنامهٔ تاکسلی</a></li>
+            )}
           </ul>
         </nav>
       ))}
@@ -88,13 +92,13 @@ const columns = [
     <div class="legal">
       <p class="copyright">
         <span class="latin tnum">©&nbsp;{span}</span>
-        <span>{SITE.name} — گودرز جعفری و مشارکت‌کنندگان</span>
+        <span>{SITE.name} - گودرز جعفری و مشارکت‌کنندگان</span>
       </p>
 
       <dl class="terms">
         <div>
           <dt>
-            کد سایت —
+            کد سایت -
             <a href={`${SITE.repo}/blob/master/LICENSE`} rel="license noopener">
               <bdi class="latin">AGPL-3.0</bdi>
             </a>
@@ -104,7 +108,7 @@ const columns = [
 
         <div>
           <dt>
-            نوشته‌ها —
+            نوشته‌ها -
             <a href="https://creativecommons.org/licenses/by-sa/4.0/deed.fa" rel="license noopener">
               <bdi class="latin">CC BY-SA 4.0</bdi>
             </a>
@@ -113,7 +117,7 @@ const columns = [
         </div>
 
         <div>
-          <dt>نشان و لوگوتایپ — <a href="/brand">علامت تجاری</a></dt>
+          <dt>نشان و لوگوتایپ - <a href="/brand">علامت تجاری</a></dt>
           <dd>مشمول پروانه‌های بالا نیست؛ قواعد استفاده در صفحهٔ هویت بصری.</dd>
         </div>
       </dl>

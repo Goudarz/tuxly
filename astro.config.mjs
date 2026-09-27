@@ -53,7 +53,7 @@ export default defineConfig({
   build: {
     format: 'directory',
     /*
-     * Inline every stylesheet. The whole sheet is ~5 KB — smaller than the
+     * Inline every stylesheet. The whole sheet is ~5 KB - smaller than the
      * cost of a render-blocking request for it.
      */
     inlineStylesheets: 'always',

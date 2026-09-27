@@ -1,6 +1,7 @@
 import type { APIContext } from 'astro';
 import { getCollection } from 'astro:content';
 import { getSpeakers } from '../lib/speakers';
+import { getConferences, conferenceUrl, talkUrl, getFigures, getFigureRecord, figureUrl } from '../lib/conferences';
 import { SITE, ENTITY_ROUTES } from '../consts';
 
 /**
@@ -13,7 +14,7 @@ import { SITE, ENTITY_ROUTES } from '../consts';
  * or drift out of sync with the content.
  *
  * Every URL carries a real lastmod taken from the content, not the build
- * time — telling Google a page changed when it did not just wastes crawl
+ * time - telling Google a page changed when it did not just wastes crawl
  * budget.
  */
 
@@ -102,6 +103,28 @@ export async function GET(context: APIContext) {
       changefreq: (event.data.endsAt ?? event.data.startsAt) < new Date() ? 'yearly' : 'weekly',
       priority: 0.6,
     });
+  }
+
+  // Conference coverage: the index, each conference, and each talk.
+  const conferences = await getConferences();
+  if (conferences.length) entries.push({ path: '/conferences', changefreq: 'weekly', priority: 0.7 });
+  for (const conference of conferences) {
+    const talks = conference.data.talks;
+    const latest = talks.reduce<Date | undefined>((a, t) => (!a || t.publishedAt > a ? t.publishedAt : a), undefined);
+    entries.push({ path: conferenceUrl(conference), lastmod: latest, changefreq: 'weekly', priority: 0.7 });
+    for (const talk of talks) {
+      entries.push({ path: talkUrl(conference, talk), lastmod: talk.publishedAt, changefreq: 'monthly', priority: 0.7 });
+    }
+  }
+
+  // Conference figures share /speakers with event speakers; only those with a page.
+  for (const figure of await getFigures()) {
+    const record = await getFigureRecord(figure.id);
+    if (!record.length) continue;
+    const latest = record
+      .flatMap((r) => r.talks.map((t) => t.publishedAt))
+      .reduce<Date | undefined>((a, d) => (!a || d > a ? d : a), undefined);
+    entries.push({ path: figureUrl(figure), lastmod: latest, changefreq: 'monthly', priority: 0.6 });
   }
 
   for (const author of authors) {

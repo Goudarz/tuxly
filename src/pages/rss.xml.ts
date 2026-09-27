@@ -5,7 +5,7 @@ import { SITE } from '../consts';
 
 export async function GET(context: APIContext) {
   return buildFeed({
-    title: `${SITE.name} — ${SITE.tagline}`,
+    title: `${SITE.name} - ${SITE.tagline}`,
     description: SITE.description,
     site: context.site,
     posts: await getPublishedPosts(),

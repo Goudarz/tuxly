@@ -8,11 +8,11 @@ import { slugify } from '../lib/persian';
  *
  * The initial stands in for a photo. Speaker photos would mean chasing
  * permission from every presenter for every event, which is not a cost
- * worth paying — a letter in the brand colour reads clearly and is never
+ * worth paying - a letter in the brand colour reads clearly and is never
  * wrong. Where a name has no usable initial, the Tuxly mark fills in.
  *
- * The name always links somewhere on this site — an author profile when
- * one is linked, otherwise the generated speaker page — so a reader can
+ * The name always links somewhere on this site - an author profile when
+ * one is linked, otherwise the generated speaker page - so a reader can
  * see the rest of that person's talks. Any external link stays in the
  * card body rather than on the name.
  */
@@ -32,7 +32,7 @@ if (!speakers.length) return null;
 
 /**
  * First letter of the name. Persian letters change shape when joined, so
- * an isolated letter here is the correct form — no ZWNJ tricks needed.
+ * an isolated letter here is the correct form - no ZWNJ tricks needed.
  */
 function initial(name: string): string | null {
   const first = [...name.trim()][0];

@@ -1,5 +1,5 @@
 import type { APIContext } from 'astro';
-import { getCollection, getEntry } from 'astro:content';
+import { getCollection, getEntry, getEntries } from 'astro:content';
 import { SITE } from '../../../consts';
 
 /**
@@ -31,7 +31,7 @@ const esc = (s: string) =>
 const stamp = (d: Date) => d.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '');
 
 /**
- * Fold to 75 octets per line. Counted in UTF-8 bytes, not characters —
+ * Fold to 75 octets per line. Counted in UTF-8 bytes, not characters -
  * Persian text is 2 bytes per character, so a character count would produce
  * lines twice the legal length.
  */
@@ -70,6 +70,9 @@ export async function GET(context: APIContext) {
 
   const organizer = d.organizer ? await getEntry(d.organizer) : undefined;
   const organizerName = organizer?.data.nameFa ?? organizer?.data.name ?? d.organizerName;
+  const partnerNames = (d.partners.length ? await getEntries(d.partners) : []).map(
+    (p) => p.data.nameFa ?? p.data.name,
+  );
 
   // No end time given: assume two hours rather than emitting an open-ended
   // event, which some calendars render as all-day.
@@ -83,6 +86,7 @@ export async function GET(context: APIContext) {
   const description = [
     d.summary,
     organizerName ? `برگزارکننده: ${organizerName}` : '',
+    partnerNames.length ? `با همراهی: ${partnerNames.join('، ')}` : '',
     `هزینه: ${d.priceNote ?? (d.price ? `${d.price} ${d.priceCurrency}` : 'رایگان')}`,
     d.language ? `زبان: ${d.language}` : '',
     d.registerUrl ? `نام‌نویسی: ${d.registerUrl}` : '',

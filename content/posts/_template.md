@@ -8,7 +8,7 @@ author: goudarz-jafari
 tags: []
 entities: []        # مثال: distributions/fedora
 
-# تصویر شاخص — در بیلد خودکار به AVIF و WebP تبدیل می‌شود.
+# تصویر شاخص - در بیلد خودکار به AVIF و WebP تبدیل می‌شود.
 # cover: ./images/cover.jpg
 # coverAlt: توضیح تصویر برای کسی که آن را نمی‌بیند
 

@@ -1,0 +1,349 @@
+---
+import { getEntries } from 'astro:content';
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import ConferenceShell from '../../../components/ConferenceShell.astro';
+import SubtitledVideo from '../../../components/SubtitledVideo.astro';
+import TalkCard from '../../../components/TalkCard.astro';
+import FigureAvatar from '../../../components/FigureAvatar.astro';
+import ShareBar from '../../../components/ShareBar.astro';
+import SearchIndex from '../../../components/SearchIndex.astro';
+import {
+  getConferences, conferenceSlug, conferenceUrl, conferenceLabel, sortedTalks, toSeconds, isoDuration, resolvePeople, figureUrl,
+} from '../../../lib/conferences';
+import { faDate, faDigits, faNumber } from '../../../lib/persian';
+import { graph, breadcrumb } from '../../../lib/schema';
+import { SITE } from '../../../consts';
+
+export async function getStaticPaths() {
+  const all = await getConferences();
+  return all.flatMap((conference) =>
+    conference.data.talks.map((talk) => ({
+      params: { slug: conferenceSlug(conference), talk: talk.slug },
+      props: { conference, talk },
+    })),
+  );
+}
+
+const { conference, talk } = Astro.props;
+const c = conference.data;
+const label = conferenceLabel(conference);
+const others = sortedTalks(conference).filter((t) => t.slug !== talk.slug);
+const translators = await getEntries(
+  talk.subtitles.flatMap((s) => (s.translator ? [s.translator] : [])),
+);
+const url = new URL(Astro.url.pathname, SITE.url).href;
+const title = `${talk.titleFa} - ${label}`;
+const speakers = await resolvePeople(talk.speakers);
+const speakerNames = speakers.map(({ figure }) => figure.data.name).join('، ');
+
+const schema = graph(
+  {
+    '@type': 'VideoObject',
+    '@id': `${url}#video`,
+    name: `${talk.title} - ${speakers.map(({ figure }) => figure.data.name).join(', ')}`,
+    actor: speakers.map(({ figure }) => ({
+      '@type': 'Person',
+      name: figure.data.fullName ?? figure.data.name,
+      url: new URL(figureUrl(figure), SITE.url).href,
+    })),
+    description: talk.summary,
+    inLanguage: 'en',
+    uploadDate: talk.publishedAt.toISOString(),
+    thumbnailUrl: [`https://i.ytimg.com/vi/${talk.youtube}/hqdefault.jpg`],
+    embedUrl: `https://www.youtube.com/embed/${talk.youtube}`,
+    contentUrl: `https://www.youtube.com/watch?v=${talk.youtube}`,
+    ...(talk.duration ? { duration: isoDuration(talk.duration) } : {}),
+    ...(talk.subtitles.length
+      ? {
+          subtitleLanguage: talk.subtitles.map((s) => s.lang),
+          caption: talk.subtitles.map((s) => ({
+            '@type': 'MediaObject',
+            contentUrl: new URL(s.src, SITE.url).href,
+            encodingFormat: 'application/x-subrip',
+            inLanguage: s.lang,
+          })),
+        }
+      : {}),
+    ...(talk.chapters.length
+      ? {
+          hasPart: talk.chapters.map((ch) => ({
+            '@type': 'Clip',
+            name: ch.title,
+            startOffset: toSeconds(ch.at),
+            url: `https://www.youtube.com/watch?v=${talk.youtube}&t=${toSeconds(ch.at)}`,
+          })),
+        }
+      : {}),
+    isPartOf: { '@type': 'Event', name: c.name, url: new URL(conferenceUrl(conference), SITE.url).href },
+  },
+  breadcrumb([
+    { name: 'خانه', url: '/' },
+    { name: 'کنفرانس‌ها', url: '/conferences' },
+    { name: label, url: conferenceUrl(conference) },
+    { name: talk.titleFa, url: new URL(url).pathname },
+  ]),
+);
+
+/** "0:01:50" → "۱:۵۰", "1:00:49" → "۱:۰۰:۴۹". */
+const showStamp = (at: string) => faDigits(at.replace(/^0:/, ''));
+---
+
+<BaseLayout title={title} description={talk.summary} schema={schema} ogType="article" publishedAt={talk.publishedAt}>
+  <ConferenceShell conference={conference} compact>
+    <div slot="heading" class="heading">
+      <p class="eyebrow">
+        {talk.keynote && <span class="kn">سخنرانی اصلی</span>}
+        <bdi class="latin">{talk.title}</bdi>
+      </p>
+      <h1>{talk.titleFa}</h1>
+      <p class="who">
+        {speakers.map(({ figure, role }, i) => (
+          <>
+            {i > 0 && '، '}
+            <a class="person" href={figureUrl(figure)}><strong><bdi class="latin">{figure.data.name}</bdi></strong></a>
+            {role && <span class="role"> - {role}</span>}
+          </>
+        ))}
+      </p>
+    </div>
+
+    <div class="wrap" data-video-root data-pagefind-body data-pagefind-meta="kind:ارائهٔ کنفرانس">
+      <div class="layout">
+        <div class="main">
+          <SubtitledVideo
+            youtube={talk.youtube}
+            title={`${talk.title} - ${speakerNames}`}
+            duration={talk.duration}
+            subtitles={talk.subtitles}
+            mirror={talk.mirror}
+          />
+
+          <section class="prose about">
+            <h2>دربارهٔ این ارائه</h2>
+            <p>{talk.summary}</p>
+            <p class="small muted">
+              منتشرشده در {faDate(talk.publishedAt)} · زبان ارائه: {c.language}
+              {talk.credit && <><br />{talk.credit}</>}
+            </p>
+            {translators.length > 0 && (
+              <p class="credit">
+                ترجمه و تنظیم زیرنویس فارسی:
+                {' '}
+                {translators.map((a, i) => (
+                  <>{i > 0 && '، '}<a href={`/people/${a.id}`} rel="author">{a.data.name}</a></>
+                ))}
+              </p>
+            )}
+          </section>
+
+          <section class="speakers">
+            <h2>{speakers.length > 1 ? 'ارائه‌دهندگان' : 'ارائه‌دهنده'}</h2>
+            {speakers.map(({ figure, role }) => (
+              <a class="speaker" href={figureUrl(figure)}>
+                <FigureAvatar figure={figure} size={64} />
+                <span class="sp-txt">
+                  <span class="sp-n">{figure.data.nameFa} <bdi class="latin sp-en">{figure.data.name}</bdi></span>
+                  <span class="sp-r">{role}</span>
+                  <span class="sp-s">{figure.data.summary}</span>
+                  <span class="sp-more">صفحهٔ {figure.data.nameFa} ←</span>
+                </span>
+              </a>
+            ))}
+          </section>
+        </div>
+
+        {talk.chapters.length > 0 && (
+          <aside class="chapters" aria-labelledby="chapters-h">
+            <h2 id="chapters-h" class="chapters-head">
+              بخش‌ها
+              <span class="count">{faNumber(talk.chapters.length)} بخش</span>
+            </h2>
+            <ol>
+              {talk.chapters.map((ch) => (
+                <li>
+                  <a
+                    href={`https://www.youtube.com/watch?v=${talk.youtube}&t=${toSeconds(ch.at)}`}
+                    data-seek={toSeconds(ch.at)}
+                    data-no-ext
+                  >
+                    <span class="at tnum">{showStamp(ch.at)}</span>
+                    <span class="ct">{ch.title}</span>
+                  </a>
+                </li>
+              ))}
+            </ol>
+          </aside>
+        )}
+      </div>
+
+      {others.length > 0 && (
+        <section class="more">
+          <h2>ارائه‌های دیگر <bdi class="latin">{c.name}</bdi></h2>
+          <ul class="grid">
+            {others.map((t) => <li><TalkCard conference={conference} talk={t} /></li>)}
+          </ul>
+        </section>
+      )}
+
+      <SearchIndex text={`${talk.title} ${talk.titleFa} ${speakerNames} ${talk.summary} ${talk.chapters.map((ch) => ch.title).join(' ')} ${c.name}`} />
+      <ShareBar title={title} />
+      <p class="back"><a href={conferenceUrl(conference)}>بازگشت به {label}</a></p>
+    </div>
+  </ConferenceShell>
+</BaseLayout>
+
+<style>
+  .heading .eyebrow {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.6rem;
+    margin: 0;
+    font-family: var(--font-en);
+    font-weight: 700;
+    color: var(--conf-soft);
+  }
+  .kn {
+    font-family: var(--font-fa);
+    font-size: var(--step--2);
+    padding: 0.1rem 0.6rem;
+    border-radius: 999px;
+    background: var(--conf);
+    color: var(--conf-ink);
+  }
+  .heading h1 { margin: 0.35rem 0 0.5rem; color: #fff; font-size: var(--step-3); }
+  .heading .who { margin: 0; color: rgb(255 255 255 / 0.85); }
+  .role { color: rgb(255 255 255 / 0.62); font-size: var(--step--1); }
+  .person { color: #fff; text-decoration: none; border-bottom: 1px dashed rgb(255 255 255 / 0.4); }
+  .person:hover { border-bottom-color: var(--conf-soft); color: var(--conf-soft); }
+
+  .speakers { margin-top: 2.2rem; max-width: var(--measure); }
+  .speakers h2 { font-size: var(--step-1); }
+  .speaker {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    padding: 1rem 1.1rem;
+    margin-bottom: 0.8rem;
+    border: 1px solid var(--border);
+    border-inline-start: 3px solid var(--conf);
+    border-radius: var(--r-md);
+    background: var(--surface);
+    text-decoration: none;
+    color: inherit;
+    transition: border-color 0.16s var(--ease);
+  }
+  .speaker:hover, .speaker:focus-visible { border-color: var(--conf); }
+  .sp-txt { display: grid; gap: 0.2rem; min-width: 0; }
+  .sp-n { font-weight: 800; }
+  .sp-en { font-weight: 400; font-size: var(--step--1); color: var(--text-muted); margin-inline-start: 0.3rem; }
+  .sp-r { font-size: var(--step--1); color: var(--text-muted); }
+  .sp-s { font-size: var(--step--1); line-height: 1.8; margin-top: 0.2rem; }
+  .sp-more { font-size: var(--step--1); font-weight: 600; color: var(--accent); margin-top: 0.2rem; }
+
+  .layout { display: grid; gap: 2rem; grid-template-columns: 1fr; }
+  @media (min-width: 1101px) {
+    .layout { grid-template-columns: minmax(0, 1fr) 320px; align-items: start; }
+    .chapters { position: sticky; top: calc(var(--header-h) + 1rem); max-height: calc(100vh - var(--header-h) - 2rem); overflow: auto; }
+  }
+  .about { margin-top: 2rem; }
+  .small { font-size: var(--step--1); }
+  .credit {
+    font-size: var(--step--1);
+    padding: 0.7rem 1rem;
+    border-radius: var(--r-sm);
+    border-inline-start: 3px solid var(--conf);
+    background: color-mix(in srgb, var(--conf) 8%, var(--surface));
+  }
+
+  .chapters {
+    border: 1px solid var(--border);
+    border-radius: var(--r-md);
+    background: var(--surface);
+    padding: 0 0.6rem 0.6rem;
+  }
+  /*
+   * The heading stays put while the list scrolls under it: at the top of the
+   * box on desktop (the box is its own scroller there), under the site
+   * header on mobile. The fade below it lets items slide out of sight
+   * instead of being cut off at a hard edge.
+   */
+  .chapters-head {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.6rem;
+    margin: 0 -0.6rem 0.4rem;
+    padding: 0.9rem 1.1rem 0.7rem;
+    font-size: var(--step-0);
+    background: color-mix(in srgb, var(--surface) 88%, transparent);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--border-soft);
+  }
+  .chapters-head::before {
+    content: '';
+    position: absolute;
+    inset-block-start: 0;
+    inset-inline: 1.1rem;
+    height: 3px;
+    border-radius: 0 0 3px 3px;
+    background: var(--conf);
+  }
+  .chapters-head::after {
+    content: '';
+    position: absolute;
+    inset-inline: 0;
+    top: 100%;
+    height: 14px;
+    pointer-events: none;
+    background: linear-gradient(to bottom, color-mix(in srgb, var(--surface) 92%, transparent), transparent);
+  }
+  .count {
+    font-size: var(--step--2);
+    font-weight: 600;
+    padding: 0.1rem 0.6rem;
+    border-radius: 999px;
+    color: var(--accent);
+    background: color-mix(in srgb, var(--conf) 14%, transparent);
+  }
+  @media (max-width: 1100px) {
+    .chapters-head { top: var(--header-h); }
+  }
+  .chapters ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.1rem; }
+  .chapters a {
+    display: flex;
+    gap: 0.7rem;
+    align-items: baseline;
+    padding: 0.45rem 0.5rem;
+    border-radius: var(--r-sm);
+    text-decoration: none;
+    color: inherit;
+    font-size: var(--step--1);
+    line-height: 1.7;
+  }
+  .chapters a:hover, .chapters a:focus-visible { background: color-mix(in srgb, var(--conf) 12%, transparent); }
+  .at {
+    flex: none;
+    min-width: 4.2ch;
+    font-weight: 700;
+    color: var(--accent);
+    direction: ltr;
+    text-align: end;
+  }
+
+  .more { margin-top: 3rem; }
+  .more h2 { font-size: var(--step-1); }
+  .grid {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr));
+  }
+  .back { margin-top: 2.5rem; }
+</style>

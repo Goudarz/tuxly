@@ -4,7 +4,7 @@
  *
  * Reusable: pass a name, a year and a label and it renders a square card
  * for social feeds. Square because that is what Telegram, Mastodon and
- * Instagram all crop least — a 16:9 banner loses its edges on every one
+ * Instagram all crop least - a 16:9 banner loses its edges on every one
  * of them.
  *
  * Built as SVG then rasterised with sharp, no headless browser. The fonts
@@ -33,7 +33,7 @@ const latin = arg('latin', 'GNOME');
 const since = Number(arg('since', '1997'));
 const year = Number(arg('year', String(new Date().getUTCFullYear())));
 /**
- * When it ended. Omit for anything still going — the card then prints an
+ * When it ended. Omit for anything still going - the card then prints an
  * open range, which is how "and still running" is normally written. A
  * closing year would quietly say the opposite.
  */
@@ -133,7 +133,7 @@ const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="1200" 
       ? `<text class="en" x="600" y="900" font-size="30" font-weight="500"
              fill="${MUTED}" text-anchor="middle">${since} – ${until}</text>`
       : /*
-         * Open range on one line: `1997 — تا امروز`. A bare trailing dash
+         * Open range on one line: `1997 - تا امروز`. A bare trailing dash
          * reads as a year that failed to render, and putting the words on a
          * second line splits the date into two things the eye has to join
          * back together.
@@ -143,7 +143,7 @@ const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="1200" 
          */
         `<text class="en" x="600" y="900" font-size="30" font-weight="500"
              fill="${MUTED}" text-anchor="middle">${since}<tspan fill="${AMBER}"
-             font-size="36" font-weight="700" dx="16">—</tspan><tspan
+             font-size="36" font-weight="700" dx="16">-</tspan><tspan
              font-family="Vazirmatn" fill="${AMBER}" font-size="27"
              font-weight="600" dx="16">تا امروز</tspan></text>`
   }
@@ -162,4 +162,4 @@ const dir = join(ROOT, outDir);
 await mkdir(dir, { recursive: true });
 const file = join(dir, `${out}.png`);
 await sharp(Buffer.from(svg)).png({ compressionLevel: 9 }).toFile(file);
-console.log(`  ✓ ${outDir}/${out}.png  (1200×1200)  ${name} — ${age}`);
+console.log(`  ✓ ${outDir}/${out}.png  (1200×1200)  ${name} - ${age}`);

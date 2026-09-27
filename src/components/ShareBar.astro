@@ -8,7 +8,7 @@ import { SITE } from '../consts';
  * Mastodon, then the rest. Native share comes first on mobile, where
  * it opens the OS sheet and covers every app the reader has installed.
  *
- * All plain links — no third-party scripts, so no tracking and nothing to
+ * All plain links - no third-party scripts, so no tracking and nothing to
  * load.
  */
 interface Props {
@@ -22,7 +22,7 @@ const { title, path = Astro.url.pathname, compact = false } = Astro.props;
 const url = new URL(path, SITE.url).href;
 const u = encodeURIComponent(url);
 const t = encodeURIComponent(title);
-const tWithSite = encodeURIComponent(`${title} — ${SITE.name}`);
+const tWithSite = encodeURIComponent(`${title} - ${SITE.name}`);
 
 const targets = [
   {
@@ -56,7 +56,7 @@ const targets = [
   <h2 class="label">هم‌رسانی</h2>
 
   <ul>
-    {/* Native share sheet — hidden until JS confirms the browser supports it. */}
+    {/* Native share sheet - hidden until JS confirms the browser supports it. */}
     <li>
       <button
         type="button"
@@ -156,7 +156,7 @@ const targets = [
 
   /*
    * On narrow screens the labels are what break the row onto four lines, so
-   * drop to icons — except for the native sheet, which needs naming.
+   * drop to icons - except for the native sheet, which needs naming.
    */
   @media (max-width: 560px) {
     .btn-share:not(.native) { width: 44px; justify-content: center; padding-inline: 0; }
@@ -174,7 +174,7 @@ const targets = [
 <script>
   const native = document.querySelector('[data-native-share]') as HTMLButtonElement | null;
 
-  // Only offer the OS sheet where it exists — mostly mobile.
+  // Only offer the OS sheet where it exists - mostly mobile.
   if (native && typeof navigator.share === 'function') {
     native.hidden = false;
     native.addEventListener('click', async () => {
@@ -189,7 +189,7 @@ const targets = [
     });
   }
 
-  // Share windows are popups, not navigations — keep the reader in place.
+  // Share windows are popups, not navigations - keep the reader in place.
   document.querySelectorAll('[data-net]').forEach((el) => {
     el.addEventListener('click', (e) => {
       const href = (el as HTMLAnchorElement).href;

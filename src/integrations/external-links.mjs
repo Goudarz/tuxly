@@ -24,7 +24,7 @@ import { parse } from 'node-html-parser';
 /** Protocols that take neither a parameter nor a new tab. */
 const SKIP_PROTOCOLS = new Set(['mailto:', 'tel:', 'sms:', 'javascript:', 'data:']);
 
-/** Hosts that must not get the ref parameter — they mishandle the query. */
+/** Hosts that must not get the ref parameter - they mishandle the query. */
 const NO_PARAM_HOSTS = new Set(['www.wikidata.org', 'wikidata.org']);
 
 /**
@@ -79,7 +79,7 @@ export default function externalLinks(options = {}) {
                *
                * `build.format: 'directory'` writes /news/index.html, so a
                * request for /news answers 301 to /news/. Googlebot follows
-               * it and files the page under "Page with redirect" — wasted
+               * it and files the page under "Page with redirect" - wasted
                * crawl budget on every internal link. Normalising here fixes
                * every link at once, rather than hunting them down one
                * component at a time.
@@ -107,7 +107,7 @@ export default function externalLinks(options = {}) {
               const target = url.hostname.replace(/^www\./, '');
               if (target === host || target.endsWith(`.${host}`)) continue;
 
-              // Referral parameter — leave any existing value alone.
+              // Referral parameter - leave any existing value alone.
               const relNow = new Set((a.getAttribute('rel') ?? '').split(/\s+/).filter(Boolean));
               if (
                 !isIdentityLink(relNow) &&

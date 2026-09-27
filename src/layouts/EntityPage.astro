@@ -45,7 +45,7 @@ const MODEL: Record<string, string> = {
   title={label}
   description={d.summary}
   schema={schema}
-  feed={{ href: entityFeedUrl(entity), title: `${SITE.name} — ${label}` }}
+  feed={{ href: entityFeedUrl(entity), title: `${SITE.name} - ${label}` }}
 >
   <div class="wrap" data-pagefind-body data-pagefind-meta={`kind:${ENTITY_LABELS[d.type]}`}>
     <header class="head">
@@ -69,7 +69,7 @@ const MODEL: Record<string, string> = {
         {d.eolAt && (
           <div>
             <dt>پایان پشتیبانی</dt>
-            <dd class={eolPassed ? 'eol' : ''}>{faDate(d.eolAt)}{eolPassed && ' — گذشته'}</dd>
+            <dd class={eolPassed ? 'eol' : ''}>{faDate(d.eolAt)}{eolPassed && ' - گذشته'}</dd>
           </div>
         )}
         {d.family && <div><dt>خانواده</dt><dd><bdi class="latin">{d.family}</bdi></dd></div>}

@@ -9,7 +9,7 @@ import type { MarkdownHeading } from 'astro';
  * Astro's own slugger, which handles Persian headings correctly.
  *
  * Desktop puts it in a sticky sidebar beside the article; mobile collapses
- * it inline. Renders nothing below `minHeadings` — a two-item list on a
+ * it inline. Renders nothing below `minHeadings` - a two-item list on a
  * short post is clutter, not navigation.
  */
 interface Props {
@@ -156,7 +156,7 @@ if (items.length < minHeadings) return null;
         else link.removeAttribute('aria-current');
       }
       /*
-       * Keep the active entry visible inside a long sidebar — but only by
+       * Keep the active entry visible inside a long sidebar - but only by
        * scrolling the sidebar itself. scrollIntoView would scroll the window
        * too, yanking the reader back up the page.
        */

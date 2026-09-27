@@ -4,6 +4,7 @@ import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
 import SearchDialog from '../components/SearchDialog.astro';
 import CopyToast from '../components/CopyToast.astro';
+import InstallPrompt from '../components/InstallPrompt.astro';
 import { SITE } from '../consts';
 
 interface Props {
@@ -35,7 +36,7 @@ const {
   next,
 } = Astro.props;
 
-const fullTitle = title ? `${title} — ${SITE.name}` : `${SITE.name} — ${SITE.tagline}`;
+const fullTitle = title ? `${title} - ${SITE.name}` : `${SITE.name} - ${SITE.tagline}`;
 const canonical = new URL(Astro.url.pathname, Astro.site ?? SITE.url).href;
 const ogImageUrl = new URL(ogImage, Astro.site ?? SITE.url).href;
 ---
@@ -48,7 +49,7 @@ const ogImageUrl = new URL(ogImage, Astro.site ?? SITE.url).href;
     <title>{fullTitle}</title>
     <meta name="description" content={description} />
     <link rel="canonical" href={canonical} />
-    <meta name="generator" content={`Tuxly ${SITE.version} — https://github.com/goudarz/tuxly`} />
+    <meta name="generator" content={`Tuxly ${SITE.version} - https://github.com/goudarz/tuxly`} />
     {noindex
       ? <meta name="robots" content="noindex, follow" />
       : <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />}
@@ -66,7 +67,7 @@ const ogImageUrl = new URL(ogImage, Astro.site ?? SITE.url).href;
     <link rel="preload" href="/fonts/Vazirmatn.woff2" as="font" type="font/woff2" crossorigin />
     <link rel="preload" href="/fonts/SpaceGrotesk.woff2" as="font" type="font/woff2" crossorigin />
 
-    <link rel="alternate" type="application/rss+xml" title={`${SITE.name} — همهٔ مطالب`} href="/rss.xml" />
+    <link rel="alternate" type="application/rss+xml" title={`${SITE.name} - همهٔ مطالب`} href="/rss.xml" />
     {feed && <link rel="alternate" type="application/rss+xml" title={feed.title} href={feed.href} />}
     <link rel="sitemap" type="application/xml" href="/sitemap.xml" />
     <link rel="me" href="https://techhub.social/@tuxly" />
@@ -111,6 +112,7 @@ const ogImageUrl = new URL(ogImage, Astro.site ?? SITE.url).href;
     <Footer />
     <SearchDialog />
     <CopyToast />
+    <InstallPrompt />
 
     <style>
       .skip {

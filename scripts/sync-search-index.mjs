@@ -3,7 +3,7 @@
  * Copy the Pagefind index into public/ after a build.
  *
  * Pagefind writes its index into dist/, but `astro dev` serves public/ and
- * never looks at dist/. Without this copy, search 404s in development —
+ * never looks at dist/. Without this copy, search 404s in development -
  * which reads like a broken feature, when in fact the index simply is not
  * built yet.
  *
@@ -20,7 +20,7 @@ const to = join(ROOT, 'public', 'pagefind');
 try {
   await access(from);
 } catch {
-  console.error('  ! dist/pagefind not found — run the full `npm run build`.');
+  console.error('  ! dist/pagefind not found - run the full `npm run build`.');
   process.exit(1);
 }
 
@@ -28,4 +28,4 @@ await rm(to, { recursive: true, force: true });
 await mkdir(dirname(to), { recursive: true });
 await cp(from, to, { recursive: true });
 
-console.log('  ✓ search index copied to public/ — search now works in `npm run dev`');
+console.log('  ✓ search index copied to public/ - search now works in `npm run dev`');

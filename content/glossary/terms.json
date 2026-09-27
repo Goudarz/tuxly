@@ -15,7 +15,7 @@
   { "id": "long-term-support", "en": "long-term support", "fa": "پشتیبانی بلندمدت", "avoid": ["ال‌تی‌اس"], "keepLatin": true },
   { "id": "open-source", "en": "open source", "fa": "متن‌باز", "avoid": ["اپن سورس", "کد باز"], "keepLatin": false },
   { "id": "free-software", "en": "free software", "fa": "نرم‌افزار آزاد", "avoid": ["نرم‌افزار رایگان"], "keepLatin": false,
-    "note": "«آزاد» است نه «رایگان» — همان تمایز free as in freedom." },
+    "note": "«آزاد» است نه «رایگان» - همان تمایز free as in freedom." },
   { "id": "maintainer", "en": "maintainer", "fa": "نگهدارنده", "avoid": ["مِینتینر"], "keepLatin": false },
   { "id": "dependency", "en": "dependency", "fa": "وابستگی", "avoid": ["دیپندنسی"], "keepLatin": false },
   { "id": "patch", "en": "patch", "fa": "وصله", "avoid": ["پچ"], "keepLatin": true },

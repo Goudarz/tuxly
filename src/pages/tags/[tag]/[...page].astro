@@ -34,10 +34,10 @@ const url = new URL(base, SITE.url).href;
 ---
 
 <BaseLayout
-  title={page === 1 ? `برچسب: ${tag}` : `برچسب: ${tag} — صفحهٔ ${page}`}
+  title={page === 1 ? `برچسب: ${tag}` : `برچسب: ${tag} - صفحهٔ ${page}`}
   description={`مطالب مرتبط با ${tag} در تاکسلی.`}
   schema={collectionSchema(`برچسب ${tag}`, url, `مطالب مرتبط با ${tag}`, count)}
-  feed={{ href: `${base}/rss.xml`, title: `${SITE.name} — ${tag}` }}
+  feed={{ href: `${base}/rss.xml`, title: `${SITE.name} - ${tag}` }}
 >
   <div class="wrap">
     <p class="kind">برچسب</p>

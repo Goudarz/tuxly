@@ -5,7 +5,7 @@ import type { Event } from './entities';
 /**
  * Speakers are derived from events, not stored as their own content files.
  *
- * The alternative — a file per speaker — means every event with a new name
+ * The alternative - a file per speaker - means every event with a new name
  * needs a file created first or the build fails. That friction is exactly
  * what stops speakers from being credited at all. Here a name in an event
  * is enough, and the page appears on its own.
@@ -89,7 +89,7 @@ export async function getSpeaker(slug: string): Promise<Speaker | undefined> {
  * Where a speaker's name should link.
  *
  * An author profile when one is linked, otherwise the generated speaker
- * page. External links stay in the card body — a name should lead somewhere
+ * page. External links stay in the card body - a name should lead somewhere
  * on this site, so the reader can see the rest of their talks.
  */
 export function speakerUrl(speaker: { slug: string; authorId?: string }): string {
@@ -98,7 +98,7 @@ export function speakerUrl(speaker: { slug: string; authorId?: string }): string
     : `/speakers/${encodeURIComponent(speaker.slug)}`;
 }
 
-/** Talks given at events organised by one community, newest first. */
+/** Talks given at events one community organised or co-organised, newest first. */
 export async function getTalksForOrganizer(entityId: string): Promise<
   Array<{ event: Event; name: string; slug: string; talk?: string; authorId?: string }>
 > {
@@ -106,7 +106,8 @@ export async function getTalksForOrganizer(entityId: string): Promise<
   const out = [];
 
   for (const event of events) {
-    if (event.data.organizer?.id !== entityId) continue;
+    const hosts = [event.data.organizer?.id, ...event.data.partners.map((p) => p.id)];
+    if (!hosts.includes(entityId)) continue;
     for (const performer of event.data.performers) {
       out.push({
         event,

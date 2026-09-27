@@ -154,7 +154,7 @@
     overflow: hidden;
   }
   /*
-   * A solid block behind every match is shouting — four of them in one
+   * A solid block behind every match is shouting - four of them in one
    * excerpt makes the sentence unreadable. Colour and weight carry the
    * signal instead.
    */
@@ -219,7 +219,7 @@
 
   async function ensureIndex() {
     if (pagefind) return pagefind;
-    // Path built at runtime so the bundler does not try to resolve it —
+    // Path built at runtime so the bundler does not try to resolve it -
     // Pagefind writes this file after astro build.
     const url = ['', 'pagefind', 'pagefind.js'].join('/');
     pagefind = await import(/* @vite-ignore */ url);

@@ -1,0 +1,196 @@
+---
+import { getEntry, render } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ConferenceShell from '../../components/ConferenceShell.astro';
+import TalkCard from '../../components/TalkCard.astro';
+import FigureAvatar from '../../components/FigureAvatar.astro';
+import ShareBar from '../../components/ShareBar.astro';
+import SearchIndex from '../../components/SearchIndex.astro';
+import {
+  getConferences, conferenceSlug, conferenceLabel, sortedTalks, talkUrl, resolvePeople, figureUrl,
+} from '../../lib/conferences';
+import { entityUrl, entityLabel } from '../../lib/entities';
+import { graph, breadcrumb } from '../../lib/schema';
+import { SITE } from '../../consts';
+
+export async function getStaticPaths() {
+  const all = await getConferences();
+  return all.map((conference) => ({ params: { slug: conferenceSlug(conference) }, props: { conference } }));
+}
+
+const { conference } = Astro.props;
+const d = conference.data;
+const { Content } = await render(conference);
+const organizer = d.organizer ? await getEntry(d.organizer) : undefined;
+const talks = sortedTalks(conference);
+const label = conferenceLabel(conference);
+const highlights = await resolvePeople(d.highlights);
+const url = new URL(Astro.url.pathname, SITE.url).href;
+
+const schema = graph(
+  {
+    '@type': 'Event',
+    '@id': `${url}#event`,
+    name: d.name,
+    description: d.summary,
+    startDate: d.startsAt.toISOString().split('T')[0],
+    endDate: (d.endsAt ?? d.startsAt).toISOString().split('T')[0],
+    eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',
+    eventStatus: 'https://schema.org/EventScheduled',
+    url: d.website,
+    location: {
+      '@type': 'Place',
+      name: d.venue ?? d.city,
+      address: { '@type': 'PostalAddress', addressLocality: d.city, addressCountry: d.country },
+    },
+    image: [`${SITE.url}/og/default.png`],
+    ...(highlights.length
+      ? {
+          performer: highlights.map(({ figure }) => ({
+            '@type': 'Person',
+            name: figure.data.fullName ?? figure.data.name,
+            url: new URL(figureUrl(figure), SITE.url).href,
+          })),
+        }
+      : {}),
+    ...(organizer ? { organizer: { '@type': 'Organization', name: organizer.data.name, url: organizer.data.website } } : {}),
+    ...(talks.length
+      ? {
+          subEvent: talks.map((t) => ({
+            '@type': 'Event',
+            name: t.title,
+            url: new URL(talkUrl(conference, t), SITE.url).href,
+            startDate: d.startsAt.toISOString().split('T')[0],
+            location: { '@type': 'Place', name: d.venue ?? d.city, address: d.city },
+          })),
+        }
+      : {}),
+  },
+  breadcrumb([
+    { name: 'خانه', url: '/' },
+    { name: 'کنفرانس‌ها', url: '/conferences' },
+    { name: label, url: new URL(url).pathname },
+  ]),
+);
+---
+
+<BaseLayout title={label} description={d.summary} schema={schema}>
+  <ConferenceShell conference={conference}>
+    <div slot="actions" class="actions">
+      {talks[0] && <a class="btn btn-primary" href={talkUrl(conference, talks[0])}>تماشای ارائه‌ها با زیرنویس فارسی</a>}
+      <a class="btn" href={d.website} rel="noopener">وب‌سایت رسمی</a>
+      {organizer && <a class="btn" href={entityUrl(organizer)}>{entityLabel(organizer)}</a>}
+    </div>
+
+    <div class="wrap" data-pagefind-body data-pagefind-meta="kind:کنفرانس">
+      {d.context && (
+        <aside class="context prose">
+          <h2>چرا برای ما مهم است؟</h2>
+          <p>{d.context}</p>
+        </aside>
+      )}
+
+      <section class="talks">
+        <div class="section-head">
+          <h2>ارائه‌ها</h2>
+          <p class="muted">
+            {talks.length > 0
+              ? 'هر ارائه با زیرنویس فارسی روی خود ویدیو. ویدیوهای جدید به‌محض انتشار اضافه می‌شوند.'
+              : 'ویدیوها هنوز منتشر نشده‌اند. به‌محض انتشار، اینجا با زیرنویس فارسی می‌آیند.'}
+          </p>
+        </div>
+        {talks.length > 0 && (
+          <ul class="grid">
+            {talks.map((t) => <li><TalkCard conference={conference} talk={t} /></li>)}
+          </ul>
+        )}
+      </section>
+
+      <div class="prose about"><Content /></div>
+
+      {highlights.length > 0 && (
+        <section class="highlights">
+          <h2>چهره‌های این دوره</h2>
+          <ul>
+            {highlights.map(({ figure, role }) => (
+              <li>
+                <a href={figureUrl(figure)}>
+                  <FigureAvatar figure={figure} size={48} />
+                  <span class="hl-txt">
+                    <span class="n">{figure.data.nameFa}</span>
+                    <span class="en"><bdi class="latin">{figure.data.name}</bdi></span>
+                    <span class="r">{role}</span>
+                  </span>
+                </a>
+              </li>
+            ))}
+          </ul>
+          <a class="all-people" href="/speakers#conferences">همهٔ سخنرانان ←</a>
+        </section>
+      )}
+
+      <SearchIndex text={`${d.name} ${label} ${d.summary} ${d.context ?? ''} ${talks.map((t) => `${t.title} ${t.titleFa}`).join(' ')}`} />
+      <ShareBar title={label} />
+      <p class="back"><a href="/conferences">همهٔ کنفرانس‌هایی که پوشش می‌دهیم</a></p>
+    </div>
+  </ConferenceShell>
+</BaseLayout>
+
+<style>
+  .actions { display: flex; flex-wrap: wrap; gap: 0.6rem; }
+  .context {
+    background: color-mix(in srgb, var(--conf) 10%, var(--surface));
+    border: 1px solid color-mix(in srgb, var(--conf) 35%, transparent);
+    border-inline-start: 4px solid var(--conf);
+    border-radius: var(--r-md);
+    padding: 1.2rem 1.4rem;
+    margin: 0 0 2.5rem;
+  }
+  .context h2 { margin: 0 0 0.5rem; font-size: var(--step-0); }
+  .context p { margin: 0; }
+
+  .section-head h2 { margin: 0 0 0.3rem; }
+  .section-head p { margin: 0 0 1.2rem; font-size: var(--step--1); }
+  .grid {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr));
+  }
+  .about { margin-top: 3rem; }
+
+  .highlights { margin-top: 2.5rem; }
+  .highlights h2 { font-size: var(--step-1); }
+  .highlights ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 0.6rem;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 230px), 1fr));
+  }
+  .highlights li a {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    height: 100%;
+    padding: 0.8rem 1rem;
+    border: 1px solid var(--border);
+    border-inline-start: 3px solid var(--conf);
+    border-radius: var(--r-sm);
+    background: var(--surface);
+    text-decoration: none;
+    color: inherit;
+    transition: border-color 0.16s var(--ease), transform 0.16s var(--ease);
+  }
+  .highlights li a:hover, .highlights li a:focus-visible { border-color: var(--conf); transform: translateY(-2px); }
+  .hl-txt { display: grid; gap: 0.05rem; min-width: 0; }
+  .n { font-weight: 700; }
+  .en { font-size: var(--step--2); color: var(--text-muted); }
+  .r { font-size: var(--step--2); color: var(--text-muted); line-height: 1.7; margin-top: 0.15rem; }
+  .all-people { display: inline-block; margin-top: 0.9rem; font-size: var(--step--1); font-weight: 600; text-decoration: none; }
+  .all-people:hover { text-decoration: underline; }
+  .back { margin-top: 2.5rem; }
+</style>

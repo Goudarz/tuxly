@@ -21,7 +21,7 @@ export async function getStaticPaths() {
 const { items, page, total, count } = Astro.props;
 const url = new URL('/news', SITE.url).href;
 const schema = collectionSchema('اخبار و مطالب', url, 'همهٔ مطالب تاکسلی', count);
-const title = page === 1 ? 'اخبار و مطالب' : `اخبار و مطالب — صفحهٔ ${page}`;
+const title = page === 1 ? 'اخبار و مطالب' : `اخبار و مطالب - صفحهٔ ${page}`;
 ---
 
 <BaseLayout

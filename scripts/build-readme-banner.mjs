@@ -3,7 +3,7 @@
  * README banner.
  *
  * GitHub renders the README on both a light and a dark background, and our
- * mark is a solid shape — the dark variant vanishes on dark mode, the light
+ * mark is a solid shape - the dark variant vanishes on dark mode, the light
  * one vanishes on light mode. A banner with its own background sidesteps
  * that entirely: one file, correct everywhere, including the places that
  * ignore `prefers-color-scheme` (npm, packagist, RSS readers, mirrors).

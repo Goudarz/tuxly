@@ -13,7 +13,7 @@ import { fileURLToPath } from 'node:url';
  *    and therefore should not be imported from source code."
  *
  * That is correct advice for source modules, but Pagefind's bundle is
- * prebuilt output that must be served verbatim — it is not ours to
+ * prebuilt output that must be served verbatim - it is not ours to
  * transform.
  *
  * So we hand these paths back before Vite gets a look at them. The

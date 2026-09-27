@@ -19,7 +19,7 @@ const url = new URL('/events', SITE.url).href;
   <div class="wrap" data-pagefind-body data-pagefind-meta="kind:صفحه">
     <h1>تقویم رویدادها</h1>
     <p class="intro">
-      نشست‌ها، کارگاه‌ها، کنفرانس‌ها و هکاتون‌های نرم‌افزار آزاد — داخلی و
+      نشست‌ها، کارگاه‌ها، کنفرانس‌ها و هکاتون‌های نرم‌افزار آزاد - داخلی و
       بین‌المللی، حضوری و آنلاین. هر رویداد صفحهٔ خودش را دارد با زمان دقیق،
       مکان، برگزارکننده و لینک نام‌نویسی.
     </p>
@@ -27,6 +27,11 @@ const url = new URL('/events', SITE.url).href;
       رویدادی می‌شناسید که اینجا نیست؟ 
       <a href={`mailto:${SITE.email}?subject=${encodeURIComponent('معرفی رویداد')}`}> خبرمان کنید </a>
       یا مستقیم در <a href={`${SITE.repo}/tree/master/content/events`} rel="noopener">مخزن</a> اضافه‌اش کنید.
+    </p>
+
+    <p class="conf-link">
+      <a href="/conferences">پوشش کنفرانس‌ها</a>: ارائه‌های ضبط‌شدهٔ کنفرانس‌های
+      بین‌المللی، با زیرنویس فارسی.
     </p>
 
     <section id="calendar" class="subscribe">
@@ -88,7 +93,7 @@ const url = new URL('/events', SITE.url).href;
             <dt>هر برنامهٔ دیگری</dt>
             <dd>
               <bdi class="latin">ICS</bdi> استاندارد باز
-              <bdi class="latin">RFC 5545</bdi> است — هر تقویمی که «اشتراک از
+              <bdi class="latin">RFC 5545</bdi> است - هر تقویمی که «اشتراک از
               نشانی» یا <bdi class="latin">subscribe from web</bdi> داشته باشد کار می‌کند.
             </dd>
           </div>
@@ -115,6 +120,16 @@ const url = new URL('/events', SITE.url).href;
 </BaseLayout>
 
 <style>
+  .conf-link {
+    font-size: var(--step--1);
+    padding: 0.7rem 1rem;
+    border: 1px solid var(--border);
+    border-inline-start: 3px solid #D30001;
+    border-radius: var(--r-sm);
+    background: var(--surface);
+    max-width: var(--measure);
+  }
+  .conf-link a { font-weight: 700; }
   .intro { max-width: var(--measure); color: var(--text-muted); }
   .add { font-size: var(--step--1); }
   section { margin-top: 2.5rem; }

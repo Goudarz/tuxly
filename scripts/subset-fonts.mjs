@@ -61,4 +61,4 @@ for (const name of ['Vazirmatn', 'SpaceGrotesk']) {
   console.log(`  ✓ ${name}: ${before} KB → ${kb(src)} KB`);
 }
 
-console.log('\n  Originals kept as *.full.woff2 — delete them once you are happy.');
+console.log('\n  Originals kept as *.full.woff2 - delete them once you are happy.');

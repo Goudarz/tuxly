@@ -1,0 +1,168 @@
+---
+import type { Conference } from '../lib/conferences';
+import { conferenceUrl, conferenceLabel, conferenceDates } from '../lib/conferences';
+
+/**
+ * The frame every conference-coverage page sits in.
+ *
+ * Coverage pages must not look like ordinary event pages: the reader should
+ * know at a glance they are inside a conference section, and which one.
+ * So the hero is always dark whatever the site theme, carries the
+ * conference's own colour, and the "پوشش کنفرانس" strip runs along the top.
+ *
+ * Inside the shell `--accent` becomes the conference colour, so every
+ * component that already uses it (buttons, chips, focus rings) follows
+ * without knowing it is on a conference page.
+ */
+interface Props {
+  conference: Conference;
+  /** Smaller hero for talk pages; the heading slot replaces the name. */
+  compact?: boolean;
+  /** Breadcrumb after the badge; defaults to the conference itself. */
+  trail?: Array<{ label: string; href: string; latin?: boolean }>;
+}
+const { conference, compact = false, trail } = Astro.props;
+const d = conference.data;
+const style = `--conf: ${d.theme.accent}; --conf-ink: ${d.theme.ink};`;
+---
+
+<div class="conf" style={style}>
+  <div class="strip" data-pagefind-ignore>
+    <div class="wrap strip-in">
+      <a href="/conferences" class="badge">
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M3 11h3l4-5v12l-4-5H3z"></path><path d="M14 9a4 4 0 0 1 0 6M17 6a8 8 0 0 1 0 12"></path>
+        </svg>
+        پوشش کنفرانس
+      </a>
+      {(trail ?? [{ label: d.name, href: conferenceUrl(conference), latin: true }]).map((t) => (
+        <>
+          <span class="sep" aria-hidden="true">/</span>
+          <a href={t.href} class="crumb"><bdi class:list={{ latin: t.latin }}>{t.label}</bdi></a>
+        </>
+      ))}
+    </div>
+  </div>
+
+  <header class:list={['hero', { compact }]}>
+    <div class="wrap hero-in">
+      {compact ? (
+        <slot name="heading" />
+      ) : (
+        <>
+          <p class="eyebrow"><bdi class="latin">{d.name}</bdi></p>
+          <h1>{conferenceLabel(conference)}</h1>
+          <p class="tagline">{d.tagline}</p>
+          <ul class="facts">
+            <li>{conferenceDates(conference)}</li>
+            <li>{[d.venue && <bdi class="latin">{d.venue}</bdi>, d.city, d.country].filter(Boolean).map((x, i) => <>{i > 0 && '، '}{x}</>)}</li>
+            <li>زبان {d.language}</li>
+          </ul>
+          <slot name="actions" />
+        </>
+      )}
+    </div>
+  </header>
+
+  <div class="body"><slot /></div>
+</div>
+
+<style>
+  .conf {
+    /* Light-on-dark readable variant of the conference colour, for text. */
+    --conf-soft: color-mix(in srgb, var(--conf) 62%, #fff);
+    --accent: var(--conf-soft);
+    --accent-ink: #0F141C;
+  }
+  :global(:root[data-theme='light']) .conf {
+    --accent: var(--conf);
+    --accent-ink: var(--conf-ink);
+  }
+  .conf :global(.btn-primary) {
+    background: var(--conf);
+    border-color: var(--conf);
+    color: var(--conf-ink);
+  }
+  .conf :global(.btn-primary:hover) {
+    background: color-mix(in srgb, var(--conf) 82%, #000);
+    border-color: color-mix(in srgb, var(--conf) 82%, #000);
+    color: var(--conf-ink);
+  }
+
+  .strip {
+    background: var(--conf);
+    color: var(--conf-ink);
+    font-size: var(--step--2);
+  }
+  .strip-in { display: flex; align-items: center; gap: 0.5rem; min-height: 34px; }
+  .strip a { color: inherit; text-decoration: none; }
+  .strip a:hover { text-decoration: underline; }
+  .badge { display: inline-flex; align-items: center; gap: 0.35rem; font-weight: 800; }
+  .sep { opacity: 0.6; }
+  .crumb { font-weight: 600; }
+
+  /* Always dark, so the conference colour has the same stage in both themes. */
+  .hero {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    color: #fff;
+    background:
+      radial-gradient(90% 120% at 100% 0%, color-mix(in srgb, var(--conf) 45%, transparent), transparent 55%),
+      radial-gradient(60% 80% at 0% 100%, color-mix(in srgb, var(--conf) 22%, transparent), transparent 60%),
+      #0A0B0F;
+    border-bottom: 1px solid color-mix(in srgb, var(--conf) 40%, #000);
+  }
+  /*
+   * Stage lights: thin beams fanning down from the top corner, fading out
+   * toward the text. Suggests a conference stage without competing with it.
+   */
+  .hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: repeating-conic-gradient(
+      from 195deg at 90% -25%,
+      rgb(255 255 255 / 0.06) 0deg 2deg,
+      transparent 2deg 10deg
+    );
+    mask-image: radial-gradient(110% 95% at 90% 0%, #000 5%, transparent 72%);
+    -webkit-mask-image: radial-gradient(110% 95% at 90% 0%, #000 5%, transparent 72%);
+  }
+  .hero-in { padding-block: clamp(2.2rem, 6vw, 4.2rem); }
+  .compact .hero-in { padding-block: clamp(1.6rem, 4vw, 2.6rem); }
+
+  .eyebrow {
+    margin: 0;
+    font-family: var(--font-en);
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    color: var(--conf-soft);
+  }
+  h1 { margin: 0.3rem 0 0.6rem; font-size: var(--step-3); color: #fff; }
+  .tagline { margin: 0 0 1.3rem; max-width: 60ch; color: rgb(255 255 255 / 0.78); font-size: var(--step-1); }
+  .facts {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 1.5rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+  .facts li {
+    font-size: var(--step--1);
+    padding: 0.3rem 0.85rem;
+    border-radius: 999px;
+    background: rgb(255 255 255 / 0.07);
+    border: 1px solid rgb(255 255 255 / 0.14);
+  }
+  .hero :global(.btn:not(.btn-primary)) {
+    background: rgb(255 255 255 / 0.06);
+    border-color: rgb(255 255 255 / 0.22);
+    color: #fff;
+  }
+  .hero :global(.btn:not(.btn-primary):hover) { border-color: var(--conf-soft); }
+
+  .body { padding-block: 2rem 1rem; }
+</style>

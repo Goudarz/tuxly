@@ -13,7 +13,7 @@ export async function GET(context: APIContext) {
   const { entity } = context.props as { entity: Awaited<ReturnType<typeof getCollection<'entities'>>>[number] };
   const label = entityLabel(entity);
   return buildFeed({
-    title: `${SITE.name} — ${label}`,
+    title: `${SITE.name} - ${label}`,
     description: entity.data.summary,
     site: context.site,
     posts: await getPostsForEntity(entity.id),

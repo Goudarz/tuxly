@@ -176,7 +176,13 @@ export function entitySchema(entity: Entity, url: string, relatedUrls: string[] 
 export function eventSchema(
   event: EventEntry,
   url: string,
-  opts: { organizerName?: string; organizerUrl?: string; imageUrl?: string } = {},
+  opts: {
+    organizerName?: string;
+    organizerUrl?: string;
+    imageUrl?: string;
+    /** Co-organisers; schema.org takes several organizers as an array. */
+    partners?: Array<{ name: string; url?: string }>;
+  } = {},
 ) {
   const d = event.data;
 
@@ -219,13 +225,19 @@ export function eventSchema(
       }
     : undefined;
 
-  const organizer = opts.organizerName
+  const host = opts.organizerName
     ? {
         '@type': 'Organization',
         name: opts.organizerName,
         ...(opts.organizerUrl ? { url: opts.organizerUrl } : {}),
       }
     : undefined;
+  const partnerNodes = (opts.partners ?? []).map((p) => ({
+    '@type': 'Organization',
+    name: p.name,
+    ...(p.url ? { url: p.url } : {}),
+  }));
+  const organizer = host && partnerNodes.length ? [host, ...partnerNodes] : host;
 
   return graph(
     {

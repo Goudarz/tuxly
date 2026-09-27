@@ -1,7 +1,9 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import Mark from '../../components/Mark.astro';
+import FigureAvatar from '../../components/FigureAvatar.astro';
 import { getSpeakers, speakerUrl } from '../../lib/speakers';
+import { getFigures, getFigureRecord, figureUrl, conferenceLabel } from '../../lib/conferences';
 import { graph, breadcrumb } from '../../lib/schema';
 import { faNumber } from '../../lib/persian';
 import { SITE } from '../../consts';
@@ -9,14 +11,26 @@ import { SITE } from '../../consts';
 const url = new URL('/speakers', SITE.url).href;
 
 /**
- * Prepared in frontmatter, not in the template.
+ * Everyone who gives talks, in one place.
  *
- * A regex literal inside a template expression trips Astro's parser — the
- * leading `/` reads as markup — so anything needing one is computed here.
+ * Two groups: figures from the international conferences we cover (written
+ * profiles, videos with Persian subtitles), and speakers at events in Iran
+ * (generated from the events). People who write for the site are a third
+ * group and live at /people; anyone who both writes and speaks links there.
+ *
+ * Prepared in frontmatter, not in the template: a regex literal inside a
+ * template expression trips Astro's parser.
  */
-const all = await getSpeakers();
+const figures = [];
+for (const figure of await getFigures()) {
+  const record = await getFigureRecord(figure.id);
+  if (!record.length) continue;
+  figures.push({ figure, record, talks: record.reduce((n, r) => n + r.talks.length, 0) });
+}
+// People with talks out first, then by name.
+figures.sort((a, b) => b.talks - a.talks || a.figure.data.name.localeCompare(b.figure.data.name, 'en'));
 
-const speakers = all.map((speaker) => {
+const speakers = (await getSpeakers()).map((speaker) => {
   const first = [...speaker.name.trim()][0];
   return {
     ...speaker,
@@ -26,96 +40,194 @@ const speakers = all.map((speaker) => {
   };
 });
 
+const description =
+  'سخنرانان کنفرانس‌های بین‌المللی نرم‌افزار آزاد با ارائه‌هایشان به زیرنویس فارسی، و ارائه‌دهندگان رویدادهای ایران.';
+
 /*
- * An ItemList of the people themselves, not just a page count. It lets a
- * search engine see who is on this page rather than only that a list
- * exists.
+ * An ItemList of the people themselves, not just a page count, so a search
+ * engine sees who is on this page.
  */
+const people = [
+  ...figures.map(({ figure }) => ({ name: figure.data.fullName ?? figure.data.name, href: figureUrl(figure) })),
+  ...speakers.map((s) => ({ name: s.name, href: s.href })),
+];
 const schema = graph(
   {
     '@type': 'CollectionPage',
     '@id': `${url}#collection`,
     url,
-    name: 'ارائه‌دهندگان',
-    description: 'کسانی که در رویدادهای ثبت‌شده در تاکسلی ارائه داده‌اند.',
+    name: 'سخنرانان',
+    description,
     inLanguage: SITE.lang,
     mainEntity: {
       '@type': 'ItemList',
-      numberOfItems: speakers.length,
-      itemListElement: speakers.map((s, i) => ({
+      numberOfItems: people.length,
+      itemListElement: people.map((p, i) => ({
         '@type': 'ListItem',
         position: i + 1,
-        item: {
-          '@type': 'Person',
-          name: s.name,
-          url: new URL(s.href, SITE.url).href,
-        },
+        item: { '@type': 'Person', name: p.name, url: new URL(p.href, SITE.url).href },
       })),
     },
   },
   breadcrumb([
     { name: 'خانه', url: '/' },
-    { name: 'ارائه‌دهندگان', url: '/speakers' },
+    { name: 'سخنرانان', url: '/speakers' },
   ]),
 );
 ---
 
-<BaseLayout
-  title="ارائه‌دهندگان"
-  description="کسانی که در رویدادهای ثبت‌شده در تاکسلی ارائه داده‌اند."
-  schema={schema}
->
-  <div class="wrap">
-    <h1>ارائه‌دهندگان</h1>
+<BaseLayout title="سخنرانان" description={description} schema={schema}>
+  <div class="wrap" data-pagefind-body data-pagefind-meta="kind:صفحه">
+    <h1>سخنرانان</h1>
     <p class="intro">
-      کسانی که در رویدادهای ثبت‌شده در تاکسلی ارائه داده‌اند. این فهرست خودکار
-      از روی رویدادها ساخته می‌شود.
+      همهٔ کسانی که ارائه‌شان در تاکسلی آمده، در یک جا: چهره‌های کنفرانس‌های
+      بین‌المللی و ارائه‌دهندگان نشست‌ها و رویدادهای داخلی.
+      کسانی که برای تاکسلی می‌نویسند در صفحهٔ <a href="/people">نویسندگان</a> هستند.
     </p>
 
-    {speakers.length === 0 ? (
-      <p class="muted">هنوز ارائه‌ای ثبت نشده.</p>
-    ) : (
-      <ul class="grid">
-        {speakers.map((speaker) => (
-          <li>
-            <a href={speaker.href}>
-              <span class="avatar" aria-hidden="true">
-                {speaker.initial ? <bdi>{speaker.initial}</bdi> : <Mark size={20} />}
-              </span>
-              <span class="who">
-                <span class="name"><bdi>{speaker.name}</bdi></span>
-                <span class="n tnum">{faNumber(speaker.talks.length)} ارائه</span>
-              </span>
-            </a>
-          </li>
-        ))}
-      </ul>
+    <nav class="jump" aria-label="بخش‌های این صفحه">
+      {figures.length > 0 && (
+        <a href="#conferences">کنفرانس‌های بین‌المللی <span class="c tnum">{faNumber(figures.length)}</span></a>
+      )}
+      <a href="#events">رویدادهای ایران <span class="c tnum">{faNumber(speakers.length)}</span></a>
+    </nav>
+
+    {figures.length > 0 && (
+      <section id="conferences" class="group">
+        <div class="group-head">
+          <h2>چهره‌های کنفرانس‌های بین‌المللی</h2>
+          <a class="more" href="/conferences">پوشش کنفرانس‌ها ←</a>
+        </div>
+        <ul class="grid figures">
+          {figures.map(({ figure, record, talks }) => {
+            const c = record[0].conference.data.theme;
+            return (
+              <li style={`--conf: ${c.accent}; --conf-ink: ${c.ink};`}>
+                <a class="fcard" href={figureUrl(figure)}>
+                  <FigureAvatar figure={figure} size={56} />
+                  <span class="txt">
+                    <span class="name">{figure.data.nameFa}</span>
+                    <span class="en"><bdi class="latin">{figure.data.name}</bdi></span>
+                    <span class="r">{figure.data.role}</span>
+                    <span class="m">
+                      {talks > 0 ? `${faNumber(talks)} ارائه با زیرنویس` : 'ارائه به‌زودی'}
+                      {' · '}
+                      {record.map((r) => conferenceLabel(r.conference)).join('، ')}
+                    </span>
+                  </span>
+                </a>
+              </li>
+            );
+          })}
+        </ul>
+      </section>
     )}
+
+    <section id="events" class="group">
+      <div class="group-head">
+        <h2>ارائه‌دهندگان رویدادهای ایران</h2>
+        <a class="more" href="/events">تقویم رویدادها ←</a>
+      </div>
+      <p class="muted small">این فهرست خودکار از روی رویدادهای ثبت‌شده ساخته می‌شود.</p>
+      {speakers.length === 0 ? (
+        <p class="muted">هنوز ارائه‌ای ثبت نشده.</p>
+      ) : (
+        <ul class="grid">
+          {speakers.map((speaker) => (
+            <li>
+              <a class="scard" href={speaker.href}>
+                <span class="avatar" aria-hidden="true">
+                  {speaker.initial ? <bdi>{speaker.initial}</bdi> : <Mark size={20} />}
+                </span>
+                <span class="who">
+                  <span class="name"><bdi>{speaker.name}</bdi></span>
+                  <span class="n tnum">{faNumber(speaker.talks.length)} ارائه</span>
+                </span>
+              </a>
+            </li>
+          ))}
+        </ul>
+      )}
+    </section>
   </div>
 </BaseLayout>
 
 <style>
   .intro { max-width: var(--measure); color: var(--text-muted); }
+  .small { font-size: var(--step--1); margin: -0.4rem 0 0; }
+
+  /* Sticky jump links: two groups, one tap to either. */
+  .jump {
+    position: sticky;
+    top: var(--header-h);
+    z-index: 5;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    padding-block: 0.7rem;
+    margin-block: 1rem 0.5rem;
+    background: color-mix(in srgb, var(--bg) 90%, transparent);
+    backdrop-filter: blur(10px);
+  }
+  .jump a {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    min-height: 40px;
+    padding: 0.2rem 0.9rem;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    font-size: var(--step--1);
+    font-weight: 600;
+    text-decoration: none;
+    color: var(--text);
+  }
+  .jump a:hover { border-color: var(--accent); }
+  .c {
+    font-size: var(--step--2);
+    padding: 0 0.45rem;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--accent) 16%, transparent);
+    color: var(--accent);
+  }
+
+  .group { margin-top: 2rem; scroll-margin-top: calc(var(--header-h) + 4rem); }
+  .group-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 0.5rem 1rem; }
+  .group h2 { font-size: var(--step-1); margin: 0 0 0.8rem; }
+  .more { font-size: var(--step--1); font-weight: 600; text-decoration: none; }
+  .more:hover { text-decoration: underline; }
+
   .grid {
     list-style: none;
-    margin: 1.5rem 0 0;
+    margin: 1rem 0 0;
     padding: 0;
     display: grid;
     gap: 0.7rem;
     grid-template-columns: repeat(auto-fill, minmax(min(100%, 250px), 1fr));
   }
-  a {
+  .figures { grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr)); }
+
+  .fcard, .scard {
     display: flex;
-    align-items: center;
     gap: 0.85rem;
+    height: 100%;
     padding: 0.9rem 1rem;
     border: 1px solid var(--border);
     border-radius: var(--r-md);
     background: var(--surface);
     text-decoration: none;
+    color: inherit;
     transition: border-color 0.16s var(--ease);
   }
-  a:hover, a:focus-visible { border-color: var(--accent); }
+  .fcard { align-items: flex-start; border-inline-start: 3px solid var(--conf); }
+  .scard { align-items: center; }
+  .fcard:hover, .fcard:focus-visible { border-color: var(--conf); }
+  .scard:hover, .scard:focus-visible { border-color: var(--accent); }
+  .txt { display: grid; gap: 0.1rem; min-width: 0; }
+  .en { font-size: var(--step--1); color: var(--text-muted); }
+  .r { font-size: var(--step--1); margin-top: 0.25rem; line-height: 1.7; }
+  .m { font-size: var(--step--2); color: var(--text-muted); margin-top: 0.25rem; }
+
   .avatar {
     display: grid;
     place-items: center;
@@ -131,6 +243,6 @@ const schema = graph(
   }
   .who { display: grid; gap: 0.1rem; min-width: 0; }
   .name { font-weight: 700; }
-  a:hover .name { color: var(--accent); }
+  .scard:hover .name, .fcard:hover .name { color: var(--accent); }
   .n { font-size: var(--step--2); color: var(--text-muted); }
 </style>

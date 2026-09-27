@@ -5,8 +5,8 @@ import { SITE } from '../consts';
 /**
  * Feed builder.
  *
- * Every standalone page — distribution, desktop, project, community, tag,
- * author — gets its own feed so readers can follow one topic only.
+ * Every standalone page - distribution, desktop, project, community, tag,
+ * author - gets its own feed so readers can follow one topic only.
  */
 export function buildFeed(opts: {
   title: string;

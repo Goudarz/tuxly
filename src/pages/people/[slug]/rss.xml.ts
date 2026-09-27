@@ -14,7 +14,7 @@ export async function GET(context: APIContext) {
   const author = (await getCollection('authors')).find((a) => a.id === slug)!;
   const posts = (await getPublishedPosts()).filter((p) => p.data.author.id === slug);
   return buildFeed({
-    title: `${SITE.name} — ${author.data.name}`,
+    title: `${SITE.name} - ${author.data.name}`,
     description: author.data.bio,
     site: context.site,
     posts,

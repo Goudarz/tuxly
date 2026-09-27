@@ -2,7 +2,7 @@
 /**
  * Default social sharing image.
  *
- * Without it, links look lifeless on Telegram and Mastodon — and Telegram
+ * Without it, links look lifeless on Telegram and Mastodon - and Telegram
  * is the main channel for a Persian audience. Built as SVG and converted
  * to PNG with sharp, so no headless browser is needed.
  *
@@ -76,7 +76,7 @@ const variants = [
     fg: SNOW,
     kicker: 'FREE &amp; OPEN SOURCE',
     title: 'دنیای نرم‌افزار آزاد',
-    subtitle: 'اخبار، معرفی، آموزش و رویدادها — به فارسی',
+    subtitle: 'اخبار، معرفی، آموزش و رویدادها - به فارسی',
   },
   {
     name: 'default-light',
@@ -84,7 +84,7 @@ const variants = [
     fg: INK,
     kicker: 'FREE &amp; OPEN SOURCE',
     title: 'دنیای نرم‌افزار آزاد',
-    subtitle: 'اخبار، معرفی، آموزش و رویدادها — به فارسی',
+    subtitle: 'اخبار، معرفی، آموزش و رویدادها - به فارسی',
   },
 ];
 

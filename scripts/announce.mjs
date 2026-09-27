@@ -86,7 +86,7 @@ async function collectPosts() {
     if (!now || now.draft) continue;
 
     if (status === 'M') {
-      // Only announce when this push is what published it — otherwise
+      // Only announce when this push is what published it - otherwise
       // fixing a typo would re-blast the channel.
       let was;
       try {
@@ -120,7 +120,7 @@ const KIND = {
  * Anniversaries falling today.
  *
  * Reads the content files directly rather than importing the site's own
- * helpers — those run inside Astro and are not available to a plain Node
+ * helpers - those run inside Astro and are not available to a plain Node
  * script.
  */
 async function collectAnniversaries() {
@@ -293,15 +293,15 @@ if (DO_ANNIVERSARIES) {
   for (const a of items) {
     const age = faDigits(a.age);
     /*
-     * Milestone titles usually already say what happened — «آغاز پروژهٔ
-     * هایکو» — so prefixing the kind gives «آغاز آغاز پروژهٔ…». Entity
+     * Milestone titles usually already say what happened - «آغاز پروژهٔ
+     * هایکو» - so prefixing the kind gives «آغاز آغاز پروژهٔ…». Entity
      * birthdays are just a name and do need the prefix.
      */
     const label = KIND[a.kind] ?? 'سالگرد';
     const needsLabel = a.fromEntity || !a.title.startsWith(label);
     const subject = needsLabel ? `${label} ${a.title}` : a.title;
     const headline = `🎂 امروز ${age} سال از ${subject} می‌گذرد.`;
-    console.log(`\n  ${a.title} — ${a.age}`);
+    console.log(`\n  ${a.title} - ${a.age}`);
 
     failures += await send({
       url: a.url,

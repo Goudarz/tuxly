@@ -13,7 +13,7 @@ export async function GET(context: APIContext) {
   const tag = context.params.tag!;
   const posts = (await getPublishedPosts()).filter((p) => p.data.tags.includes(tag));
   return buildFeed({
-    title: `${SITE.name} — ${tag}`,
+    title: `${SITE.name} - ${tag}`,
     description: `مطالب مرتبط با ${tag}`,
     site: context.site,
     posts,

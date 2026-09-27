@@ -1,0 +1,175 @@
+---
+/**
+ * "Install Tuxly" — tells readers the site can live on their home screen.
+ *
+ * Chrome, Edge and Android fire `beforeinstallprompt` once the manifest
+ * qualifies; we hold that event and offer our own card instead of the
+ * browser's easy-to-miss address-bar icon. iPhone and iPad Safari have no
+ * such event, so there the card explains the two taps instead.
+ *
+ * Polite by design: it waits a little before appearing, never shows to
+ * someone already using the installed app, and a dismissal is remembered
+ * for 30 days. Anything else that wants to offer installation (the footer
+ * link) marks itself `[data-install]` and is revealed when it is possible.
+ */
+---
+
+<aside class="install" data-install-card hidden aria-labelledby="install-t" data-pagefind-ignore>
+  <img src="/favicon-192.png" alt="" width="48" height="48" class="app" />
+  <div class="body">
+    <p id="install-t" class="t">تاکسلی را نصب کنید</p>
+    <p class="d" data-install-text>
+      مثل یک برنامه روی صفحهٔ اصلی گوشی یا رایانه، بدون فروشگاه برنامه و بدون
+      حجم اضافه. همیشه یک لمس فاصله دارد.
+    </p>
+    <ol class="ios" data-install-ios hidden>
+      <li>
+        در نوار سافاری دکمهٔ
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-label="اشتراک‌گذاری" role="img">
+          <path d="M12 3v12M8 7l4-4 4 4"></path><path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7"></path>
+        </svg>
+        (اشتراک‌گذاری) را بزنید.
+      </li>
+      <li>گزینهٔ <bdi class="latin">«Add to Home Screen»</bdi> را انتخاب کنید.</li>
+    </ol>
+    <div class="actions">
+      <button type="button" class="btn btn-primary" data-install-go>نصب</button>
+      <button type="button" class="btn" data-install-later>بعداً</button>
+    </div>
+  </div>
+  <button type="button" class="x" data-install-later aria-label="بستن">✕</button>
+</aside>
+
+<style>
+  .install {
+    position: fixed;
+    z-index: 90;
+    inset-inline: 1rem;
+    bottom: calc(1rem + env(safe-area-inset-bottom, 0px));
+    margin-inline: auto;
+    max-width: 430px;
+    display: flex;
+    align-items: flex-start;
+    gap: 0.9rem;
+    padding: 1rem 1.1rem;
+    border: 1px solid var(--border);
+    border-radius: var(--r-lg);
+    background: var(--bg-elevated);
+    box-shadow: var(--shadow);
+    animation: rise 0.35s var(--ease);
+  }
+  @keyframes rise { from { opacity: 0; transform: translateY(16px); } }
+  @media (prefers-reduced-motion: reduce) { .install { animation: none; } }
+
+  .app { flex: none; border-radius: 12px; }
+  .body { min-width: 0; flex: 1; }
+  .t { margin: 0; font-weight: 800; }
+  .d { margin: 0.25rem 0 0; font-size: var(--step--1); color: var(--text-muted); line-height: 1.8; }
+  .ios { margin: 0.5rem 0 0; padding-inline-start: 1.2rem; font-size: var(--step--1); line-height: 1.9; }
+  .ios svg { vertical-align: -3px; color: var(--accent); }
+  .actions { display: flex; gap: 0.5rem; margin-top: 0.8rem; }
+  .actions .btn { min-height: 40px; padding-block: 0.3rem; }
+  .x {
+    flex: none;
+    width: 36px;
+    height: 36px;
+    min-height: 36px;
+    margin: -0.4rem -0.5rem 0 0;
+    margin-inline: 0 -0.5rem;
+    border: 0;
+    border-radius: 50%;
+    background: transparent;
+    color: var(--text-muted);
+    cursor: pointer;
+  }
+  .x:hover { color: var(--text); background: var(--surface); }
+  @media print { .install { display: none !important; } }
+</style>
+
+<script>
+  interface InstallEvent extends Event {
+    prompt(): Promise<void>;
+    userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>;
+  }
+
+  const KEY = 'tuxly-install-dismissed';
+  const WAIT = 30 * 864e5;
+  const DELAY = 6000;
+
+  const store = {
+    get(k: string) { try { return localStorage.getItem(k); } catch { return null; } },
+    set(k: string, v: string) { try { localStorage.setItem(k, v); } catch {} },
+  };
+
+  const card = document.querySelector<HTMLElement>('[data-install-card]');
+  const standalone =
+    matchMedia('(display-mode: standalone)').matches ||
+    (navigator as Navigator & { standalone?: boolean }).standalone === true;
+  const dismissedAt = Number(store.get(KEY)) || 0;
+  const snoozed = Date.now() - dismissedAt < WAIT;
+
+  const ua = navigator.userAgent;
+  // iPadOS reports itself as a Mac; touch support gives it away.
+  const isIos = /iphone|ipad|ipod/i.test(ua) || (/macintosh/i.test(ua) && navigator.maxTouchPoints > 1);
+  // Only Safari can add to the home screen on iOS; other iOS browsers are skipped.
+  const isIosSafari = isIos && /safari/i.test(ua) && !/crios|fxios|edgios|opios/i.test(ua);
+
+  let deferred: InstallEvent | undefined;
+
+  const links = () => document.querySelectorAll<HTMLElement>('[data-install]');
+  const revealLinks = () => links().forEach((l) => { l.hidden = false; });
+
+  function show(ios = false) {
+    if (!card || standalone) return;
+    card.querySelector<HTMLElement>('[data-install-ios]')!.hidden = !ios;
+    card.querySelector<HTMLElement>('[data-install-go]')!.hidden = ios;
+    const later = card.querySelector<HTMLElement>('.actions [data-install-later]')!;
+    later.textContent = ios ? 'متوجه شدم' : 'بعداً';
+    card.hidden = false;
+  }
+
+  function hide(remember: boolean) {
+    if (card) card.hidden = true;
+    if (remember) store.set(KEY, String(Date.now()));
+  }
+
+  async function install() {
+    if (!deferred) {
+      if (isIosSafari) show(true);
+      return;
+    }
+    const e = deferred;
+    deferred = undefined;
+    await e.prompt();
+    const { outcome } = await e.userChoice;
+    hide(outcome === 'dismissed');
+  }
+
+  if (!standalone) {
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferred = e as InstallEvent;
+      revealLinks();
+      if (!snoozed) setTimeout(() => deferred && show(false), DELAY);
+    });
+
+    if (isIosSafari) {
+      revealLinks();
+      if (!snoozed) setTimeout(() => show(true), DELAY);
+    }
+  }
+
+  window.addEventListener('appinstalled', () => {
+    hide(true);
+    links().forEach((l) => { l.hidden = true; });
+  });
+
+  card?.querySelector('[data-install-go]')?.addEventListener('click', install);
+  card?.querySelectorAll('[data-install-later]').forEach((b) => b.addEventListener('click', () => hide(true)));
+  document.addEventListener('click', (e) => {
+    const link = (e.target as HTMLElement).closest('[data-install]');
+    if (!link) return;
+    e.preventDefault();
+    install();
+  });
+</script>

@@ -8,7 +8,7 @@ import ShareBar from '../../components/ShareBar.astro';
 import EventSpeakers from '../../components/EventSpeakers.astro';
 import { speakerUrl } from '../../lib/speakers';
 import { slugify } from '../../lib/persian';
-import { faDateTimeWeekday, faTimeIn, tzLabel, offsetFromTehran, SITE_TZ } from '../../lib/persian';
+import { faDateTimeWeekday, faTimeIn, tzLabel, offsetFromTehran, faNumber, SITE_TZ } from '../../lib/persian';
 import { eventSchema } from '../../lib/schema';
 import { entityUrl, entityLabel, priceLabel } from '../../lib/entities';
 import { SITE } from '../../consts';
@@ -22,6 +22,7 @@ const { event } = Astro.props;
 const d = event.data;
 const { Content } = await render(event);
 const organizer = d.organizer ? await getEntry(d.organizer) : undefined;
+const partners = d.partners.length ? await getEntries(d.partners) : [];
 const related = d.entities.length ? await getEntries(d.entities) : [];
 
 const url = new URL(Astro.url.pathname, SITE.url).href;
@@ -30,6 +31,7 @@ const schema = eventSchema(event, url, {
   organizerUrl: organizer
     ? new URL(entityUrl(organizer), SITE.url).href
     : undefined,
+  partners: partners.map((p) => ({ name: entityLabel(p), url: new URL(entityUrl(p), SITE.url).href })),
   imageUrl: d.cover ? new URL(d.cover.src, SITE.url).href : undefined,
 });
 
@@ -37,7 +39,7 @@ const MODE = { 'in-person': 'حضوری', online: 'آنلاین', hybrid: 'حض�
 
 /*
  * Times display in Asia/Tehran. When the event is announced in another zone,
- * show that one too — the reader should not have to convert, and Iran's
+ * show that one too - the reader should not have to convert, and Iran's
  * half-hour offset makes mental arithmetic unusually easy to get wrong.
  */
 const showsSourceZone =
@@ -94,6 +96,16 @@ const icsUrl = `/events/${slug}/event.ics`;
           </div>
         )}
         {!organizer && d.organizerName && <div><dt>برگزارکننده</dt><dd>{d.organizerName}</dd></div>}
+        {partners.length > 0 && (
+          <div>
+            <dt>با همراهی</dt>
+            <dd class="people">
+              {partners.map((p, i) => (
+                <>{i > 0 && '، '}<a href={entityUrl(p)}><bdi>{entityLabel(p)}</bdi></a></>
+              ))}
+            </dd>
+          </div>
+        )}
         {d.performers.length > 0 && (
           <div>
             <dt>{d.performers.length > 1 ? 'ارائه‌دهندگان' : 'ارائه‌دهنده'}</dt>
@@ -114,6 +126,24 @@ const icsUrl = `/events/${slug}/event.ics`;
       </dl>
 
       {d.address && <p class="addr muted">نشانی: {d.address}</p>}
+
+      {organizer && partners.length > 0 && (
+        <div class="joint" data-pagefind-ignore>
+          <p class="joint-t">
+            رویداد مشترک {faNumber(partners.length + 1)} اجتماع
+          </p>
+          <ul>
+            {[organizer, ...partners].map((c, i) => (
+              <li>
+                <a href={entityUrl(c)}>
+                  <bdi>{entityLabel(c)}</bdi>
+                  <span class="role">{i === 0 ? 'میزبان' : 'همراه'}</span>
+                </a>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
 
       <div class="links" data-pagefind-ignore>
         {!d.cancelled && (
@@ -158,7 +188,7 @@ const icsUrl = `/events/${slug}/event.ics`;
             loading="lazy"
           />
         </a>
-        <figcaption>پوستر رویداد — برای اندازهٔ کامل کلیک کنید یا ضربه بزنید</figcaption>
+        <figcaption>پوستر رویداد - برای اندازهٔ کامل کلیک کنید یا ضربه بزنید</figcaption>
       </figure>
     )}
 
@@ -217,6 +247,36 @@ const icsUrl = `/events/${slug}/event.ics`;
     color: var(--text-muted);
   }
   .addr { font-size: var(--step--1); margin: 0 0 1.2rem; }
+  .joint {
+    margin: 0 0 1.3rem;
+    padding: 0.8rem 1rem;
+    border: 1px solid var(--border);
+    border-radius: var(--r-md);
+    background: var(--surface);
+    max-width: 62ch;
+  }
+  .joint-t { margin: 0 0 0.6rem; font-size: var(--step--1); font-weight: 700; }
+  .joint ul { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 0.45rem; }
+  .joint a {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    min-height: 36px;
+    padding-inline: 0.8rem 0.4rem;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    font-size: var(--step--1);
+    text-decoration: none;
+    color: var(--text);
+  }
+  .joint a:hover { border-color: var(--accent); }
+  .joint .role {
+    font-size: var(--step--2);
+    padding: 0.05rem 0.5rem;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--accent) 16%, transparent);
+    color: var(--accent);
+  }
   .links { display: flex; flex-wrap: wrap; gap: 0.6rem; align-items: center; }
   .links .btn svg { flex: none; }
   .cal-note { font-size: var(--step--2); margin: 0.9rem 0 0; max-width: 62ch; }

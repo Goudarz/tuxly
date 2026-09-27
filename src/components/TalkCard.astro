@@ -1,0 +1,108 @@
+---
+import type { Conference, Talk } from '../lib/conferences';
+import { talkUrl, resolvePeople } from '../lib/conferences';
+import { faDigits } from '../lib/persian';
+
+/**
+ * A talk in a conference grid.
+ *
+ * No YouTube thumbnail: fetching one from i.ytimg.com would call Google on
+ * every page view and is often blocked from inside Iran anyway. The card
+ * draws its own poster in the conference colour instead.
+ */
+interface Props { conference: Conference; talk: Talk }
+const { conference, talk } = Astro.props;
+const hasFa = talk.subtitles.some((s) => s.lang === 'fa');
+const names = (await resolvePeople(talk.speakers)).map(({ figure }) => figure.data.name).join('، ');
+---
+
+<a class="card" href={talkUrl(conference, talk)}>
+  <span class="poster" aria-hidden="true">
+    <span class="play">
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M8 5.5v13l11-6.5-11-6.5Z"></path></svg>
+    </span>
+    <span class="en"><bdi class="latin">{talk.title}</bdi></span>
+    {talk.duration && <bdi class="dur tnum" dir="ltr">{faDigits(talk.duration)}</bdi>}
+    {talk.keynote && <span class="kn">سخنرانی اصلی</span>}
+  </span>
+  <span class="meta">
+    <span class="title">{talk.titleFa}</span>
+    <span class="who"><bdi class="latin">{names}</bdi></span>
+    {hasFa && <span class="cc">زیرنویس فارسی</span>}
+  </span>
+</a>
+
+<style>
+  .card {
+    display: grid;
+    height: 100%;
+    border: 1px solid var(--border);
+    border-radius: var(--r-md);
+    overflow: hidden;
+    background: var(--surface);
+    text-decoration: none;
+    color: inherit;
+    transition: border-color 0.16s var(--ease), transform 0.16s var(--ease);
+  }
+  .card:hover, .card:focus-visible { border-color: var(--conf, var(--accent)); transform: translateY(-2px); }
+
+  .poster {
+    position: relative;
+    aspect-ratio: 16 / 9;
+    display: flex;
+    align-items: flex-end;
+    padding: 1rem;
+    color: #fff;
+    background:
+      radial-gradient(100% 120% at 100% 0%, color-mix(in srgb, var(--conf, var(--accent)) 70%, transparent), transparent 60%),
+      linear-gradient(160deg, #17181f, #08080b);
+  }
+  .en {
+    font-family: var(--font-en);
+    font-weight: 700;
+    font-size: var(--step-1);
+    line-height: 1.25;
+    max-width: 85%;
+    direction: ltr;
+    text-align: left;
+    margin-inline-start: auto;
+  }
+  .play {
+    position: absolute;
+    top: 0.9rem;
+    inset-inline-start: 0.9rem;
+    display: grid;
+    place-items: center;
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    background: var(--conf, var(--accent));
+    color: var(--conf-ink, var(--accent-ink));
+    padding-inline-start: 2px;
+  }
+  .dur, .kn {
+    position: absolute;
+    top: 0.9rem;
+    font-size: var(--step--2);
+    padding: 0.15rem 0.55rem;
+    border-radius: 6px;
+    background: rgb(0 0 0 / 0.55);
+  }
+  /* Physical side: the badge is dir=ltr, so a logical inset would flip it. */
+  .dur { left: 0.9rem; }
+  .kn { inset-inline-start: 3.7rem; top: 1.35rem; }
+
+  .meta { display: grid; gap: 0.25rem; padding: 0.9rem 1rem 1rem; }
+  .title { font-weight: 700; line-height: 1.6; }
+  .card:hover .title { color: var(--accent); }
+  .who { font-size: var(--step--1); color: var(--text-muted); }
+  .cc {
+    justify-self: start;
+    margin-top: 0.3rem;
+    font-size: var(--step--2);
+    padding: 0.1rem 0.55rem;
+    border-radius: 999px;
+    color: var(--accent);
+    border: 1px solid color-mix(in srgb, var(--accent) 45%, transparent);
+  }
+</style>

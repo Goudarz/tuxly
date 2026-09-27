@@ -10,7 +10,7 @@ npm run brand:social-kit
 ## Avatars
 
 Every platform masks the avatar to a circle, so the mark sits well inside
-the inscribed circle — nothing important reaches the corners.
+the inscribed circle - nothing important reaches the corners.
 
 | File | Where |
 |---|---|
@@ -34,7 +34,7 @@ every platform keeps.
 | `banner-linkedin-profile-1584x396.png` | LinkedIn **personal profile** cover |
 | `banner-github-1280x640.png` | GitHub organisation profile |
 
-LinkedIn's two covers are different shapes — using the profile one on a
+LinkedIn's two covers are different shapes - using the profile one on a
 page crops the wordmark in half.
 
 ## Licence

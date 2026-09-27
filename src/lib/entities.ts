@@ -32,7 +32,12 @@ export async function getPostsForEntity(entityId: string): Promise<Post[]> {
 export async function getEventsForEntity(entityId: string): Promise<Event[]> {
   const events = await getCollection('events', live);
   return events
-    .filter((e) => e.data.organizer?.id === entityId || e.data.entities.some((x) => x.id === entityId))
+    .filter(
+      (e) =>
+        e.data.organizer?.id === entityId ||
+        e.data.partners.some((x) => x.id === entityId) ||
+        e.data.entities.some((x) => x.id === entityId),
+    )
     .sort((a, b) => b.data.startsAt.valueOf() - a.data.startsAt.valueOf());
 }
 

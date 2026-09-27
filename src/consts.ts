@@ -15,7 +15,7 @@ export const SITE = {
   version: pkg.version,
 } as const;
 
-/** Placeholders — replace these handles with the real accounts. */
+/** Placeholders - replace these handles with the real accounts. */
 export const SOCIAL = [
   { id: 'telegram', label: 'تلگرام', href: 'https://t.me/tuxlyir', handle: '@tuxlyir' },
   { id: 'mastodon', label: 'ماستودون', href: 'https://techhub.social/@tuxly', handle: '@tuxly@techhub.social' },

@@ -1,0 +1,57 @@
+---
+import { Image } from 'astro:assets';
+import type { Figure } from '../lib/conferences';
+
+/**
+ * A figure's photo, or a monogram in the conference colour when there is
+ * none. Photos need the person's (or photographer's) permission, so most
+ * profiles start with the monogram, which is never wrong.
+ */
+interface Props { figure: Figure; size?: number; eager?: boolean }
+const { figure, size = 56, eager = false } = Astro.props;
+const d = figure.data;
+
+/** "Yukihiro "Matz" Matsumoto" → "YM", "DHH" → "DH". */
+function monogram(name: string): string {
+  const words = name.replace(/["“”«»]/g, ' ').split(/\s+/).filter(Boolean);
+  const main = words.filter((w) => /^[A-Z]/.test(w));
+  const pick = main.length >= 2 ? [main[0], main[main.length - 1]] : main.length ? [main[0]] : words;
+  const letters = pick.length === 1 ? pick[0].slice(0, 2) : pick.map((w) => w[0]).join('');
+  return letters.toUpperCase();
+}
+---
+
+{d.photo && d.photoAlt ? (
+  <Image
+    src={d.photo}
+    alt={d.photoAlt}
+    width={size * 2}
+    height={size * 2}
+    class="fav"
+    style={`width:${size}px;height:${size}px`}
+    loading={eager ? 'eager' : 'lazy'}
+  />
+) : (
+  <span class="fav mono latin" style={`width:${size}px;height:${size}px;font-size:${Math.round(size * 0.36)}px`} aria-hidden="true">
+    {monogram(d.fullName ?? d.name)}
+  </span>
+)}
+
+<style>
+  .fav {
+    flex: none;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid color-mix(in srgb, var(--conf, var(--accent)) 60%, transparent);
+  }
+  .mono {
+    display: grid;
+    place-items: center;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    color: #fff;
+    background:
+      radial-gradient(120% 120% at 100% 0%, color-mix(in srgb, var(--conf, var(--accent)) 85%, transparent), transparent 70%),
+      #14151b;
+  }
+</style>

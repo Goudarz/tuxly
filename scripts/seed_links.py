@@ -2,7 +2,7 @@
 """Add official website / repo / docs URLs to entity files.
 
 Only well-established, stable URLs are listed here. Anything uncertain is
-left out — a wrong outbound link is worse than a missing one. The Wikidata
+left out - a wrong outbound link is worse than a missing one. The Wikidata
 step in update-versions.mjs fills `sameAs` separately.
 """
 import pathlib

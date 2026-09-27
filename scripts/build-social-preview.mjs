@@ -6,7 +6,7 @@
  * Discord and its own repository page. It crops the edges on some
  * surfaces, so everything important stays inside a generous margin.
  *
- * Built as SVG then rasterised with sharp — no headless browser needed.
+ * Built as SVG then rasterised with sharp - no headless browser needed.
  * The font is inlined as base64, otherwise sharp falls back to a system
  * font and the Persian letterforms break.
  *

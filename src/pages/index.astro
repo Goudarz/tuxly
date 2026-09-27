@@ -2,6 +2,8 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import PostCard from '../components/PostCard.astro';
 import EventCard from '../components/EventCard.astro';
+import TalkCard from '../components/TalkCard.astro';
+import { getConferences, getLatestTalks, conferenceUrl, conferenceLabel, talkUrl } from '../lib/conferences';
 import { getPublishedPosts, getEntities, getUpcomingEvents, entityUrl, entityLabel } from '../lib/entities';
 import { graph } from '../lib/schema';
 import { faNumber } from '../lib/persian';
@@ -12,6 +14,12 @@ const [lead, ...rest] = posts;
 const events = (await getUpcomingEvents()).slice(0, 3);
 const distros = await getEntities('distribution');
 const desktops = await getEntities('desktop');
+const conferences = await getConferences();
+const latestTalks = await getLatestTalks(3);
+const newest = latestTalks[0];
+const talkCount = conferences.reduce((n, c) => n + c.data.talks.length, 0);
+// "تازه" for two weeks after a talk goes up.
+const isFresh = newest ? Date.now() - newest.talk.publishedAt.valueOf() < 14 * 864e5 : false;
 
 const schema = graph({
   '@type': 'CollectionPage',
@@ -29,7 +37,7 @@ const schema = graph({
       <h1>{SITE.tagline}</h1>
       <p>
         اخبار گنو/لینوکس و پروژه‌های آزاد، معرفی توزیع‌ها و میزکارها، آموزش، و
-        تقویم رویدادهای اجتماع — همه به فارسی، در یک جا.
+        تقویم رویدادهای اجتماع - همه به فارسی، در یک جا.
       </p>
       <div class="cta">
         <a class="btn btn-primary" href="/news">شروع از مطالب</a>
@@ -39,6 +47,11 @@ const schema = graph({
         <a class="btn" href="/desktops">
           <span class="tnum">{faNumber(desktops.length)}</span> میزکار
         </a>
+        {talkCount > 0 && (
+          <a class="btn" href="/conferences">
+            <span class="tnum">{faNumber(talkCount)}</span> ویدیو با زیرنویس فارسی
+          </a>
+        )}
       </div>
     </section>
 
@@ -47,6 +60,40 @@ const schema = graph({
         <span class="eyebrow">تازه‌ترین</span>
         <h2><a href={`/news/${lead.id}`}>{lead.data.title}</a></h2>
         <p>{lead.data.summary}</p>
+      </section>
+    )}
+
+    {newest && (
+      <section class="confs" aria-labelledby="confs-h" style={`--conf: ${newest.conference.data.theme.accent}; --conf-ink: ${newest.conference.data.theme.ink};`}>
+        <div class="confs-head">
+          <div>
+            <p class="confs-kicker">
+              پوشش کنفرانس
+              {isFresh && <span class="fresh">ویدیوی تازه</span>}
+            </p>
+            <h2 id="confs-h">ارائه‌های کنفرانس‌ها، با زیرنویس فارسی</h2>
+            <p class="confs-lead">
+              ارائه‌های کنفرانس‌های بزرگ نرم‌افزار آزاد را با زیرنویس فارسی روی خود
+              ویدیو منتشر می‌کنیم، با فهرست بخش‌ها و تنظیمات زیرنویس. اگر فرصت
+              تماشای زنده را نداشتید یا انگلیسی مانعتان بود، از اینجا شروع کنید.
+            </p>
+          </div>
+          <div class="confs-cta">
+            <a class="btn btn-primary" href={talkUrl(newest.conference, newest.talk)}>
+              تماشای «{newest.talk.titleFa}»
+            </a>
+            <a class="btn" href="/conferences">همهٔ کنفرانس‌ها</a>
+          </div>
+        </div>
+
+        <ul class="talks">
+          {latestTalks.map(({ conference, talk }) => (
+            <li style={`--conf: ${conference.data.theme.accent}; --conf-ink: ${conference.data.theme.ink};`}>
+              <TalkCard conference={conference} talk={talk} />
+              <a class="from" href={conferenceUrl(conference)}>{conferenceLabel(conference)}</a>
+            </li>
+          ))}
+        </ul>
       </section>
     )}
 
@@ -89,7 +136,7 @@ const schema = graph({
         <section class="panel">
           <h2>دنبال کردن</h2>
           <p class="muted">
-            <a href="/rss.xml">خوراک RSS تمام سایت</a> — هر توزیع، میزکار، پروژه،
+            <a href="/rss.xml">خوراک RSS تمام سایت</a> - هر توزیع، میزکار، پروژه،
             اجتماع و برچسب هم خوراک جداگانهٔ خودش را دارد.
           </p>
         </section>
@@ -113,6 +160,83 @@ const schema = graph({
   .lead h2 a { text-decoration: none; }
   .lead h2 a:hover { text-decoration: underline; text-decoration-color: var(--accent); }
   .lead p { margin: 0; color: var(--text-muted); max-width: var(--measure); }
+
+  /* Always-dark band in the latest conference's colour, like the coverage pages. */
+  .confs {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    margin: 0 0 2.5rem;
+    padding: clamp(1.3rem, 4vw, 2.2rem);
+    border-radius: var(--r-lg);
+    color: #fff;
+    background:
+      radial-gradient(80% 120% at 100% 0%, color-mix(in srgb, var(--conf) 42%, transparent), transparent 60%),
+      #0A0B0F;
+    border: 1px solid color-mix(in srgb, var(--conf) 35%, #000);
+    border-top: 4px solid var(--conf);
+    /* Links and chips inside follow the conference colour, readable on dark. */
+    --accent: color-mix(in srgb, var(--conf) 62%, #fff);
+  }
+  /* Stage lights, as on the conference pages. */
+  .confs::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: repeating-conic-gradient(
+      from 195deg at 92% -30%,
+      rgb(255 255 255 / 0.06) 0deg 2deg,
+      transparent 2deg 10deg
+    );
+    mask-image: radial-gradient(100% 100% at 92% 0%, #000 5%, transparent 70%);
+    -webkit-mask-image: radial-gradient(100% 100% at 92% 0%, #000 5%, transparent 70%);
+  }
+  .confs-head {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 1.2rem 2rem;
+    margin-bottom: 1.5rem;
+  }
+  .confs-kicker {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    margin: 0;
+    font-size: var(--step--1);
+    font-weight: 800;
+    color: var(--accent);
+  }
+  .fresh {
+    font-size: var(--step--2);
+    padding: 0.1rem 0.6rem;
+    border-radius: 999px;
+    background: var(--conf);
+    color: var(--conf-ink);
+  }
+  .confs h2 { margin: 0.35rem 0 0.5rem; font-size: var(--step-2); color: #fff; }
+  .confs-lead { margin: 0; max-width: 62ch; color: rgb(255 255 255 / 0.75); line-height: 1.85; }
+  .confs-cta { display: flex; flex-wrap: wrap; gap: 0.6rem; }
+  .confs .btn-primary { background: var(--conf); border-color: var(--conf); color: var(--conf-ink); }
+  .confs .btn-primary:hover { background: color-mix(in srgb, var(--conf) 82%, #000); border-color: transparent; color: var(--conf-ink); }
+  .confs .btn:not(.btn-primary) { background: rgb(255 255 255 / 0.06); border-color: rgb(255 255 255 / 0.22); color: #fff; }
+
+  .talks {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr));
+  }
+  .talks li { display: grid; gap: 0.45rem; align-content: start; }
+  /* Cards sit on the dark band; give them its surface, not the page's. */
+  .talks :global(.card) { background: rgb(255 255 255 / 0.04); border-color: rgb(255 255 255 / 0.12); color: #fff; }
+  .talks :global(.who) { color: rgb(255 255 255 / 0.65); }
+  .from { font-size: var(--step--2); color: rgb(255 255 255 / 0.6); text-decoration: none; }
+  .from:hover { color: #fff; text-decoration: underline; }
 
   .cols { display: grid; gap: 2.5rem; grid-template-columns: 1fr; }
   @media (min-width: 940px) { .cols { grid-template-columns: minmax(0, 1fr) 320px; gap: 3rem; } }

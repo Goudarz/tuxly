@@ -62,7 +62,7 @@ function mark(cx, cy, size, body = SNOW) {
 
 /**
  * Avatar. Square, but every platform masks it to a circle, so the mark is
- * kept well inside the inscribed circle — roughly 70% of the width.
+ * kept well inside the inscribed circle - roughly 70% of the width.
  */
 function avatar(size, bg = INK, body = SNOW) {
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 400 400">
@@ -113,7 +113,7 @@ function banner(w, h, opts = {}) {
 /*
  * Sizes come from each platform's own guidance. Where a network crops the
  * banner differently on mobile than on desktop, the safe area is the middle
- * — which is why nothing but the URL sits near an edge.
+ * - which is why nothing but the URL sits near an edge.
  */
 const FILES = [
   // avatars

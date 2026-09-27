@@ -2,7 +2,7 @@
 
 Nine poses of the same character, generated from the brand mark by
 `scripts/build-mascots.py`. Same body curve, same eye positions, same amber
-beak — the set reads as one penguin, not nine drawings.
+beak - the set reads as one penguin, not nine drawings.
 
 Regenerate after editing the script:
 
@@ -28,8 +28,8 @@ python3 scripts/build-mascots.py
 
 | File | Background |
 |---|---|
-| `tuxly-<pose>.svg` | light — ink body |
-| `tuxly-<pose>-light.svg` | dark — snow body |
+| `tuxly-<pose>.svg` | light - ink body |
+| `tuxly-<pose>-light.svg` | dark - snow body |
 
 Belly and eyes are holes, not painted shapes, so the background shows
 through and the mascot sits on any surface of the right lightness. Only the
@@ -42,7 +42,7 @@ beak and the props carry colour.
 ```
 
 Decorative use takes an empty `alt`. If the mascot is the only thing
-carrying the message — an error page with no text — describe the meaning,
+carrying the message - an error page with no text - describe the meaning,
 not the drawing: `alt="صفحه پیدا نشد"`, never `alt="پنگوئن"`.
 
 Following the theme automatically:
@@ -58,4 +58,4 @@ Following the theme automatically:
 
 Same as the mark, on <https://tuxly.ir/brand>: do not stretch, rotate or
 recolour the beak. Adding a new pose means editing the script, not tracing
-over an export — that is what keeps the character consistent.
+over an export - that is what keeps the character consistent.

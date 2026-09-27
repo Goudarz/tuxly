@@ -1,0 +1,115 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import {
+  getConferences, conferenceUrl, conferenceLabel, conferenceDates,
+} from '../../lib/conferences';
+import { collectionSchema } from '../../lib/schema';
+import { faNumber } from '../../lib/persian';
+import { SITE } from '../../consts';
+
+const conferences = await getConferences();
+const url = new URL('/conferences', SITE.url).href;
+const description =
+  'پوشش کنفرانس‌های بین‌المللی نرم‌افزار آزاد و متن‌باز: ارائه‌های ضبط‌شده با زیرنویس فارسی، بخش‌بندی و زمینهٔ فارسی.';
+---
+
+<BaseLayout
+  title="پوشش کنفرانس‌ها"
+  description={description}
+  schema={collectionSchema('پوشش کنفرانس‌ها', url, description, conferences.length)}
+>
+  <div class="wrap" data-pagefind-body data-pagefind-meta="kind:صفحه">
+    <p class="kind">پوشش کنفرانس</p>
+    <h1>کنفرانس‌ها، به فارسی</h1>
+    <p class="intro">
+      کنفرانس‌های بزرگ نرم‌افزار آزاد و متن‌باز پر از ارائه‌های ارزشمندند، ولی
+      همه به انگلیسی. اینجا کنفرانس‌هایی را که دنبال می‌کنیم جمع کرده‌ایم: هر
+      ارائه با <strong>زیرنویس فارسی روی خود ویدیو</strong>، فهرست بخش‌ها، و
+      توضیح اینکه چرا برای ما مهم است.
+    </p>
+    <p class="muted small">
+      <a href="/speakers#conferences">سخنرانان و چهره‌های کنفرانس‌ها</a> را هم ببینید و برای نشست‌ها و
+      رویدادهای پیش رو، <a href="/events">تقویم رویدادها</a> را.
+    </p>
+
+    <ul class="list">
+      {conferences.map((c) => (
+        <li>
+          <a class="card" href={conferenceUrl(c)} style={`--conf: ${c.data.theme.accent}; --conf-ink: ${c.data.theme.ink};`}>
+            <span class="band">
+              <span class="en"><bdi class="latin">{c.data.name}</bdi></span>
+              <span class="count">
+                {c.data.talks.length > 0 ? `${faNumber(c.data.talks.length)} ارائه با زیرنویس` : 'به‌زودی'}
+              </span>
+            </span>
+            <span class="meta">
+              <span class="t">{conferenceLabel(c)}</span>
+              <span class="d">{conferenceDates(c)} · {c.data.city}</span>
+              <span class="s">{c.data.summary}</span>
+            </span>
+          </a>
+        </li>
+      ))}
+    </ul>
+
+    <p class="add muted small">
+      کنفرانسی هست که دوست دارید پوشش بدهیم، یا زیرنویسی ترجمه کرده‌اید؟
+      <a href={`mailto:${SITE.email}?subject=${encodeURIComponent('پوشش کنفرانس')}`}>خبرمان کنید</a>
+      یا در <a href={`${SITE.repo}/tree/master/content/conferences`} rel="noopener">مخزن</a> اضافه‌اش کنید.
+    </p>
+  </div>
+</BaseLayout>
+
+<style>
+  .kind { color: var(--accent); font-weight: 700; font-size: var(--step--1); margin: 1rem 0 0; }
+  h1 { margin: 0.3rem 0 0.6rem; }
+  .intro { max-width: var(--measure); color: var(--text-muted); }
+  .small { font-size: var(--step--1); }
+  .list {
+    list-style: none;
+    margin: 2rem 0;
+    padding: 0;
+    display: grid;
+    gap: 1.2rem;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 380px), 1fr));
+  }
+  .card {
+    display: grid;
+    height: 100%;
+    border: 1px solid var(--border);
+    border-radius: var(--r-md);
+    overflow: hidden;
+    background: var(--surface);
+    text-decoration: none;
+    color: inherit;
+    transition: border-color 0.16s var(--ease), transform 0.16s var(--ease);
+  }
+  .card:hover, .card:focus-visible { border-color: var(--conf); transform: translateY(-2px); }
+  .band {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 1rem;
+    min-height: 130px;
+    padding: 1.1rem 1.2rem;
+    color: #fff;
+    background:
+      radial-gradient(100% 140% at 100% 0%, color-mix(in srgb, var(--conf) 75%, transparent), transparent 60%),
+      #0A0B0F;
+    border-bottom: 3px solid var(--conf);
+  }
+  .en { font-family: var(--font-en); font-weight: 700; font-size: var(--step-2); line-height: 1.15; }
+  .count {
+    flex: none;
+    font-size: var(--step--2);
+    padding: 0.2rem 0.6rem;
+    border-radius: 999px;
+    background: var(--conf);
+    color: var(--conf-ink);
+  }
+  .meta { display: grid; gap: 0.3rem; padding: 1rem 1.2rem 1.2rem; }
+  .t { font-weight: 800; font-size: var(--step-1); }
+  .d { font-size: var(--step--1); color: var(--text-muted); }
+  .s { font-size: var(--step--1); line-height: 1.8; }
+  .add { margin-top: 1rem; }
+</style>

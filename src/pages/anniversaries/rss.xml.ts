@@ -9,7 +9,7 @@ import { SITE } from '../../consts';
  *
  * Not written through `buildFeed`, which takes posts: an anniversary has no
  * post behind it and its `pubDate` is this year's occurrence rather than a
- * publication date. That difference is the whole point — a reader
+ * publication date. That difference is the whole point - a reader
  * subscribing here wants each entry to arrive on the day it happens.
  *
  * Items with a date already past this year stay in the feed. A reader
@@ -35,7 +35,7 @@ export async function GET(context: APIContext) {
   const all = months.flatMap((m) => m.items);
 
   return rss({
-    title: `${SITE.name} — تقویم سالگردها`,
+    title: `${SITE.name} - تقویم سالگردها`,
     description:
       'سالگرد آغاز پروژه‌ها، انتشارهای تاریخی و نقطه‌های عطف نرم‌افزار آزاد. ' +
       'هر مورد در روز خودش می‌رسد.',
@@ -49,7 +49,7 @@ export async function GET(context: APIContext) {
       const age = year - a.date.getUTCFullYear();
 
       /*
-       * Milestone titles usually already name the kind — «انتشار NetBSD» —
+       * Milestone titles usually already name the kind - «انتشار NetBSD» -
        * so prefixing it again gives «انتشار انتشار NetBSD». Entity
        * birthdays are bare names and do need the prefix.
        */
@@ -57,7 +57,7 @@ export async function GET(context: APIContext) {
       const subject = label && !a.title.startsWith(label) ? `${label} ${a.title}` : a.title;
 
       const parts = [
-        `${faNumber(a.jDay)} ${MONTHS[a.jMonth - 1]} — ${faNumber(age)} سال از ${subject} می‌گذرد.`,
+        `${faNumber(a.jDay)} ${MONTHS[a.jMonth - 1]} - ${faNumber(age)} سال از ${subject} می‌گذرد.`,
         a.note ?? '',
         `تاریخ اصلی: ${faYear(a.date.getUTCFullYear())} میلادی.`,
       ].filter(Boolean);

@@ -87,7 +87,7 @@
          */
         /*
          * Cast through unknown so this does not resolve to the lib's
-         * deprecated overload — the deprecation is understood, and there is
+         * deprecated overload - the deprecation is understood, and there is
          * no modern replacement for this fallback path.
          */
         const legacy = document as unknown as {
@@ -108,7 +108,7 @@
     const ok = await copy(text);
     const label = el.getAttribute('data-copy-label');
     notify(
-      ok ? `«${label ?? text}» رونوشت شد` : 'رونوشت انجام نشد — دستی انتخاب کنید',
+      ok ? `«${label ?? text}» رونوشت شد` : 'رونوشت انجام نشد - دستی انتخاب کنید',
       !ok,
     );
     if (ok) {
