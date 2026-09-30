@@ -74,7 +74,9 @@ const schema = graph(
           })),
         }
       : {}),
-    isPartOf: { '@type': 'Event', name: c.name, url: new URL(conferenceUrl(conference), SITE.url).href },
+    // The conference's full Event lives on its own page; point at it rather
+    // than repeating a partial Event that Google would flag as incomplete.
+    recordedAt: { '@id': `${new URL(conferenceUrl(conference), SITE.url).href}#event` },
   },
   breadcrumb([
     { name: 'خانه', url: '/' },

@@ -422,6 +422,23 @@ const conferences = defineCollection({
          */
         highlights: z.array(appearance).default([]),
 
+        /**
+         * The full official speaker list, names and titles as the organiser
+         * publishes them. Shown on the conference page and used as the
+         * event's performers. A profile (content/figures/) is written only
+         * once someone's talk is published, so most entries are name-only.
+         */
+        lineup: z
+          .array(
+            z.object({
+              name: z.string(),
+              role: z.string().optional(),
+              /** Square thumbnail; stored at 400px at most, shown at 44px. */
+              photo: image().optional(),
+            }),
+          )
+          .default([]),
+
         talks: z
           .array(
             z.object({

@@ -214,16 +214,22 @@ export function eventSchema(
    * rejected outright, so the human-readable wording lives in `priceNote`
    * and never reaches the structured data.
    */
-  const offers = d.registerUrl
-    ? {
-        '@type': 'Offer',
-        url: d.registerUrl,
-        price: d.price ?? 0,
-        priceCurrency: d.priceCurrency,
-        availability: 'https://schema.org/InStock',
-        validFrom: (d.registerOpensAt ?? BUILD_TIME).toISOString(),
-      }
-    : undefined;
+  /*
+   * Always present: Google reports an Event without `offers` as incomplete.
+   * Most events here are free and need no registration, which is still an
+   * offer — price 0 — and its URL is wherever one signs up or joins, or
+   * this page when there is nothing to sign up for.
+   */
+  const ended = (d.endsAt ?? d.startsAt) < BUILD_TIME;
+  const offers = {
+    '@type': 'Offer',
+    url: d.registerUrl ?? d.onlineUrl ?? url,
+    price: d.price ?? 0,
+    priceCurrency: d.priceCurrency,
+    availability: ended || d.cancelled ? 'https://schema.org/SoldOut' : 'https://schema.org/InStock',
+    // When sign-up opened; without a stated date, the listing is the best we know.
+    validFrom: (d.registerOpensAt ?? (ended ? d.startsAt : BUILD_TIME)).toISOString(),
+  };
 
   const host = opts.organizerName
     ? {
@@ -272,7 +278,7 @@ export function eventSchema(
           organizer
           ? { performer: organizer }
           : {}),
-      ...(offers ? { offers } : {}),
+      offers,
     },
     breadcrumb([
       { name: 'خانه', url: '/' },

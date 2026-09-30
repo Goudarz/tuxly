@@ -8,6 +8,8 @@ knownFor: [Ruby, Ruby on Rails]
 affiliation: Shopify
 website: https://tenderlovemaking.com
 github: tenderlove
+photo: ../../src/assets/figures/aaron-patterson.jpg
+photoAlt: عکس چهرهٔ آرون پترسون، سخنران ریلز ورلد ۲۰۲۶
 entities:
   - projects/rails
 ---

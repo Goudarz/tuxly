@@ -9,6 +9,8 @@ website: https://www.planetargon.com/about/robby-russell
 github: robbyrussell
 x: robbyrussell
 linkedin: https://www.linkedin.com/in/robbyrussell
+photo: ../../src/assets/figures/robby-russell.jpg
+photoAlt: عکس چهرهٔ رابی راسل، سخنران ریلز ورلد ۲۰۲۶
 entities:
   - projects/rails
 ---

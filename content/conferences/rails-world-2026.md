@@ -27,6 +27,36 @@ highlights:
   - person: aaron-patterson
   - person: vladimir-dementyev
   - person: robby-russell
+# فهرست کامل سخنرانان، از صفحهٔ رسمی: https://rubyonrails.org/world/2026/speakers
+lineup:
+  - { name: DHH, role: 'مدیر فنی، 37signals' }
+  - { name: 'Yukihiro "Matz" Matsumoto', role: 'سازندهٔ روبی' }
+  - { name: Jeremy Daer, role: 'تیم هستهٔ ریلز، 37signals' }
+  - { name: Aaron Patterson, role: 'مهندس ارشد، Shopify' }
+  - { name: Robby Russell, role: 'مدیرعامل، Planet Argon' }
+  - { name: Alicia Rojas, role: 'توسعه‌دهندهٔ نرم‌افزار، Telos Labs', photo: ../../src/assets/speakers/rails-world-2026/alicia-rojas.jpg }
+  - { name: Andrew Novoselac, role: 'توسعه‌دهنده، Shopify', photo: ../../src/assets/speakers/rails-world-2026/andrew-novoselac.jpg }
+  - { name: Daniela Velasquez, role: 'مهندس ارشد نرم‌افزار، Shopify', photo: ../../src/assets/speakers/rails-world-2026/daniela-velasquez.jpg }
+  - { name: Donal McBreen, role: 'برنامه‌نویس ارشد، 37signals', photo: ../../src/assets/speakers/rails-world-2026/donal-mcbreen.jpg }
+  - { name: Enrique Mogollan, role: 'مهندس نرم‌افزار، Handshake', photo: ../../src/assets/speakers/rails-world-2026/enrique-mogollan.jpg }
+  - { name: Jenny Shen, role: 'توسعه‌دهندهٔ ارشد، Shopify', photo: ../../src/assets/speakers/rails-world-2026/jenny-shen.jpg }
+  - { name: Jeremy Smith, role: 'مالک، HYBRD', photo: ../../src/assets/speakers/rails-world-2026/jeremy-smith.jpg }
+  - { name: Joël Quenneville, role: 'توسعه‌دهندهٔ اصلی، thoughtbot', photo: ../../src/assets/speakers/rails-world-2026/joel-quenneville.jpg }
+  - { name: Jorge Manrubia, role: 'برنامه‌نویس اصلی، 37signals', photo: ../../src/assets/speakers/rails-world-2026/jorge-manrubia.jpg }
+  - { name: Josef Strzibny, role: 'مروج روبی میان توسعه‌دهندگان، SerpApi', photo: ../../src/assets/speakers/rails-world-2026/josef-strzibny.jpg }
+  - { name: Kevin McConnell, role: 'برنامه‌نویس ارشد، 37signals', photo: ../../src/assets/speakers/rails-world-2026/kevin-mcconnell.jpg }
+  - { name: Kinsey Durham Grace, role: 'از مهندسان بنیان‌گذار، All Purpose', photo: ../../src/assets/speakers/rails-world-2026/kinsey-durham-grace.jpg }
+  - { name: Marco Roth, role: 'مشاور مستقل و مشارکت‌کنندهٔ متن‌باز', photo: ../../src/assets/speakers/rails-world-2026/marco-roth.jpg }
+  - { name: Mike Dalessio, role: 'نگهدارندهٔ متن‌باز، 37signals', photo: ../../src/assets/speakers/rails-world-2026/mike-dalessio.jpg }
+  - { name: Nick Pezza, role: 'مهندس ارشد نرم‌افزار، beehiiv', photo: ../../src/assets/speakers/rails-world-2026/nick-pezza.jpg }
+  - { name: Paweł Strzałkowski, role: 'مدیر فنی، Visuality', photo: ../../src/assets/speakers/rails-world-2026/pawel-strzalkowski.jpg }
+  - { name: Rachael Wright-Munn, role: '@ChaelCodes', photo: ../../src/assets/speakers/rails-world-2026/rachael-wright-munn.jpg }
+  - { name: Ryan Sherlock, role: 'مدیر ارشد مهندسی، Fin', photo: ../../src/assets/speakers/rails-world-2026/ryan-sherlock.jpg }
+  - { name: Tess Griffin, role: 'توسعه‌دهندهٔ ارشد، thoughtbot', photo: ../../src/assets/speakers/rails-world-2026/tess-griffin.jpg }
+  - { name: Vladimir Dementyev, role: 'مهندس اصلی، Evil Martians' }
+  - { name: Arely Rivera, role: 'طراح ارشد محصول، Telos Labs', photo: ../../src/assets/speakers/rails-world-2026/arely-rivera.jpg }
+  - { name: Nathan Hessler, role: 'برگزارکننده، AustinRB', photo: ../../src/assets/speakers/rails-world-2026/nathan-hessler.jpg }
+  - { name: Michelle Yuen, role: 'برگزارکننده، ChicagoRB', photo: ../../src/assets/speakers/rails-world-2026/michelle-yuen.jpg }
 talks:
   - slug: opening-keynote-dhh
     title: Rails World 2026 Opening Keynote

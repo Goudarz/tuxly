@@ -7,6 +7,8 @@ summary: مهندس ارشد ایویل مارشنز، سازندهٔ AnyCable �
 knownFor: [AnyCable, Ruby on Rails]
 affiliation: Evil Martians
 github: palkan
+photo: ../../src/assets/figures/vladimir-dementyev.jpg
+photoAlt: عکس چهرهٔ ولادیمیر دمنتیف، سخنران ریلز ورلد ۲۰۲۶
 entities:
   - projects/rails
 ---

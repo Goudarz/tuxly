@@ -4,8 +4,10 @@ import type { Figure } from '../lib/conferences';
 
 /**
  * A figure's photo, or a monogram in the conference colour when there is
- * none. Photos need the person's (or photographer's) permission, so most
- * profiles start with the monogram, which is never wrong.
+ * none.
+ *
+ * Only ever sent at display size: 1x and 2x copies, so a 56px avatar
+ * downloads a 56 or 112px file, never the stored original.
  */
 interface Props { figure: Figure; size?: number; eager?: boolean }
 const { figure, size = 56, eager = false } = Astro.props;
@@ -25,8 +27,10 @@ function monogram(name: string): string {
   <Image
     src={d.photo}
     alt={d.photoAlt}
-    width={size * 2}
-    height={size * 2}
+    width={size}
+    height={size}
+    densities={[1, 2]}
+    decoding="async"
     class="fav"
     style={`width:${size}px;height:${size}px`}
     loading={eager ? 'eager' : 'lazy'}

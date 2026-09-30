@@ -9,6 +9,8 @@ knownFor: [Ruby]
 github: matz
 x: yukihiro_matz
 wikipedia: https://en.wikipedia.org/wiki/Yukihiro_Matsumoto
+photo: ../../src/assets/figures/matz.jpg
+photoAlt: عکس چهرهٔ یوکیهیرو ماتسوموتو (ماتز)، سخنران ریلز ورلد ۲۰۲۶
 entities:
   - projects/rails
 ---

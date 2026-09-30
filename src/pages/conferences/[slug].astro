@@ -1,5 +1,6 @@
 ---
 import { getEntry, render } from 'astro:content';
+import { Image } from 'astro:assets';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import ConferenceShell from '../../components/ConferenceShell.astro';
 import TalkCard from '../../components/TalkCard.astro';
@@ -7,10 +8,11 @@ import FigureAvatar from '../../components/FigureAvatar.astro';
 import ShareBar from '../../components/ShareBar.astro';
 import SearchIndex from '../../components/SearchIndex.astro';
 import {
-  getConferences, conferenceSlug, conferenceLabel, sortedTalks, talkUrl, resolvePeople, figureUrl,
+  getConferences, conferenceSlug, conferenceLabel, sortedTalks, talkUrl, resolvePeople, figureUrl, isoDuration,
 } from '../../lib/conferences';
 import { entityUrl, entityLabel } from '../../lib/entities';
 import { graph, breadcrumb } from '../../lib/schema';
+import { faNumber } from '../../lib/persian';
 import { SITE } from '../../consts';
 
 export async function getStaticPaths() {
@@ -26,6 +28,20 @@ const talks = sortedTalks(conference);
 const label = conferenceLabel(conference);
 const highlights = await resolvePeople(d.highlights);
 const url = new URL(Astro.url.pathname, SITE.url).href;
+
+/*
+ * Everyone on stage, for `performer`: the official lineup when we have it,
+ * otherwise the highlighted figures. Anyone with a profile links to it.
+ */
+const profileUrlByName = new Map(
+  highlights.map(({ figure }) => [figure.data.name, new URL(figureUrl(figure), SITE.url).href]),
+);
+const lineup = d.lineup.length
+  ? d.lineup.map((p) => ({ name: p.name, role: p.role, photo: p.photo, url: profileUrlByName.get(p.name) }))
+  : highlights.map(({ figure, role }) => ({ name: figure.data.name, role, photo: undefined, url: profileUrlByName.get(figure.data.name) }));
+const ended = (d.endsAt ?? d.startsAt) < new Date();
+// Lineup entries without a profile card above, shown as a plain list.
+const others = lineup.filter((p) => !p.url);
 
 const schema = graph(
   {
@@ -44,24 +60,45 @@ const schema = graph(
       address: { '@type': 'PostalAddress', addressLocality: d.city, addressCountry: d.country },
     },
     image: [`${SITE.url}/og/default.png`],
-    ...(highlights.length
+    ...(lineup.length
       ? {
-          performer: highlights.map(({ figure }) => ({
+          performer: lineup.map((p) => ({
             '@type': 'Person',
-            name: figure.data.fullName ?? figure.data.name,
-            url: new URL(figureUrl(figure), SITE.url).href,
+            name: p.name,
+            ...(p.role ? { jobTitle: p.role } : {}),
+            ...(p.url ? { url: p.url } : {}),
           })),
         }
       : {}),
-    ...(organizer ? { organizer: { '@type': 'Organization', name: organizer.data.name, url: organizer.data.website } } : {}),
+    ...(organizer
+      ? { organizer: { '@type': 'Organization', name: organizer.data.name, url: organizer.data.website ?? d.website } }
+      : { organizer: { '@type': 'Organization', name: d.name, url: d.website } }),
+    /*
+     * Tickets are sold on the organiser's site; we do not know the price, so
+     * none is claimed. Once the conference is over they are no longer sold.
+     */
+    offers: {
+      '@type': 'Offer',
+      url: d.website,
+      availability: ended ? 'https://schema.org/SoldOut' : 'https://schema.org/InStock',
+      validFrom: d.startsAt.toISOString().split('T')[0],
+    },
+    /*
+     * The recorded talks. Complete VideoObjects rather than subEvents: a
+     * sub-event with only a name is an incomplete Event to Google, and each
+     * one was reported as missing half a dozen required fields.
+     */
     ...(talks.length
       ? {
-          subEvent: talks.map((t) => ({
-            '@type': 'Event',
+          workFeatured: talks.map((t) => ({
+            '@type': 'VideoObject',
             name: t.title,
+            description: t.summary,
             url: new URL(talkUrl(conference, t), SITE.url).href,
-            startDate: d.startsAt.toISOString().split('T')[0],
-            location: { '@type': 'Place', name: d.venue ?? d.city, address: d.city },
+            uploadDate: t.publishedAt.toISOString(),
+            thumbnailUrl: [`https://i.ytimg.com/vi/${t.youtube}/hqdefault.jpg`],
+            embedUrl: `https://www.youtube.com/embed/${t.youtube}`,
+            ...(t.duration ? { duration: isoDuration(t.duration) } : {}),
           })),
         }
       : {}),
@@ -129,6 +166,33 @@ const schema = graph(
         </section>
       )}
 
+      {others.length > 0 && (
+        <section class="lineup">
+          <h2>
+            {highlights.length > 0 ? 'سخنرانان دیگر این دوره' : 'سخنرانان این دوره'}
+            <span class="count">{faNumber(others.length)}</span>
+          </h2>
+          <p class="muted small">
+            فهرست رسمی برگزارکننده. هر ارائه‌ای که منتشر شود، سخنرانش صفحهٔ خودش را
+            اینجا می‌گیرد.
+          </p>
+          <ul>
+            {others.map((p) => (
+              <li>
+                {/* 44px on screen, 88px for sharp screens; nothing larger is ever sent. */}
+                {p.photo
+                  ? <Image src={p.photo} alt={`عکس ${p.name}`} width={44} height={44} densities={[1, 2]} loading="lazy" decoding="async" class="lp" />
+                  : <span class="lp none" aria-hidden="true"></span>}
+                <span class="lt">
+                  <span class="ln"><bdi class="latin">{p.name}</bdi></span>
+                  {p.role && <bdi class="lr">{p.role}</bdi>}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
       <SearchIndex text={`${d.name} ${label} ${d.summary} ${d.context ?? ''} ${talks.map((t) => `${t.title} ${t.titleFa}`).join(' ')}`} />
       <ShareBar title={label} />
       <p class="back"><a href="/conferences">همهٔ کنفرانس‌هایی که پوشش می‌دهیم</a></p>
@@ -192,5 +256,36 @@ const schema = graph(
   .r { font-size: var(--step--2); color: var(--text-muted); line-height: 1.7; margin-top: 0.15rem; }
   .all-people { display: inline-block; margin-top: 0.9rem; font-size: var(--step--1); font-weight: 600; text-decoration: none; }
   .all-people:hover { text-decoration: underline; }
+
+  .lineup { margin-top: 2.5rem; }
+  .lineup h2 { display: flex; align-items: center; gap: 0.6rem; font-size: var(--step-1); margin-bottom: 0.4rem; }
+  .count {
+    font-size: var(--step--2);
+    padding: 0.05rem 0.55rem;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--conf) 16%, transparent);
+    color: var(--accent);
+  }
+  .small { font-size: var(--step--1); margin: 0 0 1rem; }
+  .lineup ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 0.5rem 1.2rem;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 230px), 1fr));
+  }
+  .lineup li {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    padding: 0.35rem 0.7rem;
+    border-inline-start: 2px solid color-mix(in srgb, var(--conf) 55%, transparent);
+  }
+  .lp { flex: none; width: 44px; height: 44px; border-radius: 50%; object-fit: cover; background: var(--surface); }
+  .lp.none { border: 1px dashed var(--border); }
+  .lt { display: grid; gap: 0.05rem; min-width: 0; }
+  .ln { font-weight: 600; font-size: var(--step--1); }
+  .lr { font-size: var(--step--2); color: var(--text-muted); line-height: 1.7; }
   .back { margin-top: 2.5rem; }
 </style>

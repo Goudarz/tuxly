@@ -11,6 +11,8 @@ website: https://dhh.dk
 github: dhh
 x: dhh
 wikipedia: https://en.wikipedia.org/wiki/David_Heinemeier_Hansson
+photo: ../../src/assets/figures/dhh.jpg
+photoAlt: عکس چهرهٔ دیوید هاینمایر هانسون (DHH)، سخنران ریلز ورلد ۲۰۲۶
 entities:
   - projects/rails
 ---

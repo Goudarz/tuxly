@@ -76,11 +76,13 @@ const schema = graph(
           })),
         }
       : {}),
+    /*
+     * References to each conference's full Event on its own page, not a
+     * partial Event here: Google checks every Event node it finds and
+     * reports a name-only one as missing its required fields.
+     */
     performerIn: record.map((r) => ({
-      '@type': 'Event',
-      name: r.conference.data.name,
-      url: new URL(conferenceUrl(r.conference), SITE.url).href,
-      startDate: r.conference.data.startsAt.toISOString().split('T')[0],
+      '@id': `${new URL(conferenceUrl(r.conference), SITE.url).href}#event`,
     })),
   },
   breadcrumb([

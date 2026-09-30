@@ -6,6 +6,8 @@ summary: برنامه‌نویس ۳۷سیگنالز و عضو قدیمی تیم 
 knownFor: [Ruby on Rails]
 affiliation: 37signals
 github: jeremy
+photo: ../../src/assets/figures/jeremy-daer.jpg
+photoAlt: عکس چهرهٔ جرمی دیر، سخنران ریلز ورلد ۲۰۲۶
 entities:
   - projects/rails
 ---
