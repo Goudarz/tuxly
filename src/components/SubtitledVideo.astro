@@ -359,12 +359,13 @@ const SETTINGS = [
     color: var(--cc-color);
     text-shadow: var(--cc-shadow);
   }
+
   .cue :global(span) {
+    display: inline-block;
+    max-width: 100%;
     background: var(--cc-bg);
     padding: 0.08em 0.45em;
     border-radius: 6px;
-    box-decoration-break: clone;
-    -webkit-box-decoration-break: clone;
   }
   .sv[data-cc-pos='high'] .stage .cue { bottom: 24%; }
   .sv[data-cc-pos='top'] .stage .cue { bottom: auto; top: 7%; }

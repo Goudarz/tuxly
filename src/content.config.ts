@@ -348,6 +348,8 @@ const figures = defineCollection({
         github: z.string().optional(),
         x: z.string().optional(),
         mastodon: z.url().optional(),
+        /** Full profile URL, e.g. https://www.linkedin.com/in/username */
+        linkedin: z.url().optional(),
         wikipedia: z.url().optional(),
         sameAs: z.array(z.url()).default([]),
         entities: z.array(reference('entities')).default([]),
@@ -428,7 +430,11 @@ const conferences = defineCollection({
               title: z.string(),
               titleFa: z.string(),
               speakers: z.array(appearance).min(1),
-              summary: z.string().min(40).max(600),
+              /**
+               * Also the page's meta description. Written from both the
+               * video's own description and its summary; room for both.
+               */
+              summary: z.string().min(40).max(900),
               youtube: z.string().regex(/^[\w-]{11}$/),
               /**
                * Direct MP4/WebM of the same video (own host, PeerTube, …).

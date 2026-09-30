@@ -12,6 +12,7 @@ knownFor: [Project]
 # website: https://example.org
 # github: username
 # x: username
+# linkedin: https://www.linkedin.com/in/username
 # wikipedia: https://en.wikipedia.org/wiki/...
 entities: []
 ---
