@@ -15,10 +15,10 @@ defaultDesktop: [GNOME]
 architectures: [x86_64]
 tags: [توزیع]
 currentVersion: '26.04.1'
-releasedAt: 2026-08-31
+releasedAt: 2026-08-27
 eolAt: 2031-05-29
 wikidata: Q381
-versionCheckedAt: 2026-09-28
+versionCheckedAt: 2026-10-12
 ---
 
 اوبونتو را شرکت Canonical در سال ۲۰۰۴ با یک هدف روشن ساخت: گنو/لینوکسی که
