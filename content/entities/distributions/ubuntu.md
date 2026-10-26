@@ -14,11 +14,11 @@ eolId: ubuntu
 defaultDesktop: [GNOME]
 architectures: [x86_64]
 tags: [توزیع]
-currentVersion: '26.04.1'
-releasedAt: 2026-08-27
-eolAt: 2031-05-29
+currentVersion: '26.10'
+releasedAt: 2026-10-15
+eolAt: 2027-07-01
 wikidata: Q381
-versionCheckedAt: 2026-10-12
+versionCheckedAt: 2026-10-26
 ---
 
 اوبونتو را شرکت Canonical در سال ۲۰۰۴ با یک هدف روشن ساخت: گنو/لینوکسی که

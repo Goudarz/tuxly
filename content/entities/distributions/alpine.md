@@ -12,10 +12,10 @@ releaseModel: fixed
 eolId: alpine
 architectures: [x86_64]
 tags: [توزیع]
-currentVersion: '3.24.2'
-releasedAt: 2026-09-17
+currentVersion: '3.24.3'
+releasedAt: 2026-10-21
 eolAt: 2028-06-01
-versionCheckedAt: 2026-10-12
+versionCheckedAt: 2026-10-26
 ---
 
 آلپاین به‌جای glibc از musl و به‌جای coreutils از BusyBox استفاده می‌کند.
