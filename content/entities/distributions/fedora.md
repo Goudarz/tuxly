@@ -14,11 +14,11 @@ eolId: fedora
 defaultDesktop: [GNOME]
 architectures: [x86_64]
 tags: [توزیع]
-currentVersion: '44'
-releasedAt: 2026-04-28
-eolAt: 2027-06-02
+currentVersion: '45'
+releasedAt: 2026-11-03
+eolAt: 2027-12-08
 wikidata: Q48267
-versionCheckedAt: 2026-10-12
+versionCheckedAt: 2026-11-23
 ---
 
 فدورا با پشتیبانی Red Hat اداره می‌شود ولی جامعه‌محور است و سیاست
